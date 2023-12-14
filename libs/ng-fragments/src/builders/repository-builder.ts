@@ -3,9 +3,9 @@ import { Builder } from '../builder/types';
 import { ExecutionContext } from '../fragment/types';
 import { BuilderConfig, ContentType, typeBuilder } from './type-builder';
 
-export type ContextType<T> = ContentType<T>;
+export type RepositoryType<T> = ContentType<T>;
 
-export function contextBuilder(
+export function repositoryBuilder(
   builderConfig?: BuilderConfig
 ): Builder<ExecutionContext, Type<ExecutionContext>> {
   return typeBuilder(builderConfig);

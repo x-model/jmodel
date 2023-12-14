@@ -1,44 +1,39 @@
-import { Component, Type } from '@angular/core';
+import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   build,
   contextBuilder,
-  fragments,
-  methods,
+  dependencies,
+  publicApi,
 } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
-import { store$ } from '../../../base/fragments/card-store.fragment';
 import {
   CARD_COMPONENT_CONTEXT,
   CardComponentContext,
-  draw$,
-  totalPages$,
-} from '../../../base/fragments/card.fragment';
-import { starshipGet, starshipGetAll } from '../../../../../api/starships';
-import { compareStarships } from '../../services/starship-comparer';
-import { mapStarship } from '../../services/starship-mapper';
+} from '../../../../../data/model/base/card.fragment';
+import { StarshipModel } from '../../../../../data';
 
-export const StarshipComponentContext: Type<CardComponentContext> = build(
-  contextBuilder(),
-  fragments({
-    store$,
-    totalPages$,
-    getAll$: starshipGetAll,
-    get$: starshipGet,
-  }),
-  methods(({ _exec, store$ }) => ({
-    draw: () => _exec(draw$),
-    getStore: () => _exec(store$),
-    compare: compareStarships,
-    map: mapStarship,
-  }))
-);
+@Injectable()
+export class StarshipComponentContext
+  extends build(
+    contextBuilder(),
+    dependencies({ model: StarshipModel }),
+    publicApi(({ model }) => ({
+      // ...store.getters
+      isLoading: model.isLoading,
+      player1: model.player1,
+      player2: model.player2,
+      draw: () => model.draw(),
+    }))
+  )
+  implements CardComponentContext {}
 
 @Component({
   selector: 'sw-starship-page',
   standalone: true,
   imports: [TranslateModule, TwoPlayersCardsLayoutComponent],
   providers: [
+    StarshipModel,
     { provide: CARD_COMPONENT_CONTEXT, useClass: StarshipComponentContext },
   ],
   templateUrl: './starship-page.component.html',

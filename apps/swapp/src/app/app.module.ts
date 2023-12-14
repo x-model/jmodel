@@ -10,7 +10,7 @@ import { G11nModule } from './g11n';
 import { HomePageComponent } from './ui/main/pages/home-page/home-page.component';
 import { LayoutComponent } from './ui/main/components/layout/layout.component';
 import { ApplicationContext } from './app.context';
-import { ApiModule } from './api';
+import { DataModule } from './data';
 
 function appInitFactory(
   context: ContextType<typeof ApplicationContext>
@@ -24,7 +24,7 @@ function appInitFactory(
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    ApiModule,
+    DataModule,
     G11nModule,
     MatButtonModule,
     MatToolbarModule,

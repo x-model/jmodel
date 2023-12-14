@@ -3,21 +3,16 @@ import { TranslateModule } from '@ngx-translate/core';
 import {
   build,
   contextBuilder,
-  fragments,
+  dependencies,
   hooks,
-  methods,
+  publicApi,
 } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
-import { comparePeople } from '../../services/people-comparer';
-import { mapPeople } from '../../services/people-mapper';
-import { store$ } from '../../../base/fragments/card-store.fragment';
-import { peopleGet, peopleGetAll } from '../../../../../api/people';
 import {
   CARD_COMPONENT_CONTEXT,
   CardComponentContext,
-  draw$,
-  totalPages$,
-} from '../../../base/fragments/card.fragment';
+} from '../../../../../data/model/base/card.fragment';
+import { PeopleModel } from '../../../../../data';
 
 const styles = `
   :host {
@@ -30,12 +25,7 @@ const styles = `
 export class PeopleComponentContext
   extends build(
     contextBuilder(),
-    fragments({
-      store$,
-      totalPages$,
-      getAll$: peopleGetAll,
-      get$: peopleGet,
-    }),
+    dependencies({ model: PeopleModel }),
     hooks(() => ({
       onInit: () => {
         console.log('people context initialized');
@@ -44,12 +34,20 @@ export class PeopleComponentContext
         console.log('people context destroyed');
       },
     })),
-    methods(({ _exec, store$ }) => ({
-      draw: () => _exec(draw$),
-      getStore: () => _exec(store$),
-      compare: comparePeople,
-      map: mapPeople,
+    publicApi(({ model }) => ({
+      // ...store.getters
+      isLoading: model.isLoading,
+      player1: model.player1,
+      player2: model.player2,
+      draw: () => model.draw(),
     }))
+    // TODO
+    // nie możemy teraz robić czegoś takiego,
+    // bo przepisujemy wszystkie property z modelu i potem się sypie
+    // ale jak obsłużymy public api to ta opcja powinna zadziałać
+    // publicApi(({ model }) => ({
+    //   ...model,
+    // }))
   )
   implements CardComponentContext {}
 
@@ -58,6 +56,7 @@ export class PeopleComponentContext
   standalone: true,
   imports: [TranslateModule, TwoPlayersCardsLayoutComponent],
   providers: [
+    PeopleModel,
     { provide: CARD_COMPONENT_CONTEXT, useClass: PeopleComponentContext },
   ],
   template: `

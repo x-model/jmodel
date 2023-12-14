@@ -10,10 +10,10 @@ export type BuilderStepConfig<
   Output extends BuilderPartialContext
 > = Output | Factory<Input, Output>;
 
-export type Builder<InitialContext extends BuilderInitialContext, Result> = <
-  FactoryResult extends InitialContext & BuilderPartialContext
->(
-  factory: Factory<InitialContext, FactoryResult>
+export type Builder<InitialContext extends BuilderInitialContext, Result> = (
+  factory: <FactoryResult extends InitialContext & BuilderPartialContext>(
+    context: InitialContext
+  ) => FactoryResult
 ) => Result;
 
 export type BuildResult<
@@ -23,4 +23,6 @@ export type BuildResult<
   ? Type<TBuilderStepsResult>
   : TBuilderStepsResult extends TBuilderResult
   ? TBuilderStepsResult
+  : TBuilderResult extends Factory<infer Input, unknown>
+  ? Factory<Input, TBuilderStepsResult>
   : TBuilderResult;

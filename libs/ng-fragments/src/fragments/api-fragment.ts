@@ -35,11 +35,14 @@ export function apiFragmentTemplate<
   TFragmentIn,
   TFragmentOut
 >(): FragmentTemplate<TFragmentIn, TFragmentOut> {
+  // const templateId = Symbol.for('api');
   return build(
     fragmentTemplateBuilder<TFragmentIn, TFragmentOut>({
       static: 'context',
       templateId,
       name: 'api',
+      // get name by symbol
+      // Symbol.keyFor(templateId);
     }),
     props(({ _inject }) => ({
       _client: _inject(HttpClient),

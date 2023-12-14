@@ -2,9 +2,9 @@ import { Component, Input, Signal, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { CardsLayoutComponent } from '../cards-layout/cards-layout.component';
-import { CardPlayer } from '../../models/card-player';
 import { CardPlayerComponent } from '../card-player/card-player.component';
-import { CARD_COMPONENT_CONTEXT } from '../../fragments/card.fragment';
+import { CARD_COMPONENT_CONTEXT } from '../../../../../data/model/base/card.fragment';
+import { CardPlayer } from '../../../../../data/model/base/models/card-player';
 
 @Component({
   selector: 'sw-two-players-cards-layout',
@@ -22,10 +22,9 @@ export class TwoPlayersCardsLayoutComponent {
   @Input() title: string;
 
   private readonly ctx = inject(CARD_COMPONENT_CONTEXT);
-  store = this.ctx.getStore();
-  player1: Signal<CardPlayer> = this.store.player1;
-  player2: Signal<CardPlayer> = this.store.player2;
-  isLoading: Signal<boolean> = this.store.isLoading;
+  player1: Signal<CardPlayer> = this.ctx.player1;
+  player2: Signal<CardPlayer> = this.ctx.player2;
+  isLoading: Signal<boolean> = this.ctx.isLoading;
 
   draw(): void {
     this.ctx.draw();
