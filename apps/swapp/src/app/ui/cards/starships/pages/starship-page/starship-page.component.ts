@@ -3,7 +3,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import {
   build,
   contextBuilder,
-  dependencies,
+  diDependencies,
   publicApi,
 } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
@@ -11,13 +11,13 @@ import {
   CARD_COMPONENT_CONTEXT,
   CardComponentContext,
 } from '../../../../../data/model/base/card.fragment';
-import { StarshipModel } from '../../../../../data';
+import { provideStarshipModel } from '../../../../../data';
 
 @Injectable()
 export class StarshipComponentContext
   extends build(
     contextBuilder(),
-    dependencies({ model: StarshipModel }),
+    diDependencies({ model: provideStarshipModel() }),
     publicApi(({ model }) => ({
       // ...store.getters
       isLoading: model.isLoading,
@@ -33,7 +33,6 @@ export class StarshipComponentContext
   standalone: true,
   imports: [TranslateModule, TwoPlayersCardsLayoutComponent],
   providers: [
-    StarshipModel,
     { provide: CARD_COMPONENT_CONTEXT, useClass: StarshipComponentContext },
   ],
   templateUrl: './starship-page.component.html',

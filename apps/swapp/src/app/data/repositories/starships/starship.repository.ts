@@ -1,16 +1,30 @@
-import { Injectable } from '@angular/core';
 import {
-  build,
+  ExecutionContext,
   fragmentsToMethods,
-  repositoryBuilder,
+  fromFactory,
+  perLifetimeScope,
 } from '@web-fragments/ng-fragments';
 import { starshipGet, starshipGetAll } from './starship.data-source';
 
-@Injectable({ providedIn: 'root' })
-export class StarshipRepository extends build(
-  repositoryBuilder(),
-  fragmentsToMethods({
+import { cardRepositoryToken } from '../../model/base/di-tokens';
+
+const fromFragments = (context, fragments) =>
+  fragmentsToMethods(fragments)(context);
+
+// const starshipRepositoryFactory = (context: ExecutionContext) =>
+//   build(
+//     from(context, 'singleInstance'),
+//     fragmentsToMethods({
+//       getAll: starshipGetAll,
+//       get: starshipGet,
+//     })
+//   );
+
+export const provideStarshipRepository = () =>
+  perLifetimeScope(cardRepositoryToken, fromFactory(starshipRepositoryFactory));
+
+export const starshipRepositoryFactory = (context: ExecutionContext) =>
+  fromFragments(context, {
     getAll: starshipGetAll,
     get: starshipGet,
-  })
-) {}
+  });

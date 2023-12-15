@@ -22,7 +22,8 @@ import { Factory } from '../types';
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
 
 export type BuilderConfig = {
-  providedIn: 'root';
+  providedIn?: 'root';
+  name?: string;
 };
 
 export function typeBuilder(
@@ -34,7 +35,10 @@ export function typeBuilder(
     @Injectable({ providedIn: builderConfig?.providedIn })
     // TODO Rename
     class Context implements ExecutionContext {
+      _contextName = builderConfig?.name;
       _injector = inject(Injector);
+      // Symbol(builderConfig?.name || 'CONTEXT_ID')
+      // Ułatwi potem debugowanie
       _id = Symbol('CONTEXT_ID');
       /**
        * prevents to use context during creation process

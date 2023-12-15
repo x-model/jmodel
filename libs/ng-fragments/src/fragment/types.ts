@@ -1,4 +1,4 @@
-import { Injector, ProviderToken } from '@angular/core';
+import { Injector, ProviderToken } from '../di/types';
 import { TemplateResolver } from './template-registry';
 
 export type Fragments = Record<string, Fragment<unknown, unknown>>;

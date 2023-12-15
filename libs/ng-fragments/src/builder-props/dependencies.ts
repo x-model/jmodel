@@ -1,4 +1,4 @@
-import { ProviderToken } from '@angular/core';
+import { ProviderToken } from '../di/types';
 import { ExecutionContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
 

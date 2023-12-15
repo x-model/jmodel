@@ -1,4 +1,3 @@
-import { ProviderToken } from '@angular/core';
 import {
   FragmentTemplateConfig,
   FragmentTemplate,
@@ -7,6 +6,7 @@ import {
 } from '../fragment/types';
 import { Builder, BuilderPartialContext } from '../builder/types';
 import { Factory, Unwrap } from '../types';
+import { ProviderToken } from '../di/types';
 
 type TemplateConfig = {
   name: string;

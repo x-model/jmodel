@@ -1,25 +1,43 @@
-import { Injectable } from '@angular/core';
 import {
+  ExecutionContext,
   build,
-  dependencies,
+  diDependencies,
+  from,
+  fromFactory,
   mergeWith,
   methods,
-  modelBuilder,
+  perLifetimeScope,
 } from '@web-fragments/ng-fragments';
 import { cardModel } from '../base/card.model';
-import { StarshipRepository } from '../../repositories/starships/starship.repository';
+import { provideStarshipRepository } from '../../repositories/starships/starship.repository';
 import { compareStarships } from './services/starship-comparer';
 import { mapStarship } from './services/starship-mapper';
+import { cardModelToken } from '../base/di-tokens';
 
-@Injectable()
-export class StarshipModel extends build(
-  modelBuilder(),
-  mergeWith(cardModel()),
-  dependencies({
-    cardRepository: StarshipRepository,
-  }),
-  methods(() => ({
-    compare: compareStarships,
-    map: mapStarship,
-  }))
-) {}
+// const providers = diDependencies;
+
+// const dependencies = <T extends ExecutionContext>() =>
+//   diDependencies<T, any, { cardRepository: any }>({
+//     cardRepository: perLifetimeScope(
+//       cardRepositoryToken,
+//       fromFactory(starshipRepositoryFactory)
+//     ),
+//   });
+
+export const provideStarshipModel = () =>
+  perLifetimeScope(cardModelToken, fromFactory(starshipModelFactory));
+
+// do testów potrzebne będą jakieś fakeScopes
+
+export const starshipModelFactory = (context: ExecutionContext) =>
+  build(
+    from(context),
+    mergeWith(cardModel()),
+    diDependencies({
+      cardRepository: provideStarshipRepository(),
+    }),
+    methods(() => ({
+      compare: compareStarships,
+      map: mapStarship,
+    }))
+  );

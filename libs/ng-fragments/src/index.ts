@@ -1,6 +1,7 @@
 export { build } from './builder/build';
 export { builder } from './builder/builder';
 export { dependencies } from './builder-props/dependencies';
+export { diDependencies } from './builder-props/di-dependencies';
 export { fragmentsToMethods } from './builder-props/fragments-to-methods';
 export { fragments } from './builder-props/fragments';
 export { fromFragments } from './builder-props/from-fragments';
@@ -14,6 +15,7 @@ export { publicApi } from './builder-props/public-api';
 export { repositories } from './builder-props/repositories';
 export { contextBuilder, ContextType } from './builders/context-builder';
 export { fragmentTemplateBuilder } from './builders/fragment-template-builder';
+export { from } from './builders/from';
 export { modelBuilder, ModelType } from './builders/model-builder';
 export { partialBuilder } from './builders/partial-builder';
 export {
@@ -26,6 +28,10 @@ export {
   getters,
   updaters,
 } from './builders/store-builder';
+export { di, registerAs } from './di/consts';
+export { DiContainer } from './di/container';
+export { perLifetimeScope, singleton } from './di/lifetime';
+export { fromFactory } from './di/resolvers';
 export { fragmentFactory } from './fragment/factory';
 export {
   Fragment,
@@ -45,3 +51,4 @@ export { memoFragment } from './fragments/memo-fragment';
 export { pureFragment } from './fragments/pure-fragment';
 export { storeFragment } from './fragments/store-fragment';
 export { abstract } from './utils/abstract';
+export { Method } from './types';
