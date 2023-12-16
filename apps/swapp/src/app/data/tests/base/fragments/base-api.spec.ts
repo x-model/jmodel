@@ -4,7 +4,7 @@ import { of } from 'rxjs';
 import {
   ContextType,
   build,
-  contextBuilder,
+  ngContextBuilder,
   fragments,
   methods,
 } from '@web-fragments/ng-fragments';
@@ -14,7 +14,7 @@ import {
 } from '../../../repositories/base/fragments/base-api';
 
 const FakeContext = build(
-  contextBuilder(),
+  ngContextBuilder(),
   fragments({
     getAll$: baseGetAll(''),
     get$: baseGet(''),

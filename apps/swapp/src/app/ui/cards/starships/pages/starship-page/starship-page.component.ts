@@ -2,7 +2,7 @@ import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   build,
-  contextBuilder,
+  ngContextBuilder,
   diDependencies,
   publicApi,
 } from '@web-fragments/ng-fragments';
@@ -16,7 +16,7 @@ import { provideStarshipModel } from '../../../../../data';
 @Injectable()
 export class StarshipComponentContext
   extends build(
-    contextBuilder(),
+    ngContextBuilder(),
     diDependencies({ model: provideStarshipModel() }),
     publicApi(({ model }) => ({
       // ...store.getters

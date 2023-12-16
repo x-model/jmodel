@@ -1,23 +1,19 @@
-import {
-  Injectable,
-  inject,
-  EnvironmentInjector,
-  Injector,
-  DestroyRef,
-} from '@angular/core';
+import { Injector } from './types';
+import { Scope, ScopeOptions } from '../fragment/types';
 
 // być może każdy framework/biblioteka musi mieć własną implementację swojego kontenera,
 // ale też fajnie byłoby mieć jakiś bazowy kod
-@Injectable({ providedIn: 'root' })
 export class DiContainer {
   private readonly _rootScope = Symbol('root');
-  private readonly _rootInjector = inject(EnvironmentInjector);
-  private instances: Map<symbol, Map<symbol, any>> = new Map();
+  private registrations: Map<symbol, Map<symbol, any>> = new Map();
+  private scopes: Map<symbol, Scope> = new Map();
+
+  constructor(private readonly _rootInjector: Injector) {}
 
   resolve(
     value: { token; type: 'singleInstance'; resolveFn },
     factory: any,
-    scope?: { id: symbol; injector: Injector }
+    scope?: { id: symbol }
   ) {
     if (!value.token) {
       throw new Error('It is not injectable');
@@ -25,31 +21,47 @@ export class DiContainer {
 
     const { id, injector } = this.getScope(value, scope);
 
-    if (!this.instances.has(id)) {
+    if (!this.registrations.has(id)) {
       this.register(value, factory, { id, injector });
     }
 
-    const instance = this.instances.get(id).get(value.token);
+    const instance = this.registrations.get(id).get(value.token);
 
     if (!instance) {
       this.register(value, factory, { id, injector });
     }
 
-    return this.instances.get(id).get(value.token).value;
+    return this.registrations.get(id).get(value.token).value;
+  }
+
+  createScope(options: ScopeOptions): Scope {
+    const scope = {
+      id: Symbol('SCOPE_ID'),
+      ...options,
+    } as Scope;
+
+    this.scopes.set(scope.id, scope);
+
+    return scope;
+  }
+
+  destroyScope(scopeId: symbol): void {
+    this.scopes.delete(scopeId);
   }
 
   private getScope(
     value: { token; type: 'singleInstance'; resolveFn },
-    scope?: { id: symbol; injector: Injector }
+    scope: { id: symbol }
   ) {
     let resolvedScope;
 
     if (value.type === 'singleInstance') {
       resolvedScope = { id: this._rootScope, injector: this._rootInjector };
-    } else if (!scope.id || !scope.injector) {
+    } else if (!scope.id) {
       throw new Error('Scope is missing');
     } else {
-      resolvedScope = scope;
+      const _scope = this.scopes.get(scope.id);
+      resolvedScope = { id: _scope.id, injector: _scope.localInjector };
     }
 
     return resolvedScope;
@@ -60,19 +72,15 @@ export class DiContainer {
     factory: any,
     scope: { id: symbol; injector?: Injector }
   ) {
-    const scopeMap = this.instances.get(scope.id);
+    const scopeMap = this.registrations.get(scope.id);
 
     if (!scopeMap) {
-      this.instances.set(
+      this.registrations.set(
         scope.id,
         new Map([[value.token, { value: factory(), injector: scope.injector }]])
       );
 
       console.log('DI: Registered', value.resolveFn.name);
-
-      scope.injector.get(DestroyRef).onDestroy(() => {
-        this.unregister(value, scope);
-      });
     } else {
       if (scopeMap.has(value.token)) {
         throw new Error('This object is already registered');
@@ -82,12 +90,15 @@ export class DiContainer {
         value: factory(),
         injector: scope.injector,
       });
-      console.log('DI: Registered', value.resolveFn.name);
 
-      scope.injector.get(DestroyRef).onDestroy(() => {
-        this.unregister(value, scope);
-      });
+      console.log('DI: Registered', value.resolveFn.name);
     }
+
+    const _scope = this.scopes.get(scope.id);
+
+    _scope.onRelease(() => {
+      this.unregister(value, scope);
+    });
   }
 
   private unregister(
@@ -95,10 +106,10 @@ export class DiContainer {
     scope: { id: symbol; injector?: Injector }
   ) {
     console.log('destroyed', value.resolveFn.name);
-    this.instances.get(scope.id).delete(value.token);
+    this.registrations.get(scope.id).delete(value.token);
 
-    if (this.instances.get(scope.id).size === 0) {
-      this.instances.delete(scope.id);
+    if (this.registrations.get(scope.id).size === 0) {
+      this.registrations.delete(scope.id);
     }
   }
 }

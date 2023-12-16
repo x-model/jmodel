@@ -13,7 +13,7 @@ export { models } from './builder-props/models';
 export { props } from './builder-props/props';
 export { publicApi } from './builder-props/public-api';
 export { repositories } from './builder-props/repositories';
-export { contextBuilder, ContextType } from './builders/context-builder';
+export { ngContextBuilder, ContextType } from './builders/context-builder';
 export { fragmentTemplateBuilder } from './builders/fragment-template-builder';
 export { from } from './builders/from';
 export { modelBuilder, ModelType } from './builders/model-builder';

@@ -1,5 +1,5 @@
-import { Type } from '@angular/core';
 import { Builder } from '../builder/types';
+import { Type } from '../di/types';
 import { ExecutionContext } from '../fragment/types';
 import { BuilderConfig, ContentType, typeBuilder } from './type-builder';
 

@@ -1,9 +1,9 @@
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule, EnvironmentInjector } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { ContextType } from '@web-fragments/ng-fragments';
+import { ContextType, DiContainer } from '@web-fragments/ng-fragments';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { G11nModule } from './g11n';
@@ -18,6 +18,10 @@ function appInitFactory(
   return () => context.init();
 }
 
+function containerFactory(injector: EnvironmentInjector): DiContainer {
+  return new DiContainer(injector);
+}
+
 @NgModule({
   declarations: [AppComponent, HomePageComponent, LayoutComponent],
   imports: [
@@ -30,6 +34,11 @@ function appInitFactory(
     MatToolbarModule,
   ],
   providers: [
+    {
+      provide: DiContainer,
+      useFactory: containerFactory,
+      deps: [EnvironmentInjector],
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: appInitFactory,

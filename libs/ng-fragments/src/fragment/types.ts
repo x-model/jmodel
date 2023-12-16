@@ -3,6 +3,19 @@ import { TemplateResolver } from './template-registry';
 
 export type Fragments = Record<string, Fragment<unknown, unknown>>;
 
+export type ScopeOptions = {
+  rootInjector: Injector;
+  localInjector: Injector;
+  onRelease: (callback: () => void) => void;
+};
+
+export type Scope = {
+  id: symbol;
+  rootInjector: Injector;
+  localInjector: Injector;
+  onRelease: (callback: () => void) => () => void;
+};
+
 export type ExecutionContext = {
   _exec: <TFragmentIn, TFragmentOut>(
     fragmentOrFactory:
@@ -17,6 +30,7 @@ export type CreationContext = {
   _contextId: symbol;
   _injector: Injector;
   _templateRegistry: TemplateResolver;
+  _scope: Scope;
 } & ExecutionContext;
 
 export type FragmentContext<T> = T extends {

@@ -1,23 +1,16 @@
 import {
-  DestroyRef,
-  Injectable,
-  Injector,
-  ProviderToken,
-  Type,
-  inject,
-  runInInjectionContext,
-} from '@angular/core';
-import {
   CreationContext,
   ExecutionContext,
   Fragment,
   FragmentFactory,
+  Scope,
 } from '../fragment/types';
 import { TemplateRegistry } from '../fragment/template-registry';
 import { Builder, BuilderPartialContext } from '../builder/types';
 import { resolveFragment } from '../fragment/resolver';
 import { Hooks } from '../builder-props/hooks';
 import { Factory } from '../types';
+import { ProviderToken, Type } from '../di/types';
 
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
 
@@ -32,11 +25,10 @@ export function typeBuilder(
   return function <FactoryResult extends BuilderPartialContext>(
     factory: Factory<ExecutionContext, FactoryResult>
   ): Type<ExecutionContext> {
-    @Injectable({ providedIn: builderConfig?.providedIn })
+    // @Injectable({ providedIn: builderConfig?.providedIn })
     // TODO Rename
     class Context implements ExecutionContext {
       _contextName = builderConfig?.name;
-      _injector = inject(Injector);
       // Symbol(builderConfig?.name || 'CONTEXT_ID')
       // Ułatwi potem debugowanie
       _id = Symbol('CONTEXT_ID');
@@ -50,20 +42,24 @@ export function typeBuilder(
         _exec: (fragment, input?) => this._exec(fragment, input),
         _inject: (token) => this._inject(token),
       };
-      _creationContext: CreationContext = {
+      _creationContext: Partial<CreationContext> = {
         _contextId: this._id,
-        _injector: this._injector,
         _templateRegistry: this._templateRegistry,
         ...this._executionContext,
       };
 
-      constructor() {
-        const config = factory(this._creationContext) as FactoryResult &
-          CreationContext;
+      constructor(private readonly _scope: Scope) {
+        const context = {
+          ...this._creationContext,
+          _injector: this._scope.localInjector,
+          _scope: this._scope,
+        } as CreationContext;
+
+        const config = factory(context) as FactoryResult & CreationContext;
 
         this._innerContext = getInnerContext<FactoryResult & CreationContext>(
           config,
-          this._creationContext
+          context
         );
 
         for (const key in this._innerContext) {
@@ -77,11 +73,11 @@ export function typeBuilder(
 
         this._created = true;
 
-        registerHooks(this._innerContext as Hooks, this._injector);
+        registerHooks(this._innerContext as Hooks);
       }
 
       _inject<T>(token: ProviderToken<T>): T {
-        return this._injector.get(token);
+        return this._scope.localInjector.get(token);
       }
 
       _exec<TFragmentIn, TFragmentOut>(
@@ -104,7 +100,7 @@ export function typeBuilder(
           this._templateRegistry,
           {
             contextId: this._id,
-            injector: this._injector,
+            injector: this._scope.localInjector,
           }
         );
 
@@ -133,18 +129,16 @@ export function typeBuilder(
   };
 }
 
-function registerHooks(hooks: Hooks, injector: Injector): void {
+function registerHooks(hooks: Hooks): void {
   if (hooks.onInit) {
     hooks.onInit();
   }
 
-  if (hooks.onDestroy && injector) {
-    runInInjectionContext(injector, () => {
-      inject(DestroyRef).onDestroy(() => {
-        hooks.onDestroy();
-      });
-    });
-  }
+  // if (hooks.onDestroy && injector) {
+  //   injector.get(DestroyRef).onDestroy(() => {
+  //     hooks.onDestroy();
+  //   });
+  // }
 }
 
 function getInnerContext<

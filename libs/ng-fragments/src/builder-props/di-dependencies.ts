@@ -1,4 +1,3 @@
-import { runInInjectionContext } from '@angular/core';
 import { CreationContext, ExecutionContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
 import { typeBuilder } from '../builders/type-builder';
@@ -21,27 +20,23 @@ export function diDependencies<
   return (context: Input & CreationContext) => {
     // creation context powinien mieć scope, w sumie mamy contextId
     // skąd brać identyfikator dla scope?
-    const scopeId = context._contextId; // Symbol('scope');
+    const scopeId = context._scope.id; // Symbol('scope');
     const diContainer = context._inject(DiContainer);
 
     const resolvedDeps = Object.keys(deps).reduce((instances, key) => {
       const dependency = deps[key];
 
-      const factory = runInInjectionContext(
-        context._injector,
-        () => () =>
-          new (build(
-            typeBuilder({ name: 'diDeps' }),
-            props(
-              (context) =>
-                (dependency.resolveFn as any)(context) as ExecutionContext
-            )
-          ))()
-      );
+      const factory = () =>
+        new (build(
+          typeBuilder({ name: 'diDeps' }),
+          props(
+            (_context) =>
+              (dependency.resolveFn as any)(_context) as ExecutionContext
+          )
+        ))(context._scope);
 
       const instance = diContainer.resolve(dependency as any, factory, {
         id: scopeId,
-        injector: context._injector,
       });
 
       return { ...instances, [key]: instance };

@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import {
   ContextType,
   build,
-  contextBuilder,
+  ngContextBuilder,
   fragment,
   fragments,
   methods,
@@ -28,7 +28,7 @@ describe('card fragments', () => {
     const FakeContext: Type<
       Pick<CardComponentContext, '_exec' | 'getAll$' | 'totalPages$'>
     > = build(
-      contextBuilder(),
+      ngContextBuilder(),
       fragments({
         getAll$: fragment(() =>
           Promise.resolve({ data: resourceItems, error: null })
@@ -89,7 +89,7 @@ describe('card fragments', () => {
     const FakeContext: Type<
       CardComponentContext & { compare: jest.Mock; map: jest.Mock }
     > = build(
-      contextBuilder(),
+      ngContextBuilder(),
       fragments({
         store$,
         getAll$: fragment(() =>

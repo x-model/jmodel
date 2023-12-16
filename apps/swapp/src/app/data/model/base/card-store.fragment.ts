@@ -82,9 +82,9 @@ export function drawFailure(): Method<CardState> {
 }
 
 export const store$ = storeFragment(({ _inject }) => {
-  _inject(DestroyRef).onDestroy(() => {
-    console.log('store destroyed');
-  });
+  // _inject(DestroyRef).onDestroy(() => {
+  //   console.log('store destroyed');
+  // });
 
   // const state = ;
   // const { update, select } = state;

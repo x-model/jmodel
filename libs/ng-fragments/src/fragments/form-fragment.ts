@@ -56,9 +56,9 @@ export function formFragmentTemplate<
 
       state.result = fragmentFn({ ...executionContext, ...context });
 
-      _inject(DestroyRef).onDestroy(() => {
-        state.subs.forEach((item) => item.unsubscribe());
-      });
+      // _inject(DestroyRef).onDestroy(() => {
+      //   state.subs.forEach((item) => item.unsubscribe());
+      // });
 
       return state.result;
     })

@@ -1,4 +1,6 @@
-import { Type } from '@angular/core';
+export interface Type<T> extends Function {
+  new (...args: any[]): T;
+}
 
 export type Injector = {
   get<T>(

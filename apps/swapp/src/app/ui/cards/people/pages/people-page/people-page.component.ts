@@ -2,7 +2,7 @@ import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   build,
-  contextBuilder,
+  ngContextBuilder,
   dependencies,
   hooks,
   publicApi,
@@ -24,7 +24,7 @@ const styles = `
 @Injectable()
 export class PeopleComponentContext
   extends build(
-    contextBuilder(),
+    ngContextBuilder(),
     dependencies({ model: PeopleModel }),
     hooks(() => ({
       onInit: () => {

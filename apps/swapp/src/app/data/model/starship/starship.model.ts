@@ -32,7 +32,7 @@ export const provideStarshipModel = () =>
 export const starshipModelFactory = (context: ExecutionContext) =>
   build(
     from(context),
-    mergeWith(cardModel()),
+    mergeWith(cardModel()), // Object.setPrototypeOf(Dog.prototype, Animal);
     diDependencies({
       cardRepository: provideStarshipRepository(),
     }),

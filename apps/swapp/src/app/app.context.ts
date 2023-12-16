@@ -1,7 +1,7 @@
-import { build, contextBuilder, methods } from '@web-fragments/ng-fragments';
+import { build, ngContextBuilder, methods } from '@web-fragments/ng-fragments';
 
 export const ApplicationContext = build(
-  contextBuilder({ providedIn: 'root' }),
+  ngContextBuilder({ providedIn: 'root' }),
   methods(() => ({
     init: () => console.log('app initialized'),
   }))

@@ -1,4 +1,4 @@
-import { Type } from '@angular/core';
+import { Type } from '../di/types';
 import { Factory } from '../types';
 
 export type BuilderInitialContext = Record<string, unknown>;
