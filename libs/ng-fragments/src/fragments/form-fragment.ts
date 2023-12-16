@@ -1,19 +1,17 @@
 import { DestroyRef } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { build } from '../builder/build';
 import {
+  build,
   fragmentTemplateBuilder,
   onExecute,
-} from '../builders/fragment-template-builder';
-import {
   FragmentFactory,
   FragmentFunctionContext,
   FragmentOptions,
   FragmentTemplate,
-} from '../fragment/types';
-import { props } from '../builder-props/props';
-import { fragmentFactory } from '../fragment/factory';
-import { methods } from '../builder-props/methods';
+  props,
+  fragmentFactory,
+  methods,
+} from '@web-fragments/core';
 
 type Subscription = {
   unsubscribe: () => void;

@@ -1,18 +1,18 @@
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { fragmentTemplateBuilder } from '../builders/fragment-template-builder';
-import { build } from '../builder/build';
 import {
+  fragmentTemplateBuilder,
+  build,
   FragmentFactory,
   FragmentFn,
   FragmentFunctionContext,
   FragmentOptions,
   FragmentTemplate,
-} from '../fragment/types';
-import { props } from '../builder-props/props';
-import { fragmentFactory } from '../fragment/factory';
+  props,
+  fragmentFactory,
+  methods,
+} from '@web-fragments/core';
 import { toPromise } from '../utils/rxjs';
-import { methods } from '../builder-props/methods';
 
 export type ApiError = {
   message: string;

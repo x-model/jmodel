@@ -1,10 +1,10 @@
 import { BuilderPartialContext } from '../builder/types';
-import { Model } from '../builders/model-builder.old';
+import { ModelType } from '../builders/model-builder';
 import { CreationContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
 
 export function models<
-  ModelFactories extends Record<string, Model<any>>,
+  ModelFactories extends Record<string, ModelType<any>>,
   Input extends BuilderPartialContext,
   Output extends {
     [P in keyof ModelFactories]: ReturnType<ModelFactories[P]['resolve']>;

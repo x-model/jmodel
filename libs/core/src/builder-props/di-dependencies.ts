@@ -2,8 +2,8 @@ import { CreationContext, ExecutionContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
 import { typeBuilder } from '../builders/type-builder';
 import { build } from '../builder/build';
-import { DiContainer } from '../di/container';
 import { props } from './props';
+import { DiContainer } from '../di/container';
 import { ProviderToken } from '../di/types';
 
 export type ProviderTokenType<T> = T extends ProviderToken<infer TInner>

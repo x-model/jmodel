@@ -1,8 +1,13 @@
 import { signal, Signal, computed } from '@angular/core';
-import { Builder, BuilderPartialContext } from '../builder/types';
-import { Factory, Method, Unwrap } from '../types';
-import { props } from '../builder-props/props';
-import { builder } from '../builder/builder';
+import {
+  Builder,
+  BuilderPartialContext,
+  Factory,
+  Method,
+  Unwrap,
+  props,
+  builder,
+} from '@web-fragments/core';
 
 export type SignalState<State extends Record<string, unknown>> = {
   state: Signal<State>;

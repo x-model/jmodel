@@ -1,10 +1,10 @@
 import { BuilderPartialContext } from '../builder/types';
-import { Repository } from '../builders/repository-builder.old';
+import { RepositoryType } from '../builders/repository-builder';
 import { CreationContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
 
 export function repositories<
-  RepositoryFactories extends Record<string, Repository<any>>,
+  RepositoryFactories extends Record<string, RepositoryType<any>>,
   Input extends BuilderPartialContext,
   Output extends {
     [P in keyof RepositoryFactories]: ReturnType<

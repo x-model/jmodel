@@ -11,14 +11,15 @@ import {
   ExecutionContext,
   Fragment,
   FragmentFactory,
-} from '../fragment/types';
-import { TemplateRegistry } from '../fragment/template-registry';
-import { Builder, BuilderPartialContext } from '../builder/types';
-import { resolveFragment } from '../fragment/resolver';
-import { Hooks } from '../builder-props/hooks';
-import { Factory } from '../types';
-import { DiContainer } from '../di/container';
-import { Type } from '../di/types';
+  TemplateRegistry,
+  Builder,
+  BuilderPartialContext,
+  resolveFragment,
+  Hooks,
+  Factory,
+  DiContainer,
+  Type,
+} from '@web-fragments/core';
 
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
 
