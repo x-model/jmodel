@@ -1,4 +1,5 @@
-import { build, ngContextBuilder, methods } from '@web-fragments/ng-fragments';
+import { build, methods } from '@web-fragments/core';
+import { ngContextBuilder } from '@web-fragments/ng-fragments';
 
 export const ApplicationContext = build(
   ngContextBuilder({ providedIn: 'root' }),

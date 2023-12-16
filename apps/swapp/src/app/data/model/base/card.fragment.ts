@@ -1,13 +1,13 @@
 import { InjectionToken, Type } from '@angular/core';
 import {
-  ApiResult,
   ExecutionContext,
   fragment,
   memoFragment,
   FragmentResultType,
   RepositoryType,
   Fragment,
-} from '@web-fragments/ng-fragments';
+} from '@web-fragments/core';
+import { ApiResult } from '@web-fragments/ng-fragments';
 import { getRandom } from '../../../common';
 import { store$ } from './card-store.fragment';
 import { CollectionParams } from '../../repositories/base/models/collection-params';

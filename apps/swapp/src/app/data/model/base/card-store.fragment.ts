@@ -1,12 +1,6 @@
 import { DestroyRef } from '@angular/core';
-import {
-  Method,
-  build,
-  props,
-  signalState,
-  storeBuilder,
-  storeFragment,
-} from '@web-fragments/ng-fragments';
+import { Method, build, props, storeFragment } from '@web-fragments/core';
+import { signalState, storeBuilder } from '@web-fragments/ng-fragments';
 import { CardPlayer } from './models/card-player';
 import { Card } from './models/card';
 

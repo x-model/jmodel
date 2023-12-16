@@ -3,9 +3,8 @@ import {
   fragmentsToMethods,
   fromFactory,
   perLifetimeScope,
-} from '@web-fragments/ng-fragments';
+} from '@web-fragments/core';
 import { starshipGet, starshipGetAll } from './starship.data-source';
-
 import { cardRepositoryToken } from '../../model/base/di-tokens';
 
 const fromFragments = (context, fragments) =>

@@ -7,7 +7,7 @@ import {
   methods,
   partialBuilder,
   publicApi,
-} from '@web-fragments/ng-fragments';
+} from '@web-fragments/core';
 import {
   CardCompare,
   CardMap,

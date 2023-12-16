@@ -7,7 +7,7 @@ import {
   mergeWith,
   methods,
   perLifetimeScope,
-} from '@web-fragments/ng-fragments';
+} from '@web-fragments/core';
 import { cardModel } from '../base/card.model';
 import { provideStarshipRepository } from '../../repositories/starships/starship.repository';
 import { compareStarships } from './services/starship-comparer';

@@ -3,7 +3,7 @@ import {
   build,
   fragmentsToMethods,
   repositoryBuilder,
-} from '@web-fragments/ng-fragments';
+} from '@web-fragments/core';
 import { peopleGet, peopleGetAll } from './people.data-source';
 
 @Injectable({ providedIn: 'root' })

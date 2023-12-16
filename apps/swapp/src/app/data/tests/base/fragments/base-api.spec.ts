@@ -1,13 +1,8 @@
 import { TestBed, fakeAsync } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import {
-  ContextType,
-  build,
-  ngContextBuilder,
-  fragments,
-  methods,
-} from '@web-fragments/ng-fragments';
+import { build, fragments, methods } from '@web-fragments/core';
+import { ContextType, ngContextBuilder } from '@web-fragments/ng-fragments';
 import {
   baseGet,
   baseGetAll,

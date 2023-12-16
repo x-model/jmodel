@@ -1,13 +1,7 @@
 import { Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import {
-  ContextType,
-  build,
-  ngContextBuilder,
-  fragment,
-  fragments,
-  methods,
-} from '@web-fragments/ng-fragments';
+import { build, fragment, fragments, methods } from '@web-fragments/core';
+import { ContextType, ngContextBuilder } from '@web-fragments/ng-fragments';
 import { cards, resourceItems } from './data';
 import {
   CardComponentContext,

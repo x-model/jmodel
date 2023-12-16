@@ -5,7 +5,7 @@ import {
   mergeWith,
   methods,
   modelBuilder,
-} from '@web-fragments/ng-fragments';
+} from '@web-fragments/core';
 import { cardModel } from '../base/card.model';
 import { PeopleRepository } from '../../repositories/people/people.repository';
 import { comparePeople } from './services/people-comparer';
