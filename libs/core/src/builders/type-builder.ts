@@ -67,7 +67,7 @@ export function typeBuilder(
 
           Object.defineProperty(this, key, {
             value: this._innerContext[key],
-            writable: false,
+            // writable: false,
           });
         }
 

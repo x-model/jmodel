@@ -14,6 +14,7 @@ export class StarshipComponentContext
   extends build(
     ngContextBuilder(),
     diDependencies({ model: provideStarshipModel() }),
+    // uiDependencies() // dependencies angularowe
     publicApi(({ model }) => ({
       // ...store.getters
       isLoading: model.isLoading,
