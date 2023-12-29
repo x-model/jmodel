@@ -1,6 +1,7 @@
 export const WATCHERS = Symbol('watchers');
 
 export function createNestedModel(model: any, source: any) {
+  // return structuredClone(model);
   if (
     model &&
     typeof model === 'object' &&

@@ -60,6 +60,10 @@ export { storeFragment } from './fragments/store-fragment';
 export { abstract } from './utils/abstract';
 export { Method, Factory, Unwrap } from './types';
 
-export { createReactiveModel } from './reactive-model/model-reactive';
-export { createSchema } from './reactive-model/schema';
+export {
+  createReactiveModel,
+  watcher,
+  Watcher,
+} from './reactive-model/model-reactive';
+export { createSchema, SchemaMember } from './reactive-model/schema';
 export { createNestedModel } from './reactive-model/source-model';

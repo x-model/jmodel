@@ -2,6 +2,66 @@ import { SchemaMember, createSchema } from './schema';
 import { WATCHERS, createNestedModel } from './source-model';
 
 const STATE_ROOT = Symbol('root');
+const TRACKED = Symbol('tracked');
+
+export type Watcher<
+  P extends unknown[],
+  R extends (args: unknown[]) => unknown
+> = {
+  paths: P;
+  resolver: R;
+};
+
+type SchemaMemberType<T> = T extends SchemaMember<infer S> ? S : never;
+
+export function watcher<M1 extends SchemaMember<unknown>, R>(
+  sm1: M1,
+  resolver: (value: [SchemaMemberType<M1>]) => R
+): Watcher<[M1], (value: [SchemaMemberType<M1>]) => R>;
+export function watcher<
+  M1 extends SchemaMember<unknown>,
+  M2 extends SchemaMember<unknown>,
+  R
+>(
+  sm1: M1,
+  sm2: M2,
+  resolver: (value: [SchemaMemberType<M1>, SchemaMemberType<M2>]) => R
+): Watcher<
+  [M1, M2],
+  (value: [SchemaMemberType<M1>, SchemaMemberType<M2>]) => R
+>;
+export function watcher(...args: any[]): any {
+  const resolver = args.pop();
+  const schemaMembers = [...args];
+
+  return {
+    paths: schemaMembers,
+    resolver,
+  };
+}
+
+function getValue(
+  state,
+  watcher: Watcher<unknown[], (args: unknown[]) => unknown>
+) {
+  let values = [];
+  let selectors = watcher.paths;
+
+  for (let index = 0; index < selectors.length; index++) {
+    const pathSegments = (selectors[index] as SchemaMember<any>).path
+      .split('.')
+      .slice(1);
+    let value = state;
+
+    for (let i = 0; i < pathSegments.length; i++) {
+      value = value[pathSegments[i]];
+    }
+
+    values.push(value);
+  }
+
+  return watcher.resolver(values);
+}
 
 export function createReactiveModel<T>(
   schema,
@@ -18,13 +78,18 @@ export function createReactiveModel<T>(
     connect: () => (value: M) => void
   ) => void;
 } {
-  const watchers = new Map<string, any>([]);
+  const watchers = new Map<string | symbol, any>([]);
+  const tracked = new Set();
   // co gdyby watchers dodać do fasady? wtedy pozbywamy się dodatkowego obiektu
   const source: T = {} as T;
 
   const sourceValue = createNestedModel(model, source);
 
-  const sourceModel = { [STATE_ROOT]: source, [WATCHERS]: watchers };
+  const sourceModel = {
+    [STATE_ROOT]: source,
+    [WATCHERS]: watchers,
+    [TRACKED]: tracked,
+  };
 
   const rootModel = {
     sourceModel,
@@ -45,14 +110,14 @@ export function createReactiveModel<T>(
       const pathSegments = schemaMember.path.split('.').slice(1);
       let lastSegment = pathSegments[pathSegments.length - 1] || STATE_ROOT;
       let parent = sourceModel;
-      let source = sourceModel[STATE_ROOT];
+      let sourceForNewModel = sourceModel[STATE_ROOT];
 
       for (let i = 0; i < pathSegments.length; i++) {
         parent = source as any;
-        source = source[pathSegments[i]];
+        sourceForNewModel = source[pathSegments[i]];
       }
 
-      const newModel = fn(source as any);
+      const newModel = fn(sourceForNewModel as any);
 
       const changes = checkChanges(sourceModel, newModel, [
         STATE_ROOT,
@@ -61,8 +126,38 @@ export function createReactiveModel<T>(
 
       parent[lastSegment] = newModel;
 
-      changes.forEach((fns: []) => {
-        fns.forEach((fn: any) => fn());
+      // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
+      const filteredChanges = new Set(changes);
+      const computed = [];
+
+      filteredChanges.forEach((key: string) => {
+        let propWatchers: any[] = sourceModel[WATCHERS].get(key);
+        const pathSegments = key.split('.');
+
+        if (propWatchers?.length > 0) {
+          propWatchers.forEach((watcher) => {
+            if (typeof watcher === 'symbol') {
+              if (computed.includes(watcher)) {
+                return;
+              } else {
+                computed.push(watcher);
+                const watcherObj = sourceModel[WATCHERS].get(watcher);
+
+                const computedValue = getValue(
+                  sourceModel[STATE_ROOT],
+                  watcherObj
+                );
+                watcherObj.watchFn(computedValue);
+              }
+            } else {
+              const value = getByPath(sourceModel, [
+                STATE_ROOT,
+                ...pathSegments,
+              ]);
+              watcher(value);
+            }
+          });
+        }
       });
 
       // updateFacade(facade, source, watchers, newModel);
@@ -70,21 +165,50 @@ export function createReactiveModel<T>(
 
     // co z unwatch?
     watch: <M>(
-      schemaMember: SchemaMember<M>,
+      schemaMemberOrWatcher:
+        | SchemaMember<M>
+        | Watcher<unknown[], (args: unknown[]) => unknown>,
       connect: () => (value: M) => void
     ) => {
-      const pathSegments = schemaMember.path.split('.').slice(1);
-      let key = 'root';
-
+      const isWatcher = schemaMemberOrWatcher['resolver'] != null;
       const watchFn = connect();
 
-      let watchersPath = schemaMember.path.replace('root.', '');
-      let propWatchers = sourceModel[WATCHERS].get(watchersPath);
+      if (isWatcher) {
+        const watcher = schemaMemberOrWatcher as Watcher<
+          unknown[],
+          (args: unknown[]) => unknown
+        >;
 
-      if (!propWatchers) {
-        sourceModel[WATCHERS].set(watchersPath, [watchFn]);
+        const watcherId = Symbol('computed');
+        sourceModel[WATCHERS].set(watcherId, { ...watcher, watchFn });
+
+        watcher.paths.forEach((schemaMember: SchemaMember<any>) => {
+          let watchersPath = schemaMember.path.replace('root.', '');
+
+          sourceModel[TRACKED].add(watchersPath);
+
+          let propWatchers = sourceModel[WATCHERS].get(watchersPath);
+
+          if (!propWatchers) {
+            sourceModel[WATCHERS].set(watchersPath, [watcherId]);
+          } else {
+            propWatchers.push(watcherId);
+          }
+        });
       } else {
-        propWatchers.push(watchFn);
+        const schemaMember = schemaMemberOrWatcher as SchemaMember<M>;
+        // const pathSegments = schemaMember.path.split('.').slice(1);
+        // let key = 'root';
+        let watchersPath = schemaMember.path.replace('root.', '');
+        sourceModel[TRACKED].add(watchersPath);
+
+        let propWatchers = sourceModel[WATCHERS].get(watchersPath);
+
+        if (!propWatchers) {
+          sourceModel[WATCHERS].set(watchersPath, [watchFn]);
+        } else {
+          propWatchers.push(watchFn);
+        }
       }
 
       console.log('watcher registered');
@@ -109,7 +233,7 @@ function checkChanges(source, model, path: (string | symbol)[]) {
   // mozna sprawdzać referencje, jeżeli są takie same modelu i source to wtedy wgl nie wykonujemy metodki,
   // jak nie będziemy zmieniać referencji to będziemy musieli skanować potem cały model
 
-  let changes = new Map<string, any>([]);
+  let changes = [];
 
   if (
     model &&
@@ -126,36 +250,26 @@ function checkChanges(source, model, path: (string | symbol)[]) {
       ) {
         const tmpPath = [...path, key];
         const result = checkChanges(source, model[key], tmpPath);
-        if (result?.size > 0) {
-          result.forEach((value, key) => changes.set(key, value));
+        if (result?.length > 0) {
+          changes = changes.concat(result);
         }
       } else {
         // getByPath(source, path)[key] = model[key];
 
         if (value !== model[key]) {
           const watchersKey = [...path.slice(1), key].join('.');
-          const propWatchers = source[WATCHERS].get(watchersKey) || [];
+          const isTracked = source[TRACKED].has(watchersKey);
 
-          if (propWatchers.length > 0) {
+          if (isTracked) {
             // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
-            changes.set(
-              watchersKey,
-              propWatchers?.map(
-                (watcher) => () => watcher(getByPath(source, path)[key])
-              )
-            );
+            changes.push(watchersKey);
           }
 
           const rootWatchersKey = path.slice(1).join('.');
-          const rootWatchers = source[WATCHERS].get(rootWatchersKey) || [];
+          const isRootTracked = source[TRACKED].has(rootWatchersKey);
 
-          if (rootWatchers.length > 0) {
-            changes.set(
-              rootWatchersKey,
-              rootWatchers?.map(
-                (watcher) => () => watcher(getByPath(source, path))
-              )
-            );
+          if (isRootTracked) {
+            changes.push(rootWatchersKey);
           }
         }
       }
@@ -168,27 +282,17 @@ function checkChanges(source, model, path: (string | symbol)[]) {
       const key = path[path.length - 1];
 
       const watchersKey = [...valuePath.slice(1), key].join('.');
-      const propWatchers = source[WATCHERS].get(watchersKey) || [];
+      const isTracked = source[TRACKED].has(watchersKey);
 
-      if (propWatchers.length > 0) {
-        changes.set(
-          watchersKey,
-          propWatchers?.map(
-            (watcher) => () => watcher(getByPath(source, valuePath)[key])
-          )
-        );
+      if (isTracked) {
+        changes.push(watchersKey);
       }
 
       const rootWatchersKey = valuePath.slice(1).join('.');
-      const rootWatchers = source[WATCHERS].get(rootWatchersKey) || [];
+      const isRootTracked = source[TRACKED].has(rootWatchersKey);
 
-      if (rootWatchers) {
-        changes.set(
-          rootWatchersKey,
-          rootWatchers?.map(
-            (watcher) => () => watcher(getByPath(source, valuePath))
-          )
-        );
+      if (isRootTracked) {
+        changes.push(rootWatchersKey);
       }
     }
   }
