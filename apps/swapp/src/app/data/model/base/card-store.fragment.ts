@@ -1,6 +1,14 @@
 import { DestroyRef } from '@angular/core';
-import { Method, build, props, storeFragment } from '@web-fragments/core';
-import { signalState, storeBuilder } from '@web-fragments/ng-fragments';
+import {
+  Method,
+  build,
+  props,
+  storeFragment,
+  createState,
+  storeBuilder,
+  createReactiveModel,
+  createSchema,
+} from '@web-fragments/core';
 import { CardPlayer } from './models/card-player';
 import { Card } from './models/card';
 
@@ -15,7 +23,7 @@ const initialState: CardState = {
   player2: { score: 0, isLoading: false, win: false },
 };
 
-export function draw(): Method<CardState> {
+export function _draw(): Method<CardState> {
   const _state = (player: CardPlayer) => ({
     ...player,
     isLoading: true,
@@ -33,7 +41,7 @@ export function draw(): Method<CardState> {
   });
 }
 
-export function drawSuccess(
+export function _drawSuccess(
   [card1, card2]: [Card, Card],
   winner: number
 ): Method<CardState> {
@@ -57,7 +65,7 @@ export function drawSuccess(
   });
 }
 
-export function drawFailure(): Method<CardState> {
+export function _drawFailure(): Method<CardState> {
   const _state = (player: CardPlayer) => ({
     ...player,
     isLoading: false,
@@ -76,8 +84,9 @@ export function drawFailure(): Method<CardState> {
 }
 
 export const store$ = storeFragment(({ _inject }) => {
-  // _inject(DestroyRef).onDestroy(() => {
-  //   console.log('store destroyed');
+  // const state = createState(initialState);
+  // _inject(DestroyRef as any)['onDestroy'](() => {
+  //   state.destroy();
   // });
 
   // const state = ;
@@ -85,22 +94,62 @@ export const store$ = storeFragment(({ _inject }) => {
 
   // co gdyby metodki budować ze fragmentów? głównie chodzi o to,
   // żeby przekazać context i żeby metodki miały dostęp do state
-  const store = build(
-    storeBuilder(signalState(initialState)),
-    props(({ select, update }) => ({
-      player1: select((state) => state.player1),
-      player2: select((state) => state.player2),
-      isLoading: select(
-        (state) => state.player1.isLoading && state.player2.isLoading
-      ),
-      draw: () => update(draw()),
-      drawSuccess: (cards: [Card, Card], winner: number) =>
-        update(drawSuccess(cards, winner)),
-      drawFailure: () => update(drawFailure()),
-    }))
-  );
+  // const store = build(
+  //   storeBuilder(state),
+  //   props((store) => ({
+  //     player1: store.select((state) => state.player1),
+  //     player2: store.select((state) => state.player2),
+  //     isLoading: store.select(
+  //       (state) => state.player1.isLoading && state.player2.isLoading
+  //     ),
+  //     draw: () => store.update(draw()),
+  //     drawSuccess: (cards: [Card, Card], winner: number) =>
+  //       store.update(drawSuccess(cards, winner)),
+  //     drawFailure: () => store.update(drawFailure()),
+  //   }))
+  // );
+  const schema = createSchema(initialState);
+
+  const rootModel = createReactiveModel(null, initialState);
+
+  const draw = () =>
+    rootModel.set(
+      schema.path((state) => state),
+      _draw()
+    );
+
+  const drawSuccess = (cards: [Card, Card], winner: number) =>
+    rootModel.set(
+      schema.path((state) => state),
+      _drawSuccess(cards, winner)
+    );
+
+  const drawFailure = () =>
+    rootModel.set(
+      schema.path((state) => state),
+      _drawFailure()
+    );
 
   console.log('store initialized');
 
-  return store;
+  return { state: rootModel, schema, draw, drawSuccess, drawFailure };
 });
+
+// const myState = createState({ isLoading: false });
+
+// const isLoading = myState.select((state) => state.isLoading);
+// console.log('[GET] isLoading: ', isLoading.get());
+
+// const watcher = isLoading.watch((isLoading) =>
+//   console.log('[WATCHER] isLoading', isLoading)
+// );
+
+// myState.update((state) => ({ ...state, isLoading: !state.isLoading }));
+
+// console.log('[GET] isLoading: ', isLoading.get());
+
+// isLoading.unwatch(watcher);
+
+// myState.update((state) => ({ ...state, isLoading: !state.isLoading }));
+
+// console.log('[GET] isLoading: ', isLoading.get());

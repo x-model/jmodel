@@ -1,2 +1,11 @@
 <sw-two-players-cards-layout [title]="'CARDS.STARSHIPS' | translate">
 </sw-two-players-cards-layout>
+
+
+<label for="name">Name</label>
+<input type="text" class="form-control" id="name" required [(ngModel)]="ctx.formModel.name" name="name" #name="ngModel">
+<div [hidden]="ctx.formModel.errors.name === 'valid' || name.pristine" class="alert alert-danger">
+    {{ctx.formModel.errors.name}}
+</div>
+
+<button (click)="ctx.changeName()">Change name</button>

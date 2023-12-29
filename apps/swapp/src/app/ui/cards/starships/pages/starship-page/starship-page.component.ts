@@ -1,38 +1,120 @@
-import { Component, Injectable } from '@angular/core';
+import { Component, Injectable, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { build, diDependencies, publicApi } from '@web-fragments/core';
-import { ngContextBuilder } from '@web-fragments/ng-fragments';
+import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
 import {
   CARD_COMPONENT_CONTEXT,
   CardComponentContext,
 } from '../../../../../data/model/base/card.fragment';
 import { provideStarshipModel } from '../../../../../data';
+import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 
 @Injectable()
-export class StarshipComponentContext
-  extends build(
-    ngContextBuilder(),
-    diDependencies({ model: provideStarshipModel() }),
-    // uiDependencies() // dependencies angularowe
-    publicApi(({ model }) => ({
-      // ...store.getters
-      isLoading: model.isLoading,
-      player1: model.player1,
-      player2: model.player2,
-      draw: () => model.draw(),
-    }))
-  )
-  implements CardComponentContext {}
+export class StarshipComponentContext extends build(
+  ngContextBuilder(),
+  diDependencies({ model: provideStarshipModel() }),
+  // uiDependencies() // dependencies angularowe
+  publicApi(({ model, model: { state, path } }) => ({
+    formModel: model.formModel,
+    // ...store.getters
+    isLoading: refToSignal(
+      // state.select(
+      //   path((state) => state.player1.isLoading),
+      //   path((state) => state.player2.isLoading),
+      //   ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
+      // ),
+      state,
+      [
+        path((state) => state.player1.isLoading),
+        path((state) => state.player2.isLoading),
+        ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading,
+      ],
+      null
+    ),
+    player1: refToSignal(state, [path((state) => state.player1)], null),
+    player2: refToSignal(
+      // state.select(path((state) => state.player2)),
+      state,
+      [path((state) => state.player2)],
+      null
+    ),
+
+    // isLoading: refToSignal(model.isLoading, null),
+    // player1: refToSignal(model.player1, null),
+    // player2: refToSignal(model.player2, null),
+    draw: () => model.draw(),
+    changeName: () => model.changeName(),
+  }))
+) {}
+// implements CardComponentContext {}
 
 @Component({
   selector: 'sw-starship-page',
   standalone: true,
-  imports: [TranslateModule, TwoPlayersCardsLayoutComponent],
+  imports: [TranslateModule, TwoPlayersCardsLayoutComponent, FormsModule],
   providers: [
     { provide: CARD_COMPONENT_CONTEXT, useClass: StarshipComponentContext },
   ],
   templateUrl: './starship-page.component.html',
   styleUrls: ['./starship-page.component.scss'],
 })
-export class StarshipPageComponent {}
+export class StarshipPageComponent {
+  ctx = inject(CARD_COMPONENT_CONTEXT);
+
+  form = new FormGroup({
+    name: new FormControl('test'),
+    id: new FormControl('test'),
+    address: new FormGroup({
+      street: new FormControl('tset'),
+    }),
+  });
+
+  // getName() {
+  //   this.form.get('address.street');
+  //   this.form.value.address.street;
+
+  //   const mySig = signal({counter: {id: 10, name: 'test'}});
+  //   mySig.counter.
+  // }
+}
+
+// const myProxy = new Proxy(
+//   {
+//     browsers: ['Firefox', 'Chrome'],
+//     test: {
+//       loading: false,
+//       parent: 1,
+//       description: 'test'
+//     }
+//   },
+//   {
+//     get(obj, prop) {
+//       console.log('get', prop);
+
+//       return obj[prop];
+//     },
+//     set(obj, prop, value) {
+//       console.log('set', prop, value)
+
+//       obj[prop] = value;
+
+//       return true;
+//     },
+//   }
+// );
+
+// console.log(products.browsers);
+// //  ['Firefox', 'Chrome']
+
+// products.browsers = 'Safari';
+
+// console.log(products.browsers);
+
+// products.latestBrowser = 'Edge';
+
+// console.log(products.browsers);
+// //  ['Safari', 'Edge']
+
+// console.log(products.latestBrowser);
+//  'Edge'

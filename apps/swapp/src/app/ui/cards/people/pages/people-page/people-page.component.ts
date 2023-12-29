@@ -30,9 +30,9 @@ export class PeopleComponentContext extends build(
   })),
   publicApi(({ model }) => ({
     // ...store.getters
-    isLoading: model.isLoading,
-    player1: model.player1,
-    player2: model.player2,
+    // isLoading: model.isLoading,
+    // player1: model.player1,
+    // player2: model.player2,
     draw: () => model.draw(),
   }))
   // TODO

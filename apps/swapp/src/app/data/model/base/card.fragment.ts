@@ -1,4 +1,4 @@
-import { InjectionToken, Type } from '@angular/core';
+import { InjectionToken, Signal, Type } from '@angular/core';
 import {
   ExecutionContext,
   fragment,
@@ -13,6 +13,7 @@ import { store$ } from './card-store.fragment';
 import { CollectionParams } from '../../repositories/base/models/collection-params';
 import { CollectionResult } from '../../repositories/base/models/collection-result';
 import { Card } from './models/card';
+import { CardPlayer } from './models/card-player';
 
 // Czy to powinno być w modelu czy w repository?
 // W sumie to już jest jakaś logika, to już jest obróbka danych z data sources
@@ -45,12 +46,14 @@ export type CardModel = {
   map: CardMap;
 } & ExecutionContext;
 
-export type CardComponentContext = Pick<
-  FragmentResultType<typeof store$>,
-  'isLoading' | 'player1' | 'player2'
-> & {
+export type CardComponentContext = {
+  isLoading: Signal<boolean>;
+  player1: Signal<CardPlayer>;
+  player2: Signal<CardPlayer>;
   // model: { store: FragmentResultType<typeof store$> };
   draw: () => void;
+  changeName: () => void;
+  formModel: { name: string; errors: { name: string } };
 } & ExecutionContext;
 
 export const CARD_COMPONENT_CONTEXT = new InjectionToken<CardComponentContext>(

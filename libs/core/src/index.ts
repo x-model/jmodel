@@ -25,6 +25,14 @@ export {
   repositoryBuilder,
   RepositoryType,
 } from './builders/repository-builder';
+export {
+  createState,
+  storeBuilder,
+  getters,
+  updaters,
+  Ref,
+  State,
+} from './builders/store-builder';
 export { di, registerAs } from './di/consts';
 export { DiContainer } from './di/container';
 export { perLifetimeScope, singleton } from './di/lifetime';
@@ -51,3 +59,7 @@ export { pureFragment } from './fragments/pure-fragment';
 export { storeFragment } from './fragments/store-fragment';
 export { abstract } from './utils/abstract';
 export { Method, Factory, Unwrap } from './types';
+
+export { createReactiveModel } from './reactive-model/model-reactive';
+export { createSchema } from './reactive-model/schema';
+export { createNestedModel } from './reactive-model/source-model';

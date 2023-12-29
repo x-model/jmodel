@@ -37,9 +37,11 @@ export function cardModel() /*: CardModel */ {
     fromFragments({ store: (resolve) => resolve(store$) }),
     publicApi(({ _exec, store }) => ({
       // ...store.getters
-      isLoading: store.isLoading,
-      player1: store.player1,
-      player2: store.player2,
+      // isLoading: store.isLoading,
+      // player1: store.player1,
+      // player2: store.player2,
+      state: store.state,
+      path: store.schema.path,
       draw: () => _exec(draw$),
     }))
   );

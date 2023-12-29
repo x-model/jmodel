@@ -7,12 +7,14 @@ import {
   mergeWith,
   methods,
   perLifetimeScope,
+  props,
 } from '@web-fragments/core';
 import { cardModel } from '../base/card.model';
 import { provideStarshipRepository } from '../../repositories/starships/starship.repository';
 import { compareStarships } from './services/starship-comparer';
 import { mapStarship } from './services/starship-mapper';
 import { cardModelToken } from '../base/di-tokens';
+import { sv } from 'libs/core/src/builders/store-builder';
 
 // const providers = diDependencies;
 
@@ -39,5 +41,18 @@ export const starshipModelFactory = (context: ExecutionContext) =>
     methods(() => ({
       compare: compareStarships,
       map: mapStarship,
+    })),
+    props(() => {
+      const formModel = {
+        errors: {},
+      };
+      sv(formModel, 'name');
+
+      return {
+        formModel,
+      };
+    }),
+    methods(({ formModel }) => ({
+      changeName: () => (formModel['name'] = 'test'),
     }))
   );
