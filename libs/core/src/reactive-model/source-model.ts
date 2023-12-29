@@ -1,14 +1,6 @@
 export const WATCHERS = Symbol('watchers');
 
-export function createNestedModel(
-  model: any,
-  source: any,
-  watchers: {
-    [WATCHERS]: Map<string, any>;
-  }
-
-  // facade: {}
-) {
+export function createNestedModel(model: any, source: any) {
   if (
     model &&
     typeof model === 'object' &&
@@ -19,24 +11,15 @@ export function createNestedModel(
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       let value = model[key];
-      // value = address
 
       if (
         value &&
         typeof value === 'object' &&
         ['Array', 'Object'].includes(value.constructor.name)
       ) {
-        // const tmpVal = {
-        //   [WATCHERS]: new Map<string, any>([]),
-        // };
-
-        const childWatchers = {
-          [WATCHERS]: new Map<string, any>([]),
-        };
-        watchers[key] = childWatchers;
         const childValue = {};
 
-        value = createNestedModel(value, childValue, childWatchers);
+        value = createNestedModel(value, childValue);
       }
 
       Object.defineProperty(source, key, {

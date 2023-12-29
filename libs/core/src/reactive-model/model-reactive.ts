@@ -10,11 +10,7 @@ export function createReactiveModel<T>(
   sourceModel: {
     [STATE_ROOT]: T;
   };
-  watchersModel: {
-    [STATE_ROOT]: {
-      [WATCHERS]: Map<string, any>;
-    };
-  };
+
   get: <M>(schemaMember?: SchemaMember<T>) => T;
   set: <M, R>(schemaMember: SchemaMember<M>, fn: (value: M) => R) => void;
   watch: <M>(
@@ -22,20 +18,16 @@ export function createReactiveModel<T>(
     connect: () => (value: M) => void
   ) => void;
 } {
-  const watchers = {
-    [WATCHERS]: new Map<string, any>([]),
-  };
+  const watchers = new Map<string, any>([]);
   // co gdyby watchers dodać do fasady? wtedy pozbywamy się dodatkowego obiektu
   const source: T = {} as T;
 
-  const sourceValue = createNestedModel(model, source, watchers);
+  const sourceValue = createNestedModel(model, source);
 
-  const sourceModel = { [STATE_ROOT]: source };
-  const watchersModel = { [STATE_ROOT]: watchers };
+  const sourceModel = { [STATE_ROOT]: source, [WATCHERS]: watchers };
 
   const rootModel = {
     sourceModel,
-    watchersModel,
 
     get: (schemaMember?: SchemaMember<T>) => {
       // return sourceModel[STATE_ROOT]; // source powinien być readonly i każde jego pole
@@ -62,7 +54,7 @@ export function createReactiveModel<T>(
 
       const newModel = fn(source as any);
 
-      const changes = checkChanges(sourceModel, watchersModel, newModel, [
+      const changes = checkChanges(sourceModel, newModel, [
         STATE_ROOT,
         ...pathSegments,
       ]);
@@ -84,33 +76,23 @@ export function createReactiveModel<T>(
       const pathSegments = schemaMember.path.split('.').slice(1);
       let key = 'root';
 
-      let watchersPath = [STATE_ROOT, ...pathSegments];
+      const watchFn = connect();
 
-      let watchers = getByPath(watchersModel, watchersPath);
+      let watchersPath = schemaMember.path.replace('root.', '');
+      let propWatchers = sourceModel[WATCHERS].get(watchersPath);
 
-      if (!watchers) {
-        key = watchersPath[watchersPath.length - 1] as string;
-        watchersPath = watchersPath.slice(0, -1);
+      if (!propWatchers) {
+        sourceModel[WATCHERS].set(watchersPath, [watchFn]);
+      } else {
+        propWatchers.push(watchFn);
       }
 
-      // const tmpProp = prop ? prop(source.value[key].value) : source;
-      const watchFn = connect();
-      const propWatchers =
-        (
-          getByPath(watchersModel, watchersPath)[WATCHERS] as Map<string, any>
-        ).get(key) || [];
-      propWatchers.push(watchFn);
-      (
-        getByPath(watchersModel, watchersPath)[WATCHERS] as Map<string, any>
-      ).set(key, propWatchers);
-      // tmpProp.watchers.push(watchFn);
       console.log('watcher registered');
     },
   };
 
+  console.log(rootModel);
   return rootModel;
-
-  // return [facade, sourceModel, watchersModel, rootModel];
 }
 
 function getByPath(source, path: (string | symbol)[]) {
@@ -123,7 +105,7 @@ function getByPath(source, path: (string | symbol)[]) {
 }
 
 // co jak ktoś w modelu będzie miał więcej pól niż w source?
-function checkChanges(source, watchers, model, path: (string | symbol)[]) {
+function checkChanges(source, model, path: (string | symbol)[]) {
   // mozna sprawdzać referencje, jeżeli są takie same modelu i source to wtedy wgl nie wykonujemy metodki,
   // jak nie będziemy zmieniać referencji to będziemy musieli skanować potem cały model
 
@@ -143,7 +125,7 @@ function checkChanges(source, watchers, model, path: (string | symbol)[]) {
         ['Array', 'Object'].includes(value.constructor.name)
       ) {
         const tmpPath = [...path, key];
-        const result = checkChanges(source, watchers, model[key], tmpPath);
+        const result = checkChanges(source, model[key], tmpPath);
         if (result?.length > 0) {
           changes = changes.concat(result);
         }
@@ -152,9 +134,7 @@ function checkChanges(source, watchers, model, path: (string | symbol)[]) {
 
         if (value !== model[key]) {
           const propWatchers =
-            (getByPath(watchers, path)[WATCHERS] as Map<string, any>).get(
-              key
-            ) || [];
+            source[WATCHERS].get([...path.slice(1), key].join('.')) || [];
 
           // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
           changes = changes.concat(
@@ -164,9 +144,7 @@ function checkChanges(source, watchers, model, path: (string | symbol)[]) {
           );
 
           const rootWatchers =
-            (getByPath(watchers, path)[WATCHERS] as Map<string, any>).get(
-              'root'
-            ) || [];
+            source[WATCHERS].get(path.slice(1).join('.')) || [];
 
           // const rootWatchers =
           //   (parentWatchers[WATCHERS] as Map<string, any>).get('root') || [];
@@ -191,9 +169,7 @@ function checkChanges(source, watchers, model, path: (string | symbol)[]) {
       const key = path[path.length - 1];
 
       const propWatchers =
-        (getByPath(watchers, valuePath)[WATCHERS] as Map<string, any>).get(
-          key as string
-        ) || [];
+        source[WATCHERS].get([...valuePath.slice(1), key].join('.')) || [];
 
       changes = changes.concat(
         propWatchers?.map(
@@ -202,9 +178,7 @@ function checkChanges(source, watchers, model, path: (string | symbol)[]) {
       );
 
       const rootWatchers =
-        (getByPath(watchers, valuePath)[WATCHERS] as Map<string, any>).get(
-          'root'
-        ) || [];
+        source[WATCHERS].get(valuePath.slice(1).join('.')) || [];
 
       // const rootWatchers =
       //   (parentWatchers[WATCHERS] as Map<string, any>).get('root') || [];
