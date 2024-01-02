@@ -41,7 +41,7 @@ export function cardModel() /*: CardModel */ {
       // player1: store.player1,
       // player2: store.player2,
       state: store.state,
-      path: store.schema.path,
+      query: store.query,
       draw: () => _exec(draw$),
     }))
   );

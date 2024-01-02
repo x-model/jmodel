@@ -62,8 +62,6 @@ export { Method, Factory, Unwrap } from './types';
 
 export {
   createReactiveModel,
-  watcher,
-  Watcher,
-} from './reactive-model/model-reactive';
-export { createSchema, SchemaMember } from './reactive-model/schema';
-export { createNestedModel } from './reactive-model/source-model';
+  ReactiveModel,
+} from './reactive-model/reactive-model';
+export { createGraph, Query } from './reactive-model/graph';

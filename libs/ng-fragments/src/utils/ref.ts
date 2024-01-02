@@ -1,5 +1,5 @@
 import { Signal, signal } from '@angular/core';
-import { Ref, Watcher, SchemaMember } from '@web-fragments/core';
+import { Query, ReactiveModel, Ref } from '@web-fragments/core';
 
 // watch(source, callback,
 //   { immediate: true } | { deep: true }
@@ -23,18 +23,16 @@ import { Ref, Watcher, SchemaMember } from '@web-fragments/core';
 //   console.log(`x is ${newX} and y is ${newY}`)
 // })
 
-export function refToSignal<T>(
-  state,
-  selectorOrWatcher:
-    | SchemaMember<unknown>
-    | Watcher<unknown[], (args: unknown[]) => unknown>,
+export function refToSignal<T, Value>(
+  model: ReactiveModel<T>,
+  query: Query<T, Value>,
   onCleanUp: Ref<T>
-): Signal<T> {
-  const value = getValue(state, selectorOrWatcher);
+): Signal<Value> {
+  const value = model.get(query) as Value;
   const _signal = signal(value);
 
-  state.watch(selectorOrWatcher, () => (value) => {
-    console.log('value changed', selectorOrWatcher, value);
+  model.watch(query, () => (value) => {
+    console.log('value changed', value);
     _signal.set(value);
   });
 
@@ -45,32 +43,4 @@ export function refToSignal<T>(
   // onCleanUp?.watch(() => ref.unwatch(watcher));
 
   return _signal;
-}
-
-function getValue(
-  state,
-  selectorOrWatcher:
-    | SchemaMember<unknown>
-    | Watcher<unknown[], (args: unknown[]) => unknown>
-) {
-  let values = [];
-  let value;
-  const isWatcher = selectorOrWatcher['resolver'] != null;
-  let selectors = isWatcher
-    ? (selectorOrWatcher as Watcher<unknown[], (args: unknown[]) => unknown>)
-        .paths
-    : [selectorOrWatcher as SchemaMember<unknown>];
-
-  for (let index = 0; index < selectors.length; index++) {
-    const value = state.get(selectors[index]);
-    values.push(value);
-  }
-
-  value = isWatcher
-    ? (
-        selectorOrWatcher as Watcher<unknown[], (args: unknown[]) => unknown>
-      ).resolver(values)
-    : values[0];
-
-  return value;
 }

@@ -1,6 +1,6 @@
 import { Component, Injectable, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { build, diDependencies, publicApi, watcher } from '@web-fragments/core';
+import { build, diDependencies, publicApi } from '@web-fragments/core';
 import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
 import {
@@ -15,7 +15,7 @@ export class StarshipComponentContext extends build(
   ngContextBuilder(),
   diDependencies({ model: provideStarshipModel() }),
   // uiDependencies() // dependencies angularowe
-  publicApi(({ model, model: { state, path } }) => ({
+  publicApi(({ model, model: { state, query } }) => ({
     formModel: model.formModel,
     // ...store.getters
     isLoading: refToSignal(
@@ -25,22 +25,21 @@ export class StarshipComponentContext extends build(
       //   ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
       // ),
       state,
-      watcher(
-        path((state) => state.player1.isLoading),
-        path((state) => state.player2.isLoading),
+      query(
+        (state) => state.player1.isLoading,
+        (state) => state.player2.isLoading,
         ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
       ),
       null
     ),
     player1: refToSignal(
       state,
-      path((state) => state.player1),
+      query((state) => state.player1),
       null
     ),
     player2: refToSignal(
-      // state.select(path((state) => state.player2)),
       state,
-      path((state) => state.player2),
+      query((state) => state.player2),
       null
     ),
 

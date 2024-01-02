@@ -1,0 +1,288 @@
+import { Query } from './graph';
+import { TARGET, createGraph } from './graph';
+import { createModel } from './model';
+
+const SOURCE = Symbol('SOURCE');
+const WATCHERS = Symbol('WATCHERS');
+const STATE = Symbol('STATE');
+const TRACKED = Symbol('TRACKED');
+
+export interface ReactiveModel<T> {
+  [SOURCE]: Source<T>;
+  get: <Value>(query?: Query<T, Value>) => Value | T;
+  set: <Value, R>(query: Query<T, Value>, fn: (value: Value) => R) => void;
+  watch<Value>(
+    query: Query<T, Value>,
+    connect: () => (value: Value) => void
+  ): () => void;
+}
+
+type Source<T> = {
+  [STATE]: T;
+  [WATCHERS]: Map<symbol, any>;
+  [TRACKED]: [string, symbol][];
+};
+
+export function createReactiveModel<T>(model: T): ReactiveModel<T> {
+  const source: Source<T> = {
+    [STATE]: createModel(model),
+    [WATCHERS]: new Map<symbol, any>([]),
+    [TRACKED]: [],
+  };
+
+  const reactiveModel = {
+    [SOURCE]: source,
+    get: function <Value>(query?: Query<T, Value>): Value | T {
+      return query ? query(source[STATE]) : source[STATE];
+    },
+    set: function <Value, R>(
+      query: Query<T, Value>,
+      fn: (value: Value) => R
+    ): void {
+      const target = query[TARGET][0];
+      const pathSegments = !!target ? target.split('.') : [];
+      const newModel = fn(query(source[STATE]));
+      const changes = checkChanges(source, newModel, pathSegments);
+
+      if (!!target) {
+        let lastSegment = pathSegments[pathSegments.length - 1];
+        let parent = source[STATE];
+
+        for (let i = 0; i < pathSegments.length - 1; i++) {
+          parent = parent[pathSegments[i]];
+        }
+
+        parent[lastSegment] = newModel;
+      } else {
+        source[STATE] = newModel as any;
+      }
+
+      // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
+      const filteredChanges = new Set(changes);
+      const watchIds = [];
+
+      source[TRACKED].forEach((tracked) => {
+        if (watchIds.includes(tracked[1])) {
+          return;
+        }
+
+        if (filteredChanges.has(tracked[0])) {
+          watchIds.push(tracked[1]);
+        }
+      });
+
+      watchIds.forEach((watchId) => {
+        const watchFn = source[WATCHERS].get(watchId);
+        watchFn();
+      });
+    },
+
+    watch: function <Value>(
+      query: Query<T, Value>,
+      connect: () => (value: Value) => void
+    ): () => void {
+      const watchId = Symbol('watchId');
+      query[TARGET].forEach((path: string) => {
+        source[TRACKED].push([path, watchId]);
+      });
+
+      const watcherFn = connect();
+      const watchFn = () => watcherFn(query(source[STATE]));
+      source[WATCHERS].set(watchId, watchFn);
+
+      console.log('watcher registered');
+
+      return unwatch(watchId, source);
+    },
+  };
+
+  console.log(reactiveModel);
+  return reactiveModel;
+}
+
+function unwatch<T>(watchId: symbol, source: Source<T>): () => void {
+  return () => {
+    source[TRACKED] = source[TRACKED].filter((item) => item[1] !== watchId);
+    source[WATCHERS].delete(watchId);
+    console.log('unwatched');
+  };
+}
+
+function getByPath(source, pathSegments: string[]) {
+  let value = source;
+  pathSegments.forEach((item) => {
+    value = value[item];
+  });
+
+  return value;
+}
+
+// co jak ktoś w modelu będzie miał więcej pól niż w source?
+function checkChanges<State, Model>(
+  source: Source<State>,
+  model: Model,
+  pathSegments: string[]
+) {
+  // mozna sprawdzać referencje, jeżeli są takie same modelu i source to wtedy wgl nie wykonujemy metodki,
+  // jak nie będziemy zmieniać referencji to będziemy musieli skanować potem cały model
+  const value = getByPath(source[STATE], pathSegments);
+  let changes = [];
+  let tracked = source[TRACKED];
+
+  if (model && typeof model === 'object') {
+    // jak zrobić watch na modelu? całym?
+    if (value != model) {
+      const watchersKey = pathSegments.join('.');
+      const isTracked = tracked.find((item) => item[0] === watchersKey);
+
+      if (isTracked) {
+        // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
+        changes.push(watchersKey);
+      }
+    }
+
+    if (Array.isArray(model)) {
+      return changes;
+    }
+
+    Object.keys(model).forEach((key) => {
+      const result = checkChanges(source, model[key], [...pathSegments, key]);
+      if (result?.length > 0) {
+        changes = changes.concat(result);
+      }
+    });
+  } else {
+    if (value !== model) {
+      let rootPath = pathSegments.slice(0, -1);
+      const key = pathSegments[pathSegments.length - 1];
+
+      const watchersKey = pathSegments.join('.');
+      const isTracked = tracked.find((item) => item[0] === watchersKey);
+
+      if (isTracked) {
+        changes.push(watchersKey);
+      }
+
+      const rootWatchersKey = rootPath.join('.');
+      const isRootTracked = tracked.find((item) => item[0] === rootWatchersKey);
+
+      if (isRootTracked) {
+        changes.push(rootWatchersKey);
+      }
+    }
+  }
+
+  return changes;
+}
+
+export function main(): void {
+  const initialState = {
+    firstName: 'Adalbertus',
+    lastName: 'Chris',
+    address: {
+      street: 'Ważniaka',
+      state: {
+        id: 1,
+        name: 'LA',
+      },
+    },
+    phones: ['123456789', '987654321'],
+  };
+
+  const schema = createGraph(initialState);
+  const { query } = schema;
+
+  const model = createReactiveModel(initialState);
+
+  // nie działa
+  //   rootModel.watch(
+  //     '',
+  //     () => (value) => console.log('value changes: [Address]', value)
+  //   );
+
+  const streetQuery = query((state) => state.address.street);
+
+  const unwatch = model.watch(
+    streetQuery,
+    () => (value) => console.log('value changes: [Address]', value)
+  );
+
+  const unwatchPhone = model.watch(
+    query((state) => state.phones),
+    () => (value) => console.log('value changes: [Phones]', value)
+  );
+
+  // toSignal(model.slice(query((state) => state.phones)));
+  // toSignal(model.slice((state) => state.phones));
+  const phonesQuery = query((state) => state.phones);
+  // toSignal(model, phonesQuery);
+  // .watch(() => (value) => console.log('value changes: [Phones]', value));
+
+  const unwatchName = model.watch(
+    query(
+      (state) => state.firstName,
+      (state) => state.lastName,
+      ([firstName, lastName]) => `${firstName} + ${lastName}`
+    ),
+    () => (value) => console.log('value changes: [My name is]', value)
+  );
+
+  // rootModel.watch(
+  //   path((state) => state.phones[0]),
+  //   // schema.address.state.name,
+  //   // schema.firstName
+  //   // select('address', 'state', 'name'),
+  //   () => (value) => console.log('value changes: [Phones]', value)
+  // );
+
+  //   rootModel.watch(
+  //     path('address.state'),
+  //     () => (value) => console.log('value changes: [Street]', value)
+  //   );
+
+  model.set(
+    query((state) => state.address),
+    (value) => ({
+      ...value,
+      street: 'Akacjowa',
+    })
+  );
+
+  // unwatch();
+
+  model.set(
+    query((state) => state.address.street),
+    (value) => 'Wierzbowa'
+  );
+
+  // zablokować możliwość wyboru 2 pól
+  model.set(
+    query((state) => state.phones),
+    (value) => [...value, '66554433']
+  );
+
+  // unwatchName();
+
+  model.watch(
+    query((state) => state),
+    () => (value) => console.log('value changes: [Root model]', value)
+  );
+
+  model.set(
+    query((state) => state),
+    (value) => ({
+      ...value,
+      firstName: 'Wiesław',
+      lastName: 'Paleta',
+    })
+  );
+
+  console.log('Root model state', model.get());
+  console.log(
+    'Phones from Root model state',
+    model.get(query((state) => state.address.street))
+  );
+
+  // watch na address powinien to wychwytywać?
+  //   rootModel.set(path('address.state.name'), (value) => 'NY');
+}

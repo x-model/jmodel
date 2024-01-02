@@ -7,7 +7,7 @@ import {
   createState,
   storeBuilder,
   createReactiveModel,
-  createSchema,
+  createGraph,
 } from '@web-fragments/core';
 import { CardPlayer } from './models/card-player';
 import { Card } from './models/card';
@@ -108,31 +108,32 @@ export const store$ = storeFragment(({ _inject }) => {
   //     drawFailure: () => store.update(drawFailure()),
   //   }))
   // );
-  const schema = createSchema(initialState);
+  const graph = createGraph(initialState);
+  const { query } = graph;
 
-  const rootModel = createReactiveModel(null, initialState);
+  const model = createReactiveModel(initialState);
 
   const draw = () =>
-    rootModel.set(
-      schema.path((state) => state),
+    model.set(
+      query((state) => state),
       _draw()
     );
 
   const drawSuccess = (cards: [Card, Card], winner: number) =>
-    rootModel.set(
-      schema.path((state) => state),
+    model.set(
+      query((state) => state),
       _drawSuccess(cards, winner)
     );
 
   const drawFailure = () =>
-    rootModel.set(
-      schema.path((state) => state),
+    model.set(
+      query((state) => state),
       _drawFailure()
     );
 
   console.log('store initialized');
 
-  return { state: rootModel, schema, draw, drawSuccess, drawFailure };
+  return { state: model, graph, query, draw, drawSuccess, drawFailure };
 });
 
 // const myState = createState({ isLoading: false });
