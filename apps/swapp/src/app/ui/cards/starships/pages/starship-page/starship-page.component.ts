@@ -14,16 +14,12 @@ import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 export class StarshipComponentContext extends build(
   ngContextBuilder(),
   diDependencies({ model: provideStarshipModel() }),
+
   // uiDependencies() // dependencies angularowe
   publicApi(({ model, model: { state, query } }) => ({
     formModel: model.formModel,
     // ...store.getters
     isLoading: refToSignal(
-      // state.select(
-      //   path((state) => state.player1.isLoading),
-      //   path((state) => state.player2.isLoading),
-      //   ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
-      // ),
       state,
       query(
         (state) => state.player1.isLoading,

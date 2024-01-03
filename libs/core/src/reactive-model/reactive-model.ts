@@ -110,9 +110,13 @@ function unwatch<T>(watchId: symbol, source: Source<T>): () => void {
 
 function getByPath(source, pathSegments: string[]) {
   let value = source;
-  pathSegments.forEach((item) => {
-    value = value[item];
-  });
+  for (let i = 0; i < pathSegments.length; i++) {
+    value = value[pathSegments[i]];
+
+    if (value == null) {
+      break;
+    }
+  }
 
   return value;
 }
@@ -122,11 +126,11 @@ function checkChanges<State, Model>(
   source: Source<State>,
   model: Model,
   pathSegments: string[]
-) {
+): string[] {
   // mozna sprawdzać referencje, jeżeli są takie same modelu i source to wtedy wgl nie wykonujemy metodki,
   // jak nie będziemy zmieniać referencji to będziemy musieli skanować potem cały model
   const value = getByPath(source[STATE], pathSegments);
-  let changes = [];
+  let changes: string[] = [];
   let tracked = source[TRACKED];
 
   if (model && typeof model === 'object') {

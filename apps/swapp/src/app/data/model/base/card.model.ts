@@ -4,6 +4,7 @@ import {
   dependencies,
   fragments,
   fromFragments,
+  hooks,
   methods,
   partialBuilder,
   publicApi,
@@ -35,6 +36,11 @@ export function cardModel() /*: CardModel */ {
       map: abstract<CardMap>(),
     })),
     fromFragments({ store: (resolve) => resolve(store$) }),
+    hooks(({ store }) => ({
+      onDestroy: () => {
+        // store.destroy();
+      },
+    })),
     publicApi(({ _exec, store }) => ({
       // ...store.getters
       // isLoading: store.isLoading,
