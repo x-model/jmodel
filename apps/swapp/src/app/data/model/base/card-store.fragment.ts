@@ -131,9 +131,19 @@ export const store$ = storeFragment(({ _inject }) => {
       _drawFailure()
     );
 
+  const destroy = () => model.destroy();
+
   console.log('store initialized');
 
-  return { state: model, graph, query, draw, drawSuccess, drawFailure };
+  return {
+    state: model,
+    graph,
+    query,
+    draw,
+    drawSuccess,
+    drawFailure,
+    destroy,
+  };
 });
 
 // const myState = createState({ isLoading: false });

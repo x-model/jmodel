@@ -38,7 +38,8 @@ export function cardModel() /*: CardModel */ {
     fromFragments({ store: (resolve) => resolve(store$) }),
     hooks(({ store }) => ({
       onDestroy: () => {
-        // store.destroy();
+        console.log('destroying card model');
+        store.destroy();
       },
     })),
     publicApi(({ _exec, store }) => ({

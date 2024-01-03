@@ -46,6 +46,15 @@ export class DiContainer {
   }
 
   destroyScope(scopeId: symbol): void {
+    console.log('destroying scope');
+    const instances = this.registrations.get(scopeId);
+    instances.forEach(
+      (instance) => instance.value.onDestroy && instance.value.onDestroy()
+    );
+
+    const scope = this.scopes.get(scopeId);
+    scope.localInjector = null;
+    scope.rootInjector = null;
     this.scopes.delete(scopeId);
   }
 

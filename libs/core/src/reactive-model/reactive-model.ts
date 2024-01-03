@@ -15,6 +15,7 @@ export interface ReactiveModel<T> {
     query: Query<T, Value>,
     connect: () => (value: Value) => void
   ): () => void;
+  destroy: () => void;
 }
 
 type Source<T> = {
@@ -93,6 +94,12 @@ export function createReactiveModel<T>(model: T): ReactiveModel<T> {
       console.log('watcher registered');
 
       return unwatch(watchId, source);
+    },
+
+    destroy: function (): void {
+      source[STATE] = null;
+      source[TRACKED] = [];
+      source[WATCHERS].clear();
     },
   };
 
