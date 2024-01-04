@@ -1,8 +1,11 @@
 export { build } from './builder/build';
 export { builder } from './builder/builder';
+export { context } from './builder/context';
+export { partial } from './builder/partial';
 export { Builder, BuilderPartialContext } from './builder/types';
 export { dependencies } from './builder-props/dependencies';
 export { diDependencies } from './builder-props/di-dependencies';
+export { diDependencies2 } from './builder-props/di-dependencies2';
 export { fragmentsToMethods } from './builder-props/fragments-to-methods';
 export { fragments } from './builder-props/fragments';
 export { fromFragments } from './builder-props/from-fragments';

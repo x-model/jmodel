@@ -1,6 +1,6 @@
 import { Component, Injectable, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { build, diDependencies, publicApi } from '@web-fragments/core';
+import { build, diDependencies2, publicApi } from '@web-fragments/core';
 import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
 import {
@@ -13,11 +13,11 @@ import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 @Injectable()
 export class StarshipComponentContext extends build(
   ngContextBuilder(),
-  diDependencies({ model: provideStarshipModel() }),
+  diDependencies2({ model: provideStarshipModel() }),
 
   // uiDependencies() // dependencies angularowe
   publicApi(({ model, model: { state, query } }) => ({
-    formModel: model.formModel,
+    // formModel: model.formModel,
     // ...store.getters
     isLoading: refToSignal(
       state,
@@ -43,7 +43,7 @@ export class StarshipComponentContext extends build(
     // player1: refToSignal(model.player1, null),
     // player2: refToSignal(model.player2, null),
     draw: () => model.draw(),
-    changeName: () => model.changeName(),
+    // changeName: () => model.changeName(),
   }))
 ) {}
 // implements CardComponentContext {}
@@ -59,20 +59,17 @@ export class StarshipComponentContext extends build(
   styleUrls: ['./starship-page.component.scss'],
 })
 export class StarshipPageComponent {
-  ctx = inject(CARD_COMPONENT_CONTEXT);
-
-  form = new FormGroup({
-    name: new FormControl('test'),
-    id: new FormControl('test'),
-    address: new FormGroup({
-      street: new FormControl('tset'),
-    }),
-  });
-
+  // ctx = inject(CARD_COMPONENT_CONTEXT);
+  // form = new FormGroup({
+  //   name: new FormControl('test'),
+  //   id: new FormControl('test'),
+  //   address: new FormGroup({
+  //     street: new FormControl('tset'),
+  //   }),
+  // });
   // getName() {
   //   this.form.get('address.street');
   //   this.form.value.address.street;
-
   //   const mySig = signal({counter: {id: 10, name: 'test'}});
   //   mySig.counter.
   // }

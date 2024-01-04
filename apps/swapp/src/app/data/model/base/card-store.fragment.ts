@@ -84,14 +84,6 @@ export function _drawFailure(): Method<CardState> {
 }
 
 export const store$ = storeFragment(({ _inject }) => {
-  // const state = createState(initialState);
-  // _inject(DestroyRef as any)['onDestroy'](() => {
-  //   state.destroy();
-  // });
-
-  // const state = ;
-  // const { update, select } = state;
-
   // co gdyby metodki budować ze fragmentów? głównie chodzi o to,
   // żeby przekazać context i żeby metodki miały dostęp do state
   // const store = build(
@@ -145,22 +137,3 @@ export const store$ = storeFragment(({ _inject }) => {
     destroy,
   };
 });
-
-// const myState = createState({ isLoading: false });
-
-// const isLoading = myState.select((state) => state.isLoading);
-// console.log('[GET] isLoading: ', isLoading.get());
-
-// const watcher = isLoading.watch((isLoading) =>
-//   console.log('[WATCHER] isLoading', isLoading)
-// );
-
-// myState.update((state) => ({ ...state, isLoading: !state.isLoading }));
-
-// console.log('[GET] isLoading: ', isLoading.get());
-
-// isLoading.unwatch(watcher);
-
-// myState.update((state) => ({ ...state, isLoading: !state.isLoading }));
-
-// console.log('[GET] isLoading: ', isLoading.get());
