@@ -1,20 +1,17 @@
 import { CreationContext, ExecutionContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
-import { typeBuilder } from '../builders/type-builder';
-import { build } from '../builder/build';
-import { props } from './props';
 import { DiContainer } from '../di/container';
-import { ProviderToken } from '../di/types';
+import { InjectionToken } from '../di/consts';
 
-export type ProviderTokenType<T> = T extends ProviderToken<infer TInner>
+export type InjectionTokenType<T> = T extends InjectionToken<infer TInner>
   ? TInner
   : T;
 
 export function diDependencies<
   Input extends ExecutionContext,
-  Output extends Record<string, { token; type; resolveFn }>,
+  Output extends Record<string, InjectionToken<unknown>>,
   Result extends {
-    [P in keyof Output]: ProviderTokenType<ReturnType<Output[P]['resolveFn']>>;
+    [P in keyof Output]: InjectionTokenType<Output[P]>;
   }
 >(deps: Output): Factory<Input, Unwrap<Input & Result>> {
   return (context: Input & CreationContext) => {
@@ -26,16 +23,7 @@ export function diDependencies<
     const resolvedDeps = Object.keys(deps).reduce((instances, key) => {
       const dependency = deps[key];
 
-      const factory = () =>
-        new (build(
-          typeBuilder({ name: 'diDeps' }),
-          props(
-            (_context) =>
-              (dependency.resolveFn as any)(_context) as ExecutionContext
-          )
-        ))(context._scope);
-
-      const instance = diContainer.resolve(dependency as any, factory, {
+      const instance = diContainer.resolveByToken(dependency.token, {
         id: scopeId,
       });
 

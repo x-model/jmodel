@@ -10,6 +10,20 @@ export class DiContainer {
 
   constructor(private readonly _rootInjector: Injector) {}
 
+  resolveByToken(token, scope?: { id: symbol }) {
+    if (!token) {
+      throw new Error('It is not injectable');
+    }
+
+    const { id, injector } = this.getScope({ token, type: null }, scope);
+
+    if (!this.registrations.has(id)) {
+      throw new Error('Cannot resolve. Provider not exists');
+    }
+
+    return this.registrations.get(id).get(token).value;
+  }
+
   resolve(
     value: { token; type: 'singleInstance'; resolveFn },
     factory: any,
@@ -59,7 +73,7 @@ export class DiContainer {
   }
 
   private getScope(
-    value: { token; type: 'singleInstance'; resolveFn },
+    value: { token; type: 'singleInstance' },
     scope: { id: symbol }
   ) {
     let resolvedScope;

@@ -1,3 +1,11 @@
+export const INJECTABLE = Symbol('INJECTABLE');
+
+export type InjectionToken<T> = { token: symbol };
+
+export function injectionToken<T>(description: string): InjectionToken<T> {
+  return { token: Symbol(description) };
+}
+
 export const di = {
   token: Symbol.toPrimitive,
 };

@@ -1,8 +1,9 @@
 import {
-  ExecutionContext,
   abstract,
   build,
+  context,
   dependencies,
+  diDependencies,
   fragments,
   fromFragments,
   hooks,
@@ -14,20 +15,24 @@ import {
 import {
   CardCompare,
   CardMap,
-  CardModel,
   CardRepository,
   draw$,
   totalPages$,
 } from './card.fragment';
 import { store$ } from './card-store.fragment';
+import {
+  cardCompareToken,
+  cardMapToken,
+  cardRepositoryToken,
+} from './di-tokens';
 
 export function partialCardModel() {
   return partial(
-    // dependencies({
-    //   cardRepository: cardRepositoryToken,
-    //   compare: cardCompareToken,
-    //   map: cardMapToken,
-    // }),
+    diDependencies({
+      cardRepository: cardRepositoryToken,
+      compare: cardCompareToken,
+      map: cardMapToken,
+    }),
     fragments({
       totalPages$,
     }),
@@ -50,17 +55,31 @@ export function partialCardModel() {
 // fragment powinien mieć też typ contextu, wtedy zabezpieczymy exec, jakby np. ktoś zapomniał czegoś zdefiniować,
 // a np. będzie użyte we fragmencie
 
-// export function publicCardModel(providers, model) {
-//   return context({
-//     providers,
-//     internal: () => model,
-//     public: ({ _exec, store }) => ({
-//       state: store.state,
-//       query: store.query,
-//       draw: () => _exec(draw$),
-//     }),
-//   });
-// }
+export function publicCardModel(providers) {
+  const model = partial(
+    partialCardModel(),
+    publicApi(({ _exec, store }) => ({
+      state: store.state,
+      query: store.query,
+      draw: () => _exec(draw$),
+    }))
+  );
+
+  return context({
+    providers,
+    public: model,
+  });
+
+  // return context({
+  //   providers,
+  //   internal: () => model,
+  //   public: ({ _exec, store }) => ({
+  //     state: store.state,
+  //     query: store.query,
+  //     draw: () => _exec(draw$),
+  //   }),
+  // });
+}
 
 // export function partialCardModel() /*: CardModel */ {
 //   return build(

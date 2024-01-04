@@ -1,4 +1,6 @@
-export function singleton(token: symbol, resolveFn) {
+import { InjectionToken } from './consts';
+
+export function singleton<T>(token: InjectionToken<T>, resolveFn) {
   return {
     token,
     type: 'singleInstance',
@@ -6,7 +8,7 @@ export function singleton(token: symbol, resolveFn) {
   };
 }
 
-export function perLifetimeScope(token: symbol, resolveFn) {
+export function perLifetimeScope<T>(token: InjectionToken<T>, resolveFn) {
   return {
     token,
     type: 'instancePerLifetimeScope',

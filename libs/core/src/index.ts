@@ -36,7 +36,7 @@ export {
   Ref,
   State,
 } from './builders/store-builder';
-export { di, registerAs } from './di/consts';
+export { di, registerAs, injectionToken, InjectionToken } from './di/consts';
 export { DiContainer } from './di/container';
 export { perLifetimeScope, singleton } from './di/lifetime';
 export { fromFactory } from './di/resolvers';

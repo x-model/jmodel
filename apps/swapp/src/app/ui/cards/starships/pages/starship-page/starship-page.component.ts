@@ -12,6 +12,7 @@ import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 
 @Injectable()
 export class StarshipComponentContext extends build(
+  // ngContextBuilder({ providers: [provideStarshipModel()] }),
   ngContextBuilder(),
   diDependencies2({ model: provideStarshipModel() }),
 

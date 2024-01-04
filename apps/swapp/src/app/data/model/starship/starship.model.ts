@@ -1,22 +1,14 @@
-import {
-  ExecutionContext,
-  build,
-  context,
-  diDependencies2,
-  from,
-  fromFactory,
-  mergeWith,
-  methods,
-  partial,
-  perLifetimeScope,
-  props,
-  publicApi,
-} from '@web-fragments/core';
-import { cardModel, partialCardModel } from '../base/card.model';
+import { fromFactory, perLifetimeScope } from '@web-fragments/core';
+import { publicCardModel } from '../base/card.model';
 import { provideStarshipRepository } from '../../repositories/starships/starship.repository';
 import { compareStarships } from './services/starship-comparer';
 import { mapStarship } from './services/starship-mapper';
-import { cardModelToken } from '../base/di-tokens';
+import {
+  cardCompareToken,
+  cardMapToken,
+  cardModelToken,
+  cardRepositoryToken,
+} from '../base/di-tokens';
 import { sv } from 'libs/core/src/builders/store-builder';
 import { draw$ } from '../base/card.fragment';
 
@@ -59,33 +51,11 @@ export const provideStarshipModel = () =>
 // }
 
 export function starshipModelFactory() {
-  const model = partial(
-    partialCardModel(),
-    diDependencies2({
-      cardRepository: provideStarshipRepository(),
-    }),
-    methods(() => ({
-      compare: compareStarships,
-      map: mapStarship,
-    })),
-    publicApi(({ _exec, store }) => ({
-      state: store.state,
-      query: store.query,
-      draw: () => _exec(draw$),
-    }))
-  );
-
-  return context({
-    public: model,
-  });
-
-  // const providers = [
-  //   provideStarshipRepository(),
-  //   [cardCompareToken, compareStarships],
-  //   [cardMapToken, mapStarship],
-  // ];
-
-  // return publicCardModel(model);
+  return publicCardModel([
+    provideStarshipRepository(),
+    [cardCompareToken, () => compareStarships],
+    [cardMapToken, () => mapStarship],
+  ]);
 }
 
 // export function starshipModelFactory(context: ExecutionContext) {
