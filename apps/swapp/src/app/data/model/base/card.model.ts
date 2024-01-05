@@ -10,7 +10,7 @@ import {
   methods,
   partial,
   partialBuilder,
-  publicApi,
+  publicProps,
 } from '@web-fragments/core';
 import {
   CardCompare,
@@ -19,12 +19,12 @@ import {
   draw$,
   totalPages$,
 } from './card.fragment';
-import { store$ } from './card-store.fragment';
 import {
   cardCompareToken,
   cardMapToken,
   cardRepositoryToken,
 } from './di-tokens';
+import { resolveCardStore } from './card-store';
 
 export function partialCardModel() {
   return partial(
@@ -32,17 +32,11 @@ export function partialCardModel() {
       cardRepository: cardRepositoryToken,
       compare: cardCompareToken,
       map: cardMapToken,
+      store: resolveCardStore(),
     }),
     fragments({
       totalPages$,
-    }),
-    fromFragments({ store: (resolve) => resolve(store$) }),
-    hooks(({ store }) => ({
-      onDestroy: () => {
-        console.log('destroying card model');
-        store.destroy();
-      },
-    }))
+    })
     // memo(({ _exec }) => ({
     //   totalPages: () => _exec(totalPages$),
     //   store: () => cardStore(),
@@ -50,36 +44,20 @@ export function partialCardModel() {
   );
 }
 
-// const context = null;
-
 // fragment powinien mieć też typ contextu, wtedy zabezpieczymy exec, jakby np. ktoś zapomniał czegoś zdefiniować,
 // a np. będzie użyte we fragmencie
 
 export function publicCardModel(providers) {
-  const model = partial(
-    partialCardModel(),
-    publicApi(({ _exec, store }) => ({
-      state: store.state,
-      query: store.query,
-      draw: () => _exec(draw$),
-    }))
-  );
+  const model = partial(diDependencies(providers), partialCardModel());
 
-  return context({
-    providers,
-    public: model,
-  });
-
-  // return context({
-  //   providers,
-  //   internal: () => model,
-  //   public: ({ _exec, store }) => ({
-  //     state: store.state,
-  //     query: store.query,
-  //     draw: () => _exec(draw$),
-  //   }),
-  // });
+  return context(model).public(({ _exec, store }) => ({
+    state: store.state,
+    query: store.query,
+    draw: () => _exec(draw$),
+  }));
 }
+
+// const result = publicCardModel([]);
 
 // export function partialCardModel() /*: CardModel */ {
 //   return build(
@@ -125,38 +103,38 @@ export function publicCardModel(providers) {
 // TODO
 // Pytanie czy dla każdego resource on się powinien na nowo tworzyć? w sumie tutaj się chyba wywołuje definicja
 // ale czemu np abstract się wywoływało na starcie apki? jak było const cardModel?
-export function cardModel() /*: CardModel */ {
-  return build(
-    partialBuilder(),
-    dependencies({
-      cardRepository: abstract<CardRepository>(),
-    }),
-    fragments({
-      totalPages$,
-    }),
-    methods(() => ({
-      compare: abstract<CardCompare>(),
-      map: abstract<CardMap>(),
-    })),
-    fromFragments({ store: (resolve) => resolve(store$) }),
-    hooks(({ store }) => ({
-      onDestroy: () => {
-        console.log('destroying card model');
-        store.destroy();
-      },
-    })),
-    publicApi(({ _exec, store }) => ({
-      // ...store.getters
-      // isLoading: store.isLoading,
-      // player1: store.player1,
-      // // player2: store.player2,
-      // onDestroy: () => {
-      //   console.log('destroying card model');
-      //   store.destroy();
-      // },
-      state: store.state,
-      query: store.query,
-      draw: () => _exec(draw$),
-    }))
-  );
-}
+// export function cardModel() /*: CardModel */ {
+//   return build(
+//     partialBuilder(),
+//     dependencies({
+//       cardRepository: abstract<CardRepository>(),
+//     }),
+//     fragments({
+//       totalPages$,
+//     }),
+//     methods(() => ({
+//       compare: abstract<CardCompare>(),
+//       map: abstract<CardMap>(),
+//     })),
+//     fromFragments({ store: (resolve) => resolve(store$) }),
+//     hooks(({ store }) => ({
+//       onDestroy: () => {
+//         console.log('destroying card model');
+//         store.destroy();
+//       },
+//     })),
+//     publicProps(({ _exec, store }) => ({
+//       // ...store.getters
+//       // isLoading: store.isLoading,
+//       // player1: store.player1,
+//       // // player2: store.player2,
+//       // onDestroy: () => {
+//       //   console.log('destroying card model');
+//       //   store.destroy();
+//       // },
+//       state: store.state,
+//       query: store.query,
+//       draw: () => _exec(draw$),
+//     }))
+//   );
+// }

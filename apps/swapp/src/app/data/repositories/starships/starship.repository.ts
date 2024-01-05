@@ -21,7 +21,7 @@ const fromFragments = (context, fragments) =>
 //     })
 //   );
 
-export const provideStarshipRepository = () =>
+export const resolveStarshipRepository = () =>
   perLifetimeScope(cardRepositoryToken, fromFactory(starshipRepositoryFactory));
 
 // export const starshipRepositoryFactory = (context: ExecutionContext) =>
@@ -31,14 +31,12 @@ export const provideStarshipRepository = () =>
 //   });
 
 export function starshipRepositoryFactory() {
-  const publicModel = partial(
+  const model = partial(
     fragmentsToMethods({
       getAll: starshipGetAll,
       get: starshipGet,
     })
   );
 
-  return context({
-    public: publicModel,
-  });
+  return context().public(model);
 }

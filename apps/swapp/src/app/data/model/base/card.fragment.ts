@@ -9,11 +9,11 @@ import {
 } from '@web-fragments/core';
 import { ApiResult } from '@web-fragments/ng-fragments';
 import { getRandom } from '../../../common';
-import { store$ } from './card-store.fragment';
 import { CollectionParams } from '../../repositories/base/models/collection-params';
 import { CollectionResult } from '../../repositories/base/models/collection-result';
 import { Card } from './models/card';
 import { CardPlayer } from './models/card-player';
+import { CardStore } from './card-store';
 
 // Czy to powinno być w modelu czy w repository?
 // W sumie to już jest jakaś logika, to już jest obróbka danych z data sources
@@ -38,12 +38,14 @@ export type CardCompare = ([card1, card2]: [Card, Card]) => number;
 export type CardMap = (model: unknown) => Card;
 
 export type CardModel = {
-  store: FragmentResultType<typeof store$>;
+  store: CardStore;
   cardRepository: RepositoryType<CardRepository>;
   totalPages$: () => Fragment<unknown, Promise<number>>;
   draw: () => void;
   compare: CardCompare;
   map: CardMap;
+  state: CardStore['state'];
+  query: CardStore['query'];
 } & ExecutionContext;
 
 export type CardComponentContext = {

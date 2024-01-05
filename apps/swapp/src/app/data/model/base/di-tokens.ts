@@ -5,6 +5,9 @@ import {
   CardModel,
   CardRepository,
 } from './card.fragment';
+import { CardStore } from './card-store';
+
+export const cardStoreToken = injectionToken<CardStore>('cardStore');
 
 export const cardRepositoryToken =
   injectionToken<CardRepository>('cardRepository');

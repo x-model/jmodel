@@ -1,16 +1,13 @@
-import { DestroyRef } from '@angular/core';
 import {
   Method,
-  build,
-  props,
-  storeFragment,
-  createState,
-  storeBuilder,
   createReactiveModel,
   createGraph,
+  perLifetimeScope,
+  fromFactory,
 } from '@web-fragments/core';
 import { CardPlayer } from './models/card-player';
 import { Card } from './models/card';
+import { cardStoreToken } from './di-tokens';
 
 interface CardState {
   [key: string]: unknown;
@@ -22,6 +19,11 @@ const initialState: CardState = {
   player1: { score: 0, isLoading: false, win: false },
   player2: { score: 0, isLoading: false, win: false },
 };
+
+export type CardStore = ReturnType<typeof cardStoreFactory>;
+
+export const resolveCardStore = () =>
+  perLifetimeScope(cardStoreToken, fromFactory(cardStoreFactory));
 
 export function _draw(): Method<CardState> {
   const _state = (player: CardPlayer) => ({
@@ -83,7 +85,7 @@ export function _drawFailure(): Method<CardState> {
   });
 }
 
-export const store$ = storeFragment(({ _inject }) => {
+export function cardStoreFactory() {
   // co gdyby metodki budować ze fragmentów? głównie chodzi o to,
   // żeby przekazać context i żeby metodki miały dostęp do state
   // const store = build(
@@ -136,4 +138,4 @@ export const store$ = storeFragment(({ _inject }) => {
     drawFailure,
     destroy,
   };
-});
+}

@@ -1,23 +1,29 @@
-import { Component, Injectable, inject } from '@angular/core';
+import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { build, diDependencies2, publicApi } from '@web-fragments/core';
+import {
+  build,
+  diDependencies,
+  diDependencies2,
+  props,
+  publicProps,
+} from '@web-fragments/core';
 import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
 import {
   CARD_COMPONENT_CONTEXT,
   CardComponentContext,
 } from '../../../../../data/model/base/card.fragment';
-import { provideStarshipModel } from '../../../../../data';
+import { resolveStarshipModel } from '../../../../../data';
 import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 
 @Injectable()
 export class StarshipComponentContext extends build(
   // ngContextBuilder({ providers: [provideStarshipModel()] }),
   ngContextBuilder(),
-  diDependencies2({ model: provideStarshipModel() }),
+  diDependencies({ model: resolveStarshipModel() }),
 
   // uiDependencies() // dependencies angularowe
-  publicApi(({ model, model: { state, query } }) => ({
+  props(({ model, model: { state, query } }) => ({
     // formModel: model.formModel,
     // ...store.getters
     isLoading: refToSignal(

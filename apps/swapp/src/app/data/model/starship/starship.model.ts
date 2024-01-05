@@ -1,6 +1,6 @@
 import { fromFactory, perLifetimeScope } from '@web-fragments/core';
-import { publicCardModel } from '../base/card.model';
-import { provideStarshipRepository } from '../../repositories/starships/starship.repository';
+import { publicCardModel as cardModel } from '../base/card.model';
+import { resolveStarshipRepository } from '../../repositories/starships/starship.repository';
 import { compareStarships } from './services/starship-comparer';
 import { mapStarship } from './services/starship-mapper';
 import {
@@ -22,7 +22,7 @@ import { draw$ } from '../base/card.fragment';
 //     ),
 //   });
 
-export const provideStarshipModel = () =>
+export const resolveStarshipModel = () =>
   perLifetimeScope(cardModelToken, fromFactory(starshipModelFactory));
 
 // do testów potrzebne będą jakieś fakeScopes
@@ -51,10 +51,10 @@ export const provideStarshipModel = () =>
 // }
 
 export function starshipModelFactory() {
-  return publicCardModel([
-    provideStarshipRepository(),
-    [cardCompareToken, () => compareStarships],
-    [cardMapToken, () => mapStarship],
+  return cardModel([
+    resolveStarshipRepository(),
+    perLifetimeScope(cardCompareToken, () => compareStarships),
+    perLifetimeScope(cardMapToken, () => mapStarship),
   ]);
 }
 

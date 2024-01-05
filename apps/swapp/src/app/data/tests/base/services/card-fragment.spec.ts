@@ -8,7 +8,7 @@ import {
   draw$,
   totalPages$,
 } from '../../../model/base/card.fragment';
-import { store$ } from '../../../model/base/card-store.fragment';
+import { store$ } from '../../../model/base/card-store';
 
 const resolveDelay = (delay: number, data: any) =>
   new Promise((resolve) =>

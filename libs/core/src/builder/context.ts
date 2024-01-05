@@ -1,53 +1,33 @@
 import { typeBuilder } from '../builders/type-builder';
 import { INJECTABLE } from '../di/consts';
 import { DiContainer } from '../di/container';
-import { Scope } from '../fragment/types';
+import { ExecutionContext, Scope } from '../fragment/types';
+import { INTERNAL, PUBLIC } from '../types';
+import { BuilderPartialContext } from './types';
 
-export function context(config: {
-  providers?: any[];
-  internal?: any;
-  public?: any;
-}): any {
-  const factory = (scope: Scope) => {
-    const container = scope.rootInjector.get(DiContainer);
+export function context<Result extends BuilderPartialContext>(
+  config?: (context: ExecutionContext) => Result
+): any {
+  return {
+    public: (publicConfig: <R>(context: Result) => any) => {
+      const factory = (scope: Scope) => {
+        const container = scope.rootInjector.get(DiContainer);
 
-    config.providers?.forEach((item) => {
-      let provider: {
-        token: any;
-        type: any;
-        resolveFn: any;
+        const build = typeBuilder() as any;
+        const result = build((context) => {
+          const internalProps = config ? config(context) : context;
+
+          const publicProps = publicConfig(internalProps);
+
+          return { [INTERNAL]: internalProps, [PUBLIC]: publicProps };
+        });
+
+        return new result(scope);
       };
 
-      if (Array.isArray(item) && item.length === 2) {
-        provider = {
-          token: item[0].token,
-          type: null,
-          resolveFn: item[1],
-        };
-      } else {
-        provider = { ...item, token: item.token.token };
-      }
+      factory[INJECTABLE] = true;
 
-      const factory = () => {
-        const resolved = provider.resolveFn();
-        if (typeof resolved === 'function' && resolved[INJECTABLE]) {
-          return resolved(scope);
-        }
-        return resolved;
-      };
-
-      container.resolve(provider as any, factory, {
-        id: scope.id,
-      });
-    });
-
-    const build = typeBuilder();
-    const result = build(config.public);
-
-    return new result(scope);
+      return factory;
+    },
   };
-
-  factory[INJECTABLE] = true;
-
-  return factory;
 }

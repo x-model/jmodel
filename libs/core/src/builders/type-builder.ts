@@ -9,7 +9,7 @@ import { TemplateRegistry } from '../fragment/template-registry';
 import { Builder, BuilderPartialContext } from '../builder/types';
 import { resolveFragment } from '../fragment/resolver';
 import { Hooks } from '../builder-props/hooks';
-import { Factory } from '../types';
+import { Factory, INTERNAL, PUBLIC } from '../types';
 import { ProviderToken, Type } from '../di/types';
 
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
@@ -37,7 +37,7 @@ export function typeBuilder(
        */
       _created = false;
       _templateRegistry = new TemplateRegistry();
-      _innerContext: FactoryResult;
+      _innerContext: FactoryResult & { internal: any };
       _executionContext: ExecutionContext = {
         _exec: (fragment, input?) => this._exec(fragment, input),
         _inject: (token) => this._inject(token),
@@ -56,24 +56,31 @@ export function typeBuilder(
         } as CreationContext;
 
         const config = factory(context) as FactoryResult & CreationContext;
+        const internalProps = (config as any)[INTERNAL];
+        const publicProps = (config as any)[PUBLIC];
 
         this._innerContext = getInnerContext<FactoryResult & CreationContext>(
-          config,
+          internalProps,
           context
         );
 
-        for (const key in this._innerContext) {
+        const publicContext = getInnerContext<FactoryResult & CreationContext>(
+          publicProps,
+          context
+        );
+
+        for (const key in publicContext) {
           // do każdego value podpinać jakoś name (key), wtedy możemy tego używać do logs
 
           Object.defineProperty(this, key, {
-            value: this._innerContext[key],
+            value: publicContext[key],
             // writable: false,
           });
         }
 
         this._created = true;
 
-        registerHooks(this._innerContext as Hooks);
+        registerHooks(publicContext as Hooks);
       }
 
       _inject<T>(token: ProviderToken<T>): T {
@@ -92,7 +99,7 @@ export function typeBuilder(
           console.warn('Cannot use context during creation');
         } else {
           context = {
-            ...this._innerContext,
+            ...this._innerContext, //?.internal,
           };
         }
         const fragmentInstance = resolveFragment(

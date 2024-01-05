@@ -15,7 +15,7 @@ export { mergeWith } from './builder-props/merge-with';
 export { methods } from './builder-props/methods';
 export { models } from './builder-props/models';
 export { props } from './builder-props/props';
-export { publicApi } from './builder-props/public-api';
+export { publicProps } from './builder-props/public-props';
 export { repositories } from './builder-props/repositories';
 export {
   fragmentTemplateBuilder,
@@ -61,7 +61,7 @@ export { memoFragment } from './fragments/memo-fragment';
 export { pureFragment } from './fragments/pure-fragment';
 export { storeFragment } from './fragments/store-fragment';
 export { abstract } from './utils/abstract';
-export { Method, Factory, Unwrap } from './types';
+export { Method, Factory, Unwrap, INTERNAL, PUBLIC } from './types';
 
 export {
   createReactiveModel,
