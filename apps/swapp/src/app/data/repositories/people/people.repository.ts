@@ -1,16 +1,21 @@
-import { Injectable } from '@angular/core';
 import {
-  build,
-  fragmentsToMethods,
-  repositoryBuilder,
+  context,
+  fragments,
+  fromFactory,
+  perLifetimeScope,
+  publicProps,
 } from '@web-fragments/core';
 import { peopleGet, peopleGetAll } from './people.data-source';
+import { cardRepositoryToken } from '../../model/base/di-tokens';
 
-@Injectable({ providedIn: 'root' })
-export class PeopleRepository extends build(
-  repositoryBuilder(),
-  fragmentsToMethods({
-    getAll: peopleGetAll,
-    get: peopleGet,
-  })
-) {}
+export const resolvePeopleRepository = () =>
+  perLifetimeScope(cardRepositoryToken, fromFactory(peopleRepositoryFactory));
+
+export const peopleRepositoryFactory = () =>
+  context(
+    fragments({
+      getAll: peopleGetAll,
+      get: peopleGet,
+    }),
+    publicProps((context) => context)
+  );

@@ -1,19 +1,15 @@
 import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import {
-  build,
-  dependencies,
-  hooks,
-  props,
-  publicProps,
-} from '@web-fragments/core';
-import { ngContextBuilder } from '@web-fragments/ng-fragments';
+import { build, diDependencies, hooks, props } from '@web-fragments/core';
+import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
+import { CARD_COMPONENT_CONTEXT } from '../../../../../data/model/base/card.fragment';
 import {
-  CARD_COMPONENT_CONTEXT,
-  CardComponentContext,
-} from '../../../../../data/model/base/card.fragment';
-import { PeopleModel } from '../../../../../data';
+  isLoadingQuery,
+  player1Query,
+  player2Query,
+} from '../../../../../data/model/base/card-store';
+import { resolvePeopleModel } from '../../../../../data';
 
 const styles = `
   :host {
@@ -25,21 +21,24 @@ const styles = `
 @Injectable()
 export class PeopleComponentContext extends build(
   ngContextBuilder(),
-  dependencies({ model: PeopleModel }),
-  hooks(() => ({
-    onInit: () => {
-      console.log('people context initialized');
-    },
-    onDestroy: () => {
-      console.log('people context destroyed');
-    },
-  })),
-  props(({ model }) => ({
+  diDependencies({ model: resolvePeopleModel() }),
+  // hooks(() => ({
+  //   onInit: () => {
+  //     console.log('people context initialized');
+  //   },
+  //   onDestroy: () => {
+  //     console.log('people context destroyed');
+  //   },
+  // })),
+  props(({ model, model: { state } }) => ({
+    isLoading: refToSignal(state, isLoadingQuery),
+    player1: refToSignal(state, player1Query),
+    player2: refToSignal(state, player2Query),
     // ...store.getters
     // isLoading: model.isLoading,
     // player1: model.player1,
     // player2: model.player2,
-    draw: () => model['draw'](),
+    draw: () => model.draw(),
   }))
   // TODO
   // nie możemy teraz robić czegoś takiego,
@@ -56,7 +55,6 @@ export class PeopleComponentContext extends build(
   standalone: true,
   imports: [TranslateModule, TwoPlayersCardsLayoutComponent],
   providers: [
-    PeopleModel,
     { provide: CARD_COMPONENT_CONTEXT, useClass: PeopleComponentContext },
   ],
   template: `

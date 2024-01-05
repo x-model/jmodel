@@ -1,12 +1,6 @@
 import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import {
-  build,
-  diDependencies,
-  diDependencies2,
-  props,
-  publicProps,
-} from '@web-fragments/core';
+import { build, diDependencies, props } from '@web-fragments/core';
 import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
 import {
@@ -14,7 +8,7 @@ import {
   CardComponentContext,
 } from '../../../../../data/model/base/card.fragment';
 import { resolveStarshipModel } from '../../../../../data';
-import { FormControl, FormGroup, FormsModule } from '@angular/forms';
+// import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 import {
   isLoadingQuery,
   player1Query,
@@ -23,10 +17,8 @@ import {
 
 @Injectable()
 export class StarshipComponentContext extends build(
-  // ngContextBuilder({ providers: [provideStarshipModel()] }),
   ngContextBuilder(),
   diDependencies({ model: resolveStarshipModel() }),
-
   // uiDependencies() // dependencies angularowe
   props(({ model, model: { state } }) => ({
     // formModel: model.formModel,
@@ -47,7 +39,7 @@ export class StarshipComponentContext extends build(
 @Component({
   selector: 'sw-starship-page',
   standalone: true,
-  imports: [TranslateModule, TwoPlayersCardsLayoutComponent, FormsModule],
+  imports: [TranslateModule, TwoPlayersCardsLayoutComponent],
   providers: [
     { provide: CARD_COMPONENT_CONTEXT, useClass: StarshipComponentContext },
   ],

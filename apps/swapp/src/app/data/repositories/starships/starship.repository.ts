@@ -1,17 +1,12 @@
 import {
-  ExecutionContext,
   context,
-  fragmentsToMethods,
+  fragments,
   fromFactory,
-  partial,
   perLifetimeScope,
   publicProps,
 } from '@web-fragments/core';
 import { starshipGet, starshipGetAll } from './starship.data-source';
 import { cardRepositoryToken } from '../../model/base/di-tokens';
-
-const fromFragments = (context, fragments) =>
-  fragmentsToMethods(fragments)(context);
 
 // const starshipRepositoryFactory = (context: ExecutionContext) =>
 //   build(
@@ -22,21 +17,20 @@ const fromFragments = (context, fragments) =>
 //     })
 //   );
 
-export const resolveStarshipRepository = () =>
-  perLifetimeScope(cardRepositoryToken, fromFactory(starshipRepositoryFactory));
-
 // export const starshipRepositoryFactory = (context: ExecutionContext) =>
 //   fromFragments(context, {
 //     getAll: starshipGetAll,
 //     get: starshipGet,
 //   });
 
-export function starshipRepositoryFactory() {
-  return context(
-    fragmentsToMethods({
+export const resolveStarshipRepository = () =>
+  perLifetimeScope(cardRepositoryToken, fromFactory(starshipRepositoryFactory));
+
+export const starshipRepositoryFactory = () =>
+  context(
+    fragments({
       getAll: starshipGetAll,
       get: starshipGet,
     }),
     publicProps((context) => context)
   );
-}

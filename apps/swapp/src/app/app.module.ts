@@ -10,14 +10,14 @@ import { AppComponent } from './app.component';
 import { G11nModule } from './g11n';
 import { HomePageComponent } from './ui/main/pages/home-page/home-page.component';
 import { LayoutComponent } from './ui/main/components/layout/layout.component';
-import { ApplicationContext } from './app.context';
+// import { ApplicationContext } from './app.context';
 import { DataModule } from './data';
 
-function appInitFactory(
-  context: ContextType<typeof ApplicationContext>
-): () => void {
-  return () => context.init();
-}
+// function appInitFactory(
+//   context: ContextType<typeof ApplicationContext>
+// ): () => void {
+//   return () => context.init();
+// }
 
 function containerFactory(injector: EnvironmentInjector): DiContainer {
   return new DiContainer(injector);
@@ -40,12 +40,12 @@ function containerFactory(injector: EnvironmentInjector): DiContainer {
       useFactory: containerFactory,
       deps: [EnvironmentInjector],
     },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: appInitFactory,
-      deps: [ApplicationContext],
-      multi: true,
-    },
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: appInitFactory,
+    //   deps: [ApplicationContext],
+    //   multi: true,
+    // },
   ],
   bootstrap: [AppComponent],
 })

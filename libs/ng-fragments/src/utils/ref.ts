@@ -1,5 +1,5 @@
 import { Signal, signal } from '@angular/core';
-import { Query, ReactiveModel, Ref } from '@web-fragments/core';
+import { Query, ReactiveModel } from '@web-fragments/core';
 
 // watch(source, callback,
 //   { immediate: true } | { deep: true }
@@ -25,8 +25,8 @@ import { Query, ReactiveModel, Ref } from '@web-fragments/core';
 
 export function refToSignal<T, Value>(
   model: ReactiveModel<T>,
-  query: Query<T, Value>,
-  onCleanUp?: Ref<T>
+  query: Query<T, Value>
+  // onCleanUp?: Ref<T>
 ): Signal<Value> {
   const value = model.get(query) as Value;
   const _signal = signal(value);

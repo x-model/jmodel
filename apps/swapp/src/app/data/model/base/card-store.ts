@@ -135,7 +135,7 @@ export function cardStoreFactory() {
 
   const destroy = () => model.destroy();
 
-  console.log('store initialized');
+  // console.log('store initialized');
 
   return {
     state: model,

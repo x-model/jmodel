@@ -7,10 +7,7 @@ import {
   cardCompareToken,
   cardMapToken,
   cardModelToken,
-  cardRepositoryToken,
 } from '../base/di-tokens';
-import { sv } from 'libs/core/src/builders/store-builder';
-import { draw$ } from '../base/card.fragment';
 
 // const providers = diDependencies;
 

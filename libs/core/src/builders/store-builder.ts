@@ -1,12 +1,12 @@
-import {
-  Builder,
-  BuilderPartialContext,
-  Factory,
-  Method,
-  Unwrap,
-  props,
-  builder,
-} from '@web-fragments/core';
+// import {
+//   Builder,
+//   BuilderPartialContext,
+//   Factory,
+//   Method,
+//   Unwrap,
+//   props,
+//   builder,
+// } from '@web-fragments/core';
 
 export type State<TState extends Record<string, unknown>> = {
   state: TState;
@@ -176,24 +176,4 @@ export function createState<TState extends Record<string, unknown>>(
   //   update: (fn: (state: TState) => TState) =>
   //     stateSignal.set(fn(stateSignal())),
   // };
-}
-
-export function storeBuilder<T extends Record<string, unknown>>(
-  initialState?: T
-): Builder<T, Record<string, unknown>> {
-  return builder({ context: initialState });
-}
-
-export function getters<
-  Input extends BuilderPartialContext,
-  Output extends Record<string, State<any>>
->(factory: Factory<Input, Output>): Factory<Input, Unwrap<Input & Output>> {
-  return props(factory);
-}
-
-export function updaters<
-  Input extends BuilderPartialContext,
-  Output extends Record<string, Method<void>>
->(factory: Factory<Input, Output>): Factory<Input, Unwrap<Input & Output>> {
-  return props(factory);
 }

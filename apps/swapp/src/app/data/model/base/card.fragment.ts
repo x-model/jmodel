@@ -1,12 +1,5 @@
-import { InjectionToken, Signal, Type } from '@angular/core';
-import {
-  ExecutionContext,
-  fragment,
-  memoFragment,
-  FragmentResultType,
-  RepositoryType,
-  Fragment,
-} from '@web-fragments/core';
+import { InjectionToken, Signal } from '@angular/core';
+import { ExecutionContext, fragment, memoFragment } from '@web-fragments/core';
 import { ApiResult } from '@web-fragments/ng-fragments';
 import { getRandom } from '../../../common';
 import { CollectionParams } from '../../repositories/base/models/collection-params';
@@ -29,18 +22,18 @@ export const totalPages$ = memoFragment(
   }
 );
 
-export type CardRepository = Type<{
+export type CardRepository = {
   getAll: (input: CollectionParams) => Promise<ApiResult<CollectionResult>>;
   get: (input: number) => Promise<ApiResult<unknown>>;
-}>;
+};
 
 export type CardCompare = ([card1, card2]: [Card, Card]) => number;
 export type CardMap = (model: unknown) => Card;
 
 export type InternalCardModel = {
   store: CardStore;
-  cardRepository: RepositoryType<CardRepository>;
-  totalPages$: () => Fragment<unknown, Promise<number>>;
+  cardRepository: CardRepository;
+  totalPages: () => Promise<number>;
   compare: CardCompare;
   map: CardMap;
 } & ExecutionContext;
@@ -64,10 +57,10 @@ export const CARD_COMPONENT_CONTEXT = new InjectionToken<CardComponentContext>(
 // bo wtedy wykonuje tego niezarejestrowanego z góry i już jest bug który ciężko ogarnąć co jest problem
 // że zapomniało się wyciągnąć z context
 const getCard$ = fragment(
-  async ({ totalPages$, cardRepository, map, _exec }: InternalCardModel) => {
-    const totalPages = await _exec(totalPages$);
+  async ({ totalPages, cardRepository, map }: InternalCardModel) => {
+    const total = await totalPages();
     const { data: resourceResult } = await cardRepository.getAll({
-      page: getRandomPage(totalPages),
+      page: getRandomPage(total),
       limit: 1,
     });
 

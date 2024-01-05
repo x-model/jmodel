@@ -1,17 +1,8 @@
 import {
   Context,
-  abstract,
-  build,
   context,
-  dependencies,
   diDependencies,
   fragments,
-  fromFragments,
-  hooks,
-  methods,
-  partial,
-  partialBuilder,
-  props,
   publicProps,
 } from '@web-fragments/core';
 import {
@@ -21,11 +12,6 @@ import {
   draw$,
   totalPages$,
 } from './card.fragment';
-import {
-  cardCompareToken,
-  cardMapToken,
-  cardRepositoryToken,
-} from './di-tokens';
 import { CardStore, resolveCardStore } from './card-store';
 import { InjectionDef } from 'libs/core/src/builder-props/di-dependencies';
 
@@ -68,7 +54,7 @@ export const cardModel = (providers: CardModelProviders): Context<CardModel> =>
       store: resolveCardStore(),
     }),
     fragments({
-      totalPages$,
+      totalPages: totalPages$,
     }),
     publicProps(({ _exec, store }) => ({
       state: store.state,
