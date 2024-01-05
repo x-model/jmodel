@@ -1,11 +1,7 @@
 import { injectionToken } from '@web-fragments/core';
-import {
-  CardCompare,
-  CardMap,
-  CardModel,
-  CardRepository,
-} from './card.fragment';
+import { CardCompare, CardMap, CardRepository } from './card.fragment';
 import { CardStore } from './card-store';
+import { CardModel } from './card.model';
 
 export const cardStoreToken = injectionToken<CardStore>('cardStore');
 

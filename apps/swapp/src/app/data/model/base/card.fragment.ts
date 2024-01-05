@@ -20,7 +20,7 @@ import { CardStore } from './card-store';
 // w repositories też by to mogło być tylko zrobiliśmy repository jako singleton
 // repository powinno się traktować jak dawne api serwisy?
 export const totalPages$ = memoFragment(
-  async ({ cardRepository }: CardModel) => {
+  async ({ cardRepository }: InternalCardModel) => {
     const { data, error } = await cardRepository.getAll({
       page: 1,
       limit: 1,
@@ -37,15 +37,12 @@ export type CardRepository = Type<{
 export type CardCompare = ([card1, card2]: [Card, Card]) => number;
 export type CardMap = (model: unknown) => Card;
 
-export type CardModel = {
+export type InternalCardModel = {
   store: CardStore;
   cardRepository: RepositoryType<CardRepository>;
   totalPages$: () => Fragment<unknown, Promise<number>>;
-  draw: () => void;
   compare: CardCompare;
   map: CardMap;
-  state: CardStore['state'];
-  query: CardStore['query'];
 } & ExecutionContext;
 
 export type CardComponentContext = {
@@ -67,7 +64,7 @@ export const CARD_COMPONENT_CONTEXT = new InjectionToken<CardComponentContext>(
 // bo wtedy wykonuje tego niezarejestrowanego z góry i już jest bug który ciężko ogarnąć co jest problem
 // że zapomniało się wyciągnąć z context
 const getCard$ = fragment(
-  async ({ totalPages$, cardRepository, map, _exec }: CardModel) => {
+  async ({ totalPages$, cardRepository, map, _exec }: InternalCardModel) => {
     const totalPages = await _exec(totalPages$);
     const { data: resourceResult } = await cardRepository.getAll({
       page: getRandomPage(totalPages),
@@ -85,19 +82,24 @@ const getCard$ = fragment(
   }
 );
 
-export const draw$ = fragment(async ({ _exec, store, compare }: CardModel) => {
-  store.draw();
-  // store.update(draw());
+export const draw$ = fragment(
+  async ({ _exec, store, compare }: InternalCardModel) => {
+    store.draw();
+    // store.update(draw());
 
-  const [card1, card2] = await Promise.all([_exec(getCard$), _exec(getCard$)]);
+    const [card1, card2] = await Promise.all([
+      _exec(getCard$),
+      _exec(getCard$),
+    ]);
 
-  if (card1 && card2) {
-    const winner = compare([card1, card2]);
-    store.drawSuccess([card1, card2], winner);
-  } else {
-    store.drawFailure();
+    if (card1 && card2) {
+      const winner = compare([card1, card2]);
+      store.drawSuccess([card1, card2], winner);
+    } else {
+      store.drawFailure();
+    }
   }
-});
+);
 
 const getRandomPage = (range: number): number => {
   return getRandom(1, range);

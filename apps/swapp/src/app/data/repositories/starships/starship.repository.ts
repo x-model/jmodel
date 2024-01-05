@@ -5,6 +5,7 @@ import {
   fromFactory,
   partial,
   perLifetimeScope,
+  publicProps,
 } from '@web-fragments/core';
 import { starshipGet, starshipGetAll } from './starship.data-source';
 import { cardRepositoryToken } from '../../model/base/di-tokens';
@@ -31,12 +32,11 @@ export const resolveStarshipRepository = () =>
 //   });
 
 export function starshipRepositoryFactory() {
-  const model = partial(
+  return context(
     fragmentsToMethods({
       getAll: starshipGetAll,
       get: starshipGet,
-    })
+    }),
+    publicProps((context) => context)
   );
-
-  return context().public(model);
 }

@@ -26,7 +26,7 @@ import { Query, ReactiveModel, Ref } from '@web-fragments/core';
 export function refToSignal<T, Value>(
   model: ReactiveModel<T>,
   query: Query<T, Value>,
-  onCleanUp: Ref<T>
+  onCleanUp?: Ref<T>
 ): Signal<Value> {
   const value = model.get(query) as Value;
   const _signal = signal(value);

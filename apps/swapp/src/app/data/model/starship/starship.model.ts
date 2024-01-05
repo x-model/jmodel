@@ -1,5 +1,5 @@
-import { fromFactory, perLifetimeScope } from '@web-fragments/core';
-import { publicCardModel as cardModel } from '../base/card.model';
+import { Context, fromFactory, perLifetimeScope } from '@web-fragments/core';
+import { cardModel, CardModel } from '../base/card.model';
 import { resolveStarshipRepository } from '../../repositories/starships/starship.repository';
 import { compareStarships } from './services/starship-comparer';
 import { mapStarship } from './services/starship-mapper';
@@ -50,13 +50,12 @@ export const resolveStarshipModel = () =>
 //   return publicCardModel(providers, partialCardModel());
 // }
 
-export function starshipModelFactory() {
-  return cardModel([
-    resolveStarshipRepository(),
-    perLifetimeScope(cardCompareToken, () => compareStarships),
-    perLifetimeScope(cardMapToken, () => mapStarship),
-  ]);
-}
+export const starshipModelFactory = (): Context<CardModel> =>
+  cardModel({
+    cardRepository: resolveStarshipRepository(),
+    compare: perLifetimeScope(cardCompareToken, () => compareStarships),
+    map: perLifetimeScope(cardMapToken, () => mapStarship),
+  });
 
 // export function starshipModelFactory(context: ExecutionContext) {
 //   return build(

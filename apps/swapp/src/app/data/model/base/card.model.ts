@@ -1,4 +1,5 @@
 import {
+  Context,
   abstract,
   build,
   context,
@@ -10,6 +11,7 @@ import {
   methods,
   partial,
   partialBuilder,
+  props,
   publicProps,
 } from '@web-fragments/core';
 import {
@@ -24,43 +26,60 @@ import {
   cardMapToken,
   cardRepositoryToken,
 } from './di-tokens';
-import { resolveCardStore } from './card-store';
+import { CardStore, resolveCardStore } from './card-store';
+import { InjectionDef } from 'libs/core/src/builder-props/di-dependencies';
 
-export function partialCardModel() {
-  return partial(
-    diDependencies({
-      cardRepository: cardRepositoryToken,
-      compare: cardCompareToken,
-      map: cardMapToken,
-      store: resolveCardStore(),
-    }),
-    fragments({
-      totalPages$,
-    })
-    // memo(({ _exec }) => ({
-    //   totalPages: () => _exec(totalPages$),
-    //   store: () => cardStore(),
-    // }))
-  );
-}
+// export function partialCardModel() {
+//   return partial(
+//     diDependencies({
+//       cardRepository: cardRepositoryToken,
+//       compare: cardCompareToken,
+//       map: cardMapToken,
+//       store: resolveCardStore(),
+//     }),
+//     fragments({
+//       totalPages$,
+//     })
+//     // memo(({ _exec }) => ({
+//     //   totalPages: () => _exec(totalPages$),
+//     //   store: () => cardStore(),
+//     // }))
+//   );
+// }
 
 // fragment powinien mieć też typ contextu, wtedy zabezpieczymy exec, jakby np. ktoś zapomniał czegoś zdefiniować,
 // a np. będzie użyte we fragmencie
 
-export function publicCardModel(providers) {
-  const model = partial(diDependencies(providers), partialCardModel());
+export type CardModel = {
+  draw: () => void;
+  state: CardStore['state'];
+};
 
-  return context(model).public(({ _exec, store }) => ({
-    state: store.state,
-    query: store.query,
-    draw: () => _exec(draw$),
-  }));
-}
+export type CardModelProviders = {
+  cardRepository: InjectionDef<CardRepository>;
+  map: InjectionDef<CardMap>;
+  compare: InjectionDef<CardCompare>;
+};
+
+export const cardModel = (providers: CardModelProviders): Context<CardModel> =>
+  context(
+    diDependencies({
+      ...providers,
+      store: resolveCardStore(),
+    }),
+    fragments({
+      totalPages$,
+    }),
+    publicProps(({ _exec, store }) => ({
+      state: store.state,
+      draw: () => _exec(draw$),
+    }))
+  );
 
 // const result = publicCardModel([]);
 
 // export function partialCardModel() /*: CardModel */ {
-//   return build(
+//    return build(
 //     partialBuilder(),
 //     dependencies({
 //       cardRepository: abstract<CardRepository>(),

@@ -10,17 +10,27 @@ import { Card } from './models/card';
 import { cardStoreToken } from './di-tokens';
 
 interface CardState {
-  [key: string]: unknown;
   player1: CardPlayer;
   player2: CardPlayer;
 }
+
+export type CardStore = ReturnType<typeof cardStoreFactory>;
 
 const initialState: CardState = {
   player1: { score: 0, isLoading: false, win: false },
   player2: { score: 0, isLoading: false, win: false },
 };
 
-export type CardStore = ReturnType<typeof cardStoreFactory>;
+const graph = createGraph(initialState);
+const { query } = graph;
+
+export const player1Query = query((state) => state.player1);
+export const player2Query = query((state) => state.player2);
+export const isLoadingQuery = query(
+  (state) => state.player1.isLoading,
+  (state) => state.player2.isLoading,
+  ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
+);
 
 export const resolveCardStore = () =>
   perLifetimeScope(cardStoreToken, fromFactory(cardStoreFactory));
@@ -102,8 +112,6 @@ export function cardStoreFactory() {
   //     drawFailure: () => store.update(drawFailure()),
   //   }))
   // );
-  const graph = createGraph(initialState);
-  const { query } = graph;
 
   const model = createReactiveModel(initialState);
 
@@ -132,7 +140,6 @@ export function cardStoreFactory() {
   return {
     state: model,
     graph,
-    query,
     draw,
     drawSuccess,
     drawFailure,

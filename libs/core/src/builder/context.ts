@@ -2,32 +2,52 @@ import { typeBuilder } from '../builders/type-builder';
 import { INJECTABLE } from '../di/consts';
 import { DiContainer } from '../di/container';
 import { ExecutionContext, Scope } from '../fragment/types';
-import { INTERNAL, PUBLIC } from '../types';
-import { BuilderPartialContext } from './types';
+import { INTERNAL, PUBLIC, Unwrap } from '../types';
+import { BuilderPartialContext, BuilderStepConfig } from './types';
 
-export function context<Result extends BuilderPartialContext>(
-  config?: (context: ExecutionContext) => Result
-): any {
-  return {
-    public: (publicConfig: <R>(context: Result) => any) => {
-      const factory = (scope: Scope) => {
-        const container = scope.rootInjector.get(DiContainer);
+export type PublicProps<Internal, Public> = {
+  [INTERNAL]: Internal;
+  [PUBLIC]: Public;
+};
 
-        const build = typeBuilder() as any;
-        const result = build((context) => {
-          const internalProps = config ? config(context) : context;
+export type Context<T> = (scope: Scope) => T;
 
-          const publicProps = publicConfig(internalProps);
+export function context<T1 extends ExecutionContext & BuilderPartialContext>(
+  s1: BuilderStepConfig<
+    Unwrap<ExecutionContext>,
+    PublicProps<ExecutionContext, T1>
+  >
+): Context<T1>;
+export function context<
+  T1 extends ExecutionContext & BuilderPartialContext,
+  T2
+>(
+  s1: BuilderStepConfig<Unwrap<ExecutionContext>, T1>,
+  s2: BuilderStepConfig<Unwrap<T1>, PublicProps<T1, T2>>
+): Context<T2>;
+export function context<
+  T1 extends ExecutionContext & BuilderPartialContext,
+  T2 extends T1,
+  T3
+>(
+  s1: BuilderStepConfig<Unwrap<ExecutionContext>, T1>,
+  s2: BuilderStepConfig<Unwrap<T1>, T2>,
+  s3: BuilderStepConfig<Unwrap<T2>, PublicProps<T2, T3>>
+): Context<T3>;
 
-          return { [INTERNAL]: internalProps, [PUBLIC]: publicProps };
-        });
+export function context(...steps: BuilderStepConfig<any, any>[]): any {
+  const factory = (scope: Scope) => {
+    const container = scope.rootInjector.get(DiContainer);
 
-        return new result(scope);
-      };
+    const build = typeBuilder() as any;
+    const result = build((initialContext) =>
+      steps.reduce((context, step) => step(context), initialContext)
+    );
 
-      factory[INJECTABLE] = true;
-
-      return factory;
-    },
+    return new result(scope);
   };
+
+  factory[INJECTABLE] = true;
+
+  return factory;
 }

@@ -1,6 +1,6 @@
 export { build } from './builder/build';
 export { builder } from './builder/builder';
-export { context } from './builder/context';
+export { context, Context } from './builder/context';
 export { partial } from './builder/partial';
 export { Builder, BuilderPartialContext } from './builder/types';
 export { dependencies } from './builder-props/dependencies';

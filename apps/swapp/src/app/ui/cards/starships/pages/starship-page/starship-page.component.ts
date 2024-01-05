@@ -15,6 +15,11 @@ import {
 } from '../../../../../data/model/base/card.fragment';
 import { resolveStarshipModel } from '../../../../../data';
 import { FormControl, FormGroup, FormsModule } from '@angular/forms';
+import {
+  isLoadingQuery,
+  player1Query,
+  player2Query,
+} from '../../../../../data/model/base/card-store';
 
 @Injectable()
 export class StarshipComponentContext extends build(
@@ -23,28 +28,12 @@ export class StarshipComponentContext extends build(
   diDependencies({ model: resolveStarshipModel() }),
 
   // uiDependencies() // dependencies angularowe
-  props(({ model, model: { state, query } }) => ({
+  props(({ model, model: { state } }) => ({
     // formModel: model.formModel,
     // ...store.getters
-    isLoading: refToSignal(
-      state,
-      query(
-        (state) => state.player1.isLoading,
-        (state) => state.player2.isLoading,
-        ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
-      ),
-      null
-    ),
-    player1: refToSignal(
-      state,
-      query((state) => state.player1),
-      null
-    ),
-    player2: refToSignal(
-      state,
-      query((state) => state.player2),
-      null
-    ),
+    isLoading: refToSignal(state, isLoadingQuery),
+    player1: refToSignal(state, player1Query),
+    player2: refToSignal(state, player2Query),
 
     // isLoading: refToSignal(model.isLoading, null),
     // player1: refToSignal(model.player1, null),
