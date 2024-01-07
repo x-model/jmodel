@@ -1,13 +1,16 @@
 import { typeBuilder } from '../builders/type-builder';
 import { INJECTABLE } from '../di/consts';
-import { DiContainer } from '../di/container';
-import { InjectionDef, InjectionResult, InjectionToken } from '../di/types';
+import {
+  InjectionDef,
+  InjectionResult,
+  InjectionToken,
+  Scope,
+} from '../di/types';
 import {
   ExecutionContext,
   Fragment,
   FragmentFactory,
   FragmentResultType,
-  Scope,
 } from '../fragment/types';
 import { Unwrap } from '../types';
 import { BuilderPartialContext, BuilderStepConfig } from './types';
@@ -108,7 +111,7 @@ export function context<
 
 export function context(...steps: BuilderStepConfig<any, any>[]): any {
   const factory = (scope: Scope) => {
-    const container = scope.rootInjector.get(DiContainer);
+    // const container = scope.rootInjector.get(Container);
 
     const result = typeBuilder((initialContext) =>
       steps.reduce((context, step) => step(context), initialContext)

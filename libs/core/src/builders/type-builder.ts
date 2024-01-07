@@ -3,14 +3,13 @@ import {
   ExecutionContext,
   Fragment,
   FragmentFactory,
-  Scope,
 } from '../fragment/types';
 import { TemplateRegistry } from '../fragment/template-registry';
 import { BuilderPartialContext } from '../builder/types';
 import { resolveFragment } from '../fragment/resolver';
 import { Hooks } from '../builder-props/hooks';
 import { Factory } from '../types';
-import { ProviderToken, Type } from '../di/types';
+import { ProviderToken, Scope, Type } from '../di/types';
 
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
 
@@ -42,7 +41,10 @@ export function typeBuilder<FactoryResult extends BuilderPartialContext>(
     constructor(private readonly _scope: Scope) {
       const context = {
         ...this._creationContext,
-        _injector: this._scope.localInjector,
+        _injector: {
+          get: <T>(token: ProviderToken<T>) =>
+            this._scope.inject(token as any) as T,
+        },
         _scope: this._scope,
       } as CreationContext;
 
@@ -86,7 +88,7 @@ export function typeBuilder<FactoryResult extends BuilderPartialContext>(
     }
 
     _inject<T>(token: ProviderToken<T>): T {
-      return this._scope.localInjector.get(token);
+      return this._scope.inject(token as any);
     }
 
     _exec<TFragmentIn, TFragmentOut>(
@@ -109,7 +111,10 @@ export function typeBuilder<FactoryResult extends BuilderPartialContext>(
         this._templateRegistry,
         {
           contextId: this._id,
-          injector: this._scope.localInjector,
+          injector: {
+            get: <T>(token: ProviderToken<T>) =>
+              this._scope.inject(token as any) as T,
+          },
         }
       );
 

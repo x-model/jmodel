@@ -1,20 +1,7 @@
-import { Injector, ProviderToken } from '../di/types';
+import { Injector, ProviderToken, Scope } from '../di/types';
 import { TemplateResolver } from './template-registry';
 
 export type Fragments = Record<string, Fragment<unknown, unknown>>;
-
-export type ScopeOptions = {
-  rootInjector: Injector;
-  localInjector: Injector;
-  onRelease: (callback: () => void) => void;
-};
-
-export type Scope = {
-  id: symbol;
-  rootInjector: Injector;
-  localInjector: Injector;
-  onRelease: (callback: () => void) => () => void;
-};
 
 export type ExecutionContext = {
   _exec: <TFragmentIn, TFragmentOut>(

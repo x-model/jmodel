@@ -17,7 +17,7 @@ import {
   resolveFragment,
   Hooks,
   Factory,
-  DiContainer,
+  Container,
   Type,
 } from '@web-fragments/core';
 
@@ -42,23 +42,17 @@ export function ngContextBuilder(
       _contextName = builderConfig?.name;
       _injector = inject(Injector);
       _rootInjector = inject(EnvironmentInjector);
-      _container = inject(DiContainer);
+      _container = inject(Container);
       // Symbol(builderConfig?.name || 'CONTEXT_ID')
       // Ułatwi potem debugowanie
       _id = Symbol('CONTEXT_ID');
-      _destroyCallbacks: (() => void)[] = [];
       /**
        * prevents to use context during creation process
        */
       _created = false;
       _templateRegistry = new TemplateRegistry();
       _innerContext: FactoryResult;
-      _scope = this._container.createScope({
-        localInjector: this._injector,
-        rootInjector: this._rootInjector,
-        onRelease: (callback: () => void) =>
-          this._destroyCallbacks.push(callback),
-      });
+      _scope = this._container.createScope();
       _executionContext: ExecutionContext = {
         _exec: (fragment, input?) => this._exec(fragment, input),
         _inject: (token) => this._inject(token),
@@ -72,15 +66,9 @@ export function ngContextBuilder(
       };
 
       constructor() {
-        this._destroyCallbacks.push(() =>
-          this._container.destroyScope(this._scope.id)
-        );
-
         this._injector
           .get(DestroyRef)
-          .onDestroy(() =>
-            this._destroyCallbacks.forEach((callback) => callback())
-          );
+          .onDestroy(() => this._container.destroyScope(this._scope.id));
 
         const config = factory(this._creationContext) as FactoryResult &
           CreationContext;
@@ -101,15 +89,11 @@ export function ngContextBuilder(
 
         this._created = true;
 
-        registerHooks(
-          this._innerContext as Hooks,
-          this._injector,
-          this._destroyCallbacks
-        );
+        registerHooks(this._innerContext as Hooks, this._injector);
       }
 
       _inject<T>(token: ProviderToken<T>): T {
-        return this._injector.get(token);
+        return this._scope.inject(token as any);
       }
 
       _exec<TFragmentIn, TFragmentOut>(
@@ -161,17 +145,13 @@ export function ngContextBuilder(
   };
 }
 
-function registerHooks(
-  hooks: Hooks,
-  injector: Injector,
-  destroyCallbacks: (() => void)[]
-): void {
+function registerHooks(hooks: Hooks, injector: Injector): void {
   if (hooks.onInit) {
     hooks.onInit();
   }
 
   if (hooks.onDestroy && injector) {
-    destroyCallbacks.push(() => hooks.onDestroy());
+    this._injector.get(DestroyRef).onDestroy(() => hooks.onDestroy());
   }
 }
 

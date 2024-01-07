@@ -1,3 +1,4 @@
+import { Lifetime } from './lifetime';
 import { InjectionToken } from './types';
 
 export const INJECTABLE = Symbol('INJECTABLE');
@@ -12,16 +13,16 @@ export const di = {
 
 // co gdybyśmy chcieli utworzyć kilka instancji?
 export function registerAs<T extends Function>(
-  option: 'singleInstance' | 'instancePerLifetimeScope',
+  lifetime: Lifetime,
   fnRef: T
-): [T, string] {
+): [T, Lifetime] {
   if (fnRef[di.token]) {
-    return [fnRef, option];
+    return [fnRef, lifetime];
   }
 
   fnRef[di.token] = Symbol('token');
 
-  return [fnRef, option];
+  return [fnRef, lifetime];
 }
 
 // var builder = new ContainerBuilder();

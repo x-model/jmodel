@@ -24,7 +24,7 @@ export { from } from './builders/from';
 // export { partialBuilder } from './builders/partial-builder';
 // export { createState, Ref, State } from './builders/store-builder';
 export { di, registerAs, injectionToken } from './di/consts';
-export { DiContainer } from './di/container';
+export { Container } from './di/container';
 export { perLifetimeScope, singleton } from './di/lifetime';
 export { fromFactory } from './di/resolvers';
 export {

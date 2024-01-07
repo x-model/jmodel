@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { DiContainer } from '@web-fragments/core';
+import { Container } from '@web-fragments/core';
 import { ContextType } from '@web-fragments/ng-fragments';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -18,8 +18,8 @@ import { LayoutComponent } from './ui/main/components/layout/layout.component';
 //   return () => context.init();
 // }
 
-function containerFactory(injector: EnvironmentInjector): DiContainer {
-  return new DiContainer(injector);
+function containerFactory(injector: EnvironmentInjector): Container {
+  return new Container();
 }
 
 @NgModule({
@@ -34,7 +34,7 @@ function containerFactory(injector: EnvironmentInjector): DiContainer {
   ],
   providers: [
     {
-      provide: DiContainer,
+      provide: Container,
       useFactory: containerFactory,
       deps: [EnvironmentInjector],
     },

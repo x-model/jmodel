@@ -4,14 +4,12 @@ import {
   PublicModel,
   context,
   diDependencies,
-  fragment,
   fragments,
-  injectionToken,
   perLifetimeScope,
-  singleton,
 } from '@web-fragments/core';
 import { starshipGet, starshipGetAll } from './starship.data-source';
 import { cardRepositoryToken } from '../../model/base/di-tokens';
+import { resolveHttpClient } from '../base/http-client/http-client';
 
 // const starshipRepositoryFactory = (context: ExecutionContext) =>
 //   build(
@@ -27,11 +25,6 @@ import { cardRepositoryToken } from '../../model/base/di-tokens';
 //     getAll: starshipGetAll,
 //     get: starshipGet,
 //   });
-
-export const httpClientToken = injectionToken<typeof fetch>('httpClient');
-
-export const resolveHttpClient = () =>
-  perLifetimeScope<typeof fetch>(httpClientToken, () => fetch);
 
 const starshipRepository = {
   [DEPENDENCIES]: {
