@@ -110,8 +110,7 @@ export function context(...steps: BuilderStepConfig<any, any>[]): any {
   const factory = (scope: Scope) => {
     const container = scope.rootInjector.get(DiContainer);
 
-    const build = typeBuilder() as any;
-    const result = build((initialContext) =>
+    const result = typeBuilder((initialContext) =>
       steps.reduce((context, step) => step(context), initialContext)
     );
 
