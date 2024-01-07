@@ -1,23 +1,8 @@
 import { CreationContext, ExecutionContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
 import { DiContainer } from '../di/container';
-import { INJECTABLE, InjectionToken } from '../di/consts';
-
-export type InjectionTokenType<T> = T extends InjectionToken<infer TInner>
-  ? TInner
-  : T;
-
-export type InjectionDef<T> = {
-  token: InjectionToken<T>;
-  type;
-  resolveFn;
-};
-
-export type InjectionResult<T> = T extends InjectionToken<infer IType>
-  ? IType
-  : T extends InjectionDef<infer IDef>
-  ? IDef
-  : never;
+import { INJECTABLE } from '../di/consts';
+import { InjectionDef, InjectionResult, InjectionToken } from '../di/types';
 
 export function diDependencies<
   Input extends ExecutionContext,

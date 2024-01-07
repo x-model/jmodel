@@ -1,9 +1,10 @@
 import {
   Context,
+  InjectionDef,
   context,
   diDependencies,
   fragments,
-  publicProps,
+  props,
 } from '@web-fragments/core';
 import {
   CardCompare,
@@ -13,7 +14,6 @@ import {
   totalPages$,
 } from './card.fragment';
 import { CardStore, resolveCardStore } from './card-store';
-import { InjectionDef } from 'libs/core/src/builder-props/di-dependencies';
 
 // export function partialCardModel() {
 //   return partial(
@@ -42,23 +42,23 @@ export type CardModel = {
 };
 
 export type CardModelProviders = {
-  cardRepository: InjectionDef<CardRepository>;
-  map: InjectionDef<CardMap>;
-  compare: InjectionDef<CardCompare>;
+  _cardRepository: InjectionDef<CardRepository>;
+  _map: InjectionDef<CardMap>;
+  _compare: InjectionDef<CardCompare>;
 };
 
 export const cardModel = (providers: CardModelProviders): Context<CardModel> =>
   context(
     diDependencies({
       ...providers,
-      store: resolveCardStore(),
+      _store: resolveCardStore(),
     }),
     fragments({
-      totalPages: totalPages$,
+      _totalPages: totalPages$,
+      draw: draw$,
     }),
-    publicProps(({ _exec, store }) => ({
-      state: store.state,
-      draw: () => _exec(draw$),
+    props(({ _store }) => ({
+      state: _store.state,
     }))
   );
 

@@ -1,4 +1,4 @@
-import { InjectionToken } from './consts';
+import { InjectionToken } from './types';
 
 export function singleton<T>(token: InjectionToken<T>, resolveFn) {
   return {

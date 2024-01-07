@@ -1,21 +1,23 @@
 import {
+  FRAGMENTS,
+  PublicModel,
   context,
   fragments,
-  fromFactory,
   perLifetimeScope,
-  publicProps,
 } from '@web-fragments/core';
 import { peopleGet, peopleGetAll } from './people.data-source';
 import { cardRepositoryToken } from '../../model/base/di-tokens';
 
-export const resolvePeopleRepository = () =>
-  perLifetimeScope(cardRepositoryToken, fromFactory(peopleRepositoryFactory));
+const peopleRepository = {
+  [FRAGMENTS]: {
+    getAll: peopleGetAll,
+    get: peopleGet,
+  },
+};
 
-export const peopleRepositoryFactory = () =>
-  context(
-    fragments({
-      getAll: peopleGetAll,
-      get: peopleGet,
-    }),
-    publicProps((context) => context)
+export type PeopleRepository = PublicModel<typeof peopleRepository>;
+
+export const resolvePeopleRepository = () =>
+  perLifetimeScope<PeopleRepository>(cardRepositoryToken, () =>
+    context(fragments(peopleRepository[FRAGMENTS]))
   );

@@ -1,38 +1,22 @@
-import { Component, Injectable } from '@angular/core';
+import { Component, Injectable, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { build, diDependencies, props } from '@web-fragments/core';
-import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
+import { build, diDependencies } from '@web-fragments/core';
+import { ngContextBuilder } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
-import {
-  CARD_COMPONENT_CONTEXT,
-  CardComponentContext,
-} from '../../../../../data/model/base/card.fragment';
+import { CARD_COMPONENT_CONTEXT } from '../../../../../data/model/base/card.fragment';
 import { resolveStarshipModel } from '../../../../../data';
+import { FormBuilder } from '@angular/forms';
 // import { FormControl, FormGroup, FormsModule } from '@angular/forms';
-import {
-  isLoadingQuery,
-  player1Query,
-  player2Query,
-} from '../../../../../data/model/base/card-store';
 
 @Injectable()
 export class StarshipComponentContext extends build(
   ngContextBuilder(),
-  diDependencies({ model: resolveStarshipModel() }),
+  diDependencies({ model: resolveStarshipModel() })
   // uiDependencies() // dependencies angularowe
-  props(({ model, model: { state } }) => ({
-    // formModel: model.formModel,
-    // ...store.getters
-    isLoading: refToSignal(state, isLoadingQuery),
-    player1: refToSignal(state, player1Query),
-    player2: refToSignal(state, player2Query),
-
-    // isLoading: refToSignal(model.isLoading, null),
-    // player1: refToSignal(model.player1, null),
-    // player2: refToSignal(model.player2, null),
-    draw: () => model.draw(),
-    // changeName: () => model.changeName(),
-  }))
+  // props(({ model, model: { state } }) => ({
+  //   // formModel: model.formModel,
+  //   // changeName: () => model.changeName(),
+  // }))
 ) {}
 // implements CardComponentContext {}
 

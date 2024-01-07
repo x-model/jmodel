@@ -14,7 +14,7 @@ export const resolvePeopleModel = () =>
 
 export const peopleModelFactory = (): Context<CardModel> =>
   cardModel({
-    cardRepository: resolvePeopleRepository(),
-    compare: perLifetimeScope(cardCompareToken, () => comparePeople),
-    map: perLifetimeScope(cardMapToken, () => mapPeople),
+    _cardRepository: resolvePeopleRepository(),
+    _compare: perLifetimeScope(cardCompareToken, () => comparePeople),
+    _map: perLifetimeScope(cardMapToken, () => mapPeople),
   });

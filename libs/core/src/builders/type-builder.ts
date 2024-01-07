@@ -9,7 +9,7 @@ import { TemplateRegistry } from '../fragment/template-registry';
 import { Builder, BuilderPartialContext } from '../builder/types';
 import { resolveFragment } from '../fragment/resolver';
 import { Hooks } from '../builder-props/hooks';
-import { Factory, INTERNAL, PUBLIC } from '../types';
+import { Factory } from '../types';
 import { ProviderToken, Type } from '../di/types';
 
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
@@ -56,8 +56,19 @@ export function typeBuilder(
         } as CreationContext;
 
         const config = factory(context) as FactoryResult & CreationContext;
-        const internalProps = (config as any)[INTERNAL];
-        const publicProps = (config as any)[PUBLIC];
+        let internalProps;
+        let publicProps;
+
+        Object.keys(config as any).forEach((key) => {
+          if (key.startsWith('_')) {
+            internalProps = {
+              ...internalProps,
+              [key.replace(/^_/, '')]: config[key],
+            };
+          } else {
+            publicProps = { ...publicProps, [key]: config[key] };
+          }
+        });
 
         this._innerContext = getInnerContext<FactoryResult & CreationContext>(
           internalProps,

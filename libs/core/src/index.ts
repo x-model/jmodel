@@ -1,6 +1,12 @@
 export { build } from './builder/build';
 export { builder } from './builder/builder';
-export { context, Context } from './builder/context';
+export {
+  context,
+  Context,
+  PublicModel,
+  FRAGMENTS,
+  DEPENDENCIES,
+} from './builder/context';
 export { partial } from './builder/partial';
 export { Builder, BuilderPartialContext } from './builder/types';
 export { dependencies } from './builder-props/dependencies';
@@ -17,11 +23,17 @@ export {
 export { from } from './builders/from';
 // export { partialBuilder } from './builders/partial-builder';
 // export { createState, Ref, State } from './builders/store-builder';
-export { di, registerAs, injectionToken, InjectionToken } from './di/consts';
+export { di, registerAs, injectionToken } from './di/consts';
 export { DiContainer } from './di/container';
 export { perLifetimeScope, singleton } from './di/lifetime';
 export { fromFactory } from './di/resolvers';
-export { Type, ProviderToken, Injector } from './di/types';
+export {
+  Type,
+  ProviderToken,
+  Injector,
+  InjectionToken,
+  InjectionDef,
+} from './di/types';
 export { fragmentFactory } from './fragment/factory';
 export { resolveFragment } from './fragment/resolver';
 export { TemplateRegistry } from './fragment/template-registry';
@@ -37,6 +49,7 @@ export {
   FragmentOptions,
   FragmentTemplate,
 } from './fragment/types';
+export { ApiError, ApiResult, sendRequest } from './fragments/api-fragment';
 export { fragment } from './fragments/fragment';
 export { memoFragment } from './fragments/memo-fragment';
 export { pureFragment } from './fragments/pure-fragment';

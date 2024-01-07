@@ -1,12 +1,12 @@
-import { InjectionToken, Signal } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 import { ExecutionContext, fragment, memoFragment } from '@web-fragments/core';
 import { ApiResult } from '@web-fragments/ng-fragments';
 import { getRandom } from '../../../common';
 import { CollectionParams } from '../../repositories/base/models/collection-params';
 import { CollectionResult } from '../../repositories/base/models/collection-result';
 import { Card } from './models/card';
-import { CardPlayer } from './models/card-player';
 import { CardStore } from './card-store';
+import { CardModel } from './card.model';
 
 // Czy to powinno być w modelu czy w repository?
 // W sumie to już jest jakaś logika, to już jest obróbka danych z data sources
@@ -39,14 +39,15 @@ export type InternalCardModel = {
 } & ExecutionContext;
 
 export type CardComponentContext = {
-  isLoading: Signal<boolean>;
-  player1: Signal<CardPlayer>;
-  player2: Signal<CardPlayer>;
-  // model: { store: FragmentResultType<typeof store$> };
-  draw: () => void;
-  changeName: () => void;
-  formModel: { name: string; errors: { name: string } };
-} & ExecutionContext;
+  model: CardModel;
+  // isLoading: Signal<boolean>;
+  // player1: Signal<CardPlayer>;
+  // player2: Signal<CardPlayer>;
+  // // model: { store: FragmentResultType<typeof store$> };
+  // draw: () => void;
+  // changeName: () => void;
+  // formModel: { name: string; errors: { name: string } };
+};
 
 export const CARD_COMPONENT_CONTEXT = new InjectionToken<CardComponentContext>(
   'CARD_COMPONENT_CONTEXT'

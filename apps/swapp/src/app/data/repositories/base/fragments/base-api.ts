@@ -1,35 +1,45 @@
-import { Observable, map } from 'rxjs';
-import { ApiResult, apiFragment } from '@web-fragments/ng-fragments';
+import { ApiResult } from '@web-fragments/ng-fragments';
 import { mapResponseToCamelCase } from '../utils/response.util';
 import { CollectionApiResult } from '../models/collection-api-result';
 import { CollectionResult } from '../models/collection-result';
 import { DetailApiResult } from '../models/detail-api-result';
 import { CollectionParams } from '../models/collection-params';
 import { getCollectionParams } from '../utils/params.util';
+import { ExecutionContext, fragment } from '@web-fragments/core';
+
+export type ApiContext = { client: typeof fetch } & ExecutionContext;
+export type Input<T> = { _input: T };
 
 export const baseUrl = 'https://www.swapi.tech/api';
 
 export const baseGetAll = (resource: string) =>
-  apiFragment<CollectionParams, Promise<ApiResult<CollectionResult>>>(
-    ({ _client, _send, _input: params }) => {
-      const request = _client
-        .get(`${baseUrl}/${resource}`, {
-          params: getCollectionParams(params),
-        })
-        .pipe(map((result) => adaptToCollectionResult(result)));
-
-      return _send(request);
+  fragment(
+    async ({
+      client,
+      _input: params,
+    }: ApiContext & Input<CollectionParams>) => {
+      try {
+        const response = await client(
+          `${baseUrl}/${resource}?${getCollectionParams(params)}`
+        );
+        const result = await response.json();
+        return { data: adaptToCollectionResult(result), error: null };
+      } catch (error) {
+        return Promise.resolve({ data: null, error });
+      }
     }
   );
 
 export const baseGet = <T>(resource: string) =>
-  apiFragment<number, Promise<ApiResult<T>>>(
-    ({ _input: id, _client, _send }) => {
-      const request: Observable<T> = _client
-        .get(`${baseUrl}/${resource}/${id}`)
-        .pipe(map((result) => adaptToDetailResult(result)));
-
-      return _send(request);
+  fragment<number, Promise<ApiResult<T>>>(
+    async ({ client, _input: id }: ApiContext & Input<number>) => {
+      try {
+        const response = await client(`${baseUrl}/${resource}/${id}`);
+        const result = await response.json();
+        return { data: adaptToDetailResult(result), error: null };
+      } catch (error) {
+        return Promise.resolve({ data: null, error });
+      }
     }
   );
 

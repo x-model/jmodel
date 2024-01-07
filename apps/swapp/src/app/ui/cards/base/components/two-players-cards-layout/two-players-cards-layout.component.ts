@@ -1,10 +1,15 @@
-import { Component, Input, Signal, inject } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { refToSignal } from '@web-fragments/ng-fragments';
 import { CardsLayoutComponent } from '../cards-layout/cards-layout.component';
 import { CardPlayerComponent } from '../card-player/card-player.component';
 import { CARD_COMPONENT_CONTEXT } from '../../../../../data/model/base/card.fragment';
-import { CardPlayer } from '../../../../../data/model/base/models/card-player';
+import {
+  isLoadingQuery,
+  player1Query,
+  player2Query,
+} from '../../../../../data/model/base/card-store';
 
 @Component({
   selector: 'sw-two-players-cards-layout',
@@ -21,12 +26,12 @@ import { CardPlayer } from '../../../../../data/model/base/models/card-player';
 export class TwoPlayersCardsLayoutComponent {
   @Input() title: string;
 
-  private readonly ctx = inject(CARD_COMPONENT_CONTEXT);
-  player1: Signal<CardPlayer> = this.ctx.player1;
-  player2: Signal<CardPlayer> = this.ctx.player2;
-  isLoading: Signal<boolean> = this.ctx.isLoading;
+  private readonly model = inject(CARD_COMPONENT_CONTEXT).model;
+  isLoading = refToSignal(this.model.state, isLoadingQuery);
+  player1 = refToSignal(this.model.state, player1Query);
+  player2 = refToSignal(this.model.state, player2Query);
 
   draw(): void {
-    this.ctx.draw();
+    this.model.draw();
   }
 }

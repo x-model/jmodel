@@ -49,9 +49,9 @@ export const resolveStarshipModel = () =>
 
 export const starshipModelFactory = (): Context<CardModel> =>
   cardModel({
-    cardRepository: resolveStarshipRepository(),
-    compare: perLifetimeScope(cardCompareToken, () => compareStarships),
-    map: perLifetimeScope(cardMapToken, () => mapStarship),
+    _cardRepository: resolveStarshipRepository(),
+    _compare: perLifetimeScope(cardCompareToken, () => compareStarships),
+    _map: perLifetimeScope(cardMapToken, () => mapStarship),
   });
 
 // export function starshipModelFactory(context: ExecutionContext) {

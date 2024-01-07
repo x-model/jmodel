@@ -1,6 +1,6 @@
-export const INJECTABLE = Symbol('INJECTABLE');
+import { InjectionToken } from './types';
 
-export type InjectionToken<T> = { token: symbol };
+export const INJECTABLE = Symbol('INJECTABLE');
 
 export function injectionToken<T>(description: string): InjectionToken<T> {
   return { token: Symbol(description) };

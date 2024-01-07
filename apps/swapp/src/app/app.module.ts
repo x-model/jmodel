@@ -11,7 +11,6 @@ import { G11nModule } from './g11n';
 import { HomePageComponent } from './ui/main/pages/home-page/home-page.component';
 import { LayoutComponent } from './ui/main/components/layout/layout.component';
 // import { ApplicationContext } from './app.context';
-import { DataModule } from './data';
 
 // function appInitFactory(
 //   context: ContextType<typeof ApplicationContext>
@@ -29,7 +28,6 @@ function containerFactory(injector: EnvironmentInjector): DiContainer {
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    DataModule,
     G11nModule,
     MatButtonModule,
     MatToolbarModule,

@@ -33,6 +33,7 @@ export function createReactiveModel<T>(model: T): ReactiveModel<T> {
 
   const reactiveModel = {
     [SOURCE]: source,
+    // TODO Poprawić get, bo teraz jest problem z typem jak używamy get, jest lub i nie wie co przypisać do pola
     get: function <Value>(query?: Query<T, Value>): Value | T {
       return query ? query(source[STATE]) : source[STATE];
     },
@@ -186,114 +187,114 @@ function checkChanges<State, Model>(
   return changes;
 }
 
-export function main(): void {
-  const initialState = {
-    firstName: 'Adalbertus',
-    lastName: 'Chris',
-    address: {
-      street: 'Ważniaka',
-      state: {
-        id: 1,
-        name: 'LA',
-      },
-    },
-    phones: ['123456789', '987654321'],
-  };
+// export function main(): void {
+//   const initialState = {
+//     firstName: 'Adalbertus',
+//     lastName: 'Chris',
+//     address: {
+//       street: 'Ważniaka',
+//       state: {
+//         id: 1,
+//         name: 'LA',
+//       },
+//     },
+//     phones: ['123456789', '987654321'],
+//   };
 
-  const schema = createGraph(initialState);
-  const { query } = schema;
+//   const schema = createGraph(initialState);
+//   const { query } = schema;
 
-  const model = createReactiveModel(initialState);
+//   const model = createReactiveModel(initialState);
 
-  // nie działa
-  //   rootModel.watch(
-  //     '',
-  //     () => (value) => console.log('value changes: [Address]', value)
-  //   );
+//   // nie działa
+//   //   rootModel.watch(
+//   //     '',
+//   //     () => (value) => console.log('value changes: [Address]', value)
+//   //   );
 
-  const streetQuery = query((state) => state.address.street);
+//   const streetQuery = query((state) => state.address.street);
 
-  const unwatch = model.watch(
-    streetQuery,
-    () => (value) => console.log('value changes: [Address]', value)
-  );
+//   const unwatch = model.watch(
+//     streetQuery,
+//     () => (value) => console.log('value changes: [Address]', value)
+//   );
 
-  const unwatchPhone = model.watch(
-    query((state) => state.phones),
-    () => (value) => console.log('value changes: [Phones]', value)
-  );
+//   const unwatchPhone = model.watch(
+//     query((state) => state.phones),
+//     () => (value) => console.log('value changes: [Phones]', value)
+//   );
 
-  // toSignal(model.slice(query((state) => state.phones)));
-  // toSignal(model.slice((state) => state.phones));
-  const phonesQuery = query((state) => state.phones);
-  // toSignal(model, phonesQuery);
-  // .watch(() => (value) => console.log('value changes: [Phones]', value));
+//   // toSignal(model.slice(query((state) => state.phones)));
+//   // toSignal(model.slice((state) => state.phones));
+//   const phonesQuery = query((state) => state.phones);
+//   // toSignal(model, phonesQuery);
+//   // .watch(() => (value) => console.log('value changes: [Phones]', value));
 
-  const unwatchName = model.watch(
-    query(
-      (state) => state.firstName,
-      (state) => state.lastName,
-      ([firstName, lastName]) => `${firstName} + ${lastName}`
-    ),
-    () => (value) => console.log('value changes: [My name is]', value)
-  );
+//   const unwatchName = model.watch(
+//     query(
+//       (state) => state.firstName,
+//       (state) => state.lastName,
+//       ([firstName, lastName]) => `${firstName} + ${lastName}`
+//     ),
+//     () => (value) => console.log('value changes: [My name is]', value)
+//   );
 
-  // rootModel.watch(
-  //   path((state) => state.phones[0]),
-  //   // schema.address.state.name,
-  //   // schema.firstName
-  //   // select('address', 'state', 'name'),
-  //   () => (value) => console.log('value changes: [Phones]', value)
-  // );
+//   // rootModel.watch(
+//   //   path((state) => state.phones[0]),
+//   //   // schema.address.state.name,
+//   //   // schema.firstName
+//   //   // select('address', 'state', 'name'),
+//   //   () => (value) => console.log('value changes: [Phones]', value)
+//   // );
 
-  //   rootModel.watch(
-  //     path('address.state'),
-  //     () => (value) => console.log('value changes: [Street]', value)
-  //   );
+//   //   rootModel.watch(
+//   //     path('address.state'),
+//   //     () => (value) => console.log('value changes: [Street]', value)
+//   //   );
 
-  model.set(
-    query((state) => state.address),
-    (value) => ({
-      ...value,
-      street: 'Akacjowa',
-    })
-  );
+//   model.set(
+//     query((state) => state.address),
+//     (value) => ({
+//       ...value,
+//       street: 'Akacjowa',
+//     })
+//   );
 
-  // unwatch();
+//   // unwatch();
 
-  model.set(
-    query((state) => state.address.street),
-    (value) => 'Wierzbowa'
-  );
+//   model.set(
+//     query((state) => state.address.street),
+//     (value) => 'Wierzbowa'
+//   );
 
-  // zablokować możliwość wyboru 2 pól
-  model.set(
-    query((state) => state.phones),
-    (value) => [...value, '66554433']
-  );
+//   // zablokować możliwość wyboru 2 pól
+//   model.set(
+//     query((state) => state.phones),
+//     (value) => [...value, '66554433']
+//   );
 
-  // unwatchName();
+//   // unwatchName();
 
-  model.watch(
-    query((state) => state),
-    () => (value) => console.log('value changes: [Root model]', value)
-  );
+//   model.watch(
+//     query((state) => state),
+//     () => (value) => console.log('value changes: [Root model]', value)
+//   );
 
-  model.set(
-    query((state) => state),
-    (value) => ({
-      ...value,
-      firstName: 'Wiesław',
-      lastName: 'Paleta',
-    })
-  );
+//   model.set(
+//     query((state) => state),
+//     (value) => ({
+//       ...value,
+//       firstName: 'Wiesław',
+//       lastName: 'Paleta',
+//     })
+//   );
 
-  console.log('Root model state', model.get());
-  console.log(
-    'Phones from Root model state',
-    model.get(query((state) => state.address.street))
-  );
+//   console.log('Root model state', model.get());
+//   console.log(
+//     'Phones from Root model state',
+//     model.get(query((state) => state.address.street))
+//   );
 
-  // watch na address powinien to wychwytywać?
-  //   rootModel.set(path('address.state.name'), (value) => 'NY');
-}
+//   // watch na address powinien to wychwytywać?
+//   //   rootModel.set(path('address.state.name'), (value) => 'NY');
+// }
