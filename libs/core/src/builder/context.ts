@@ -1,4 +1,5 @@
-import { typeBuilder } from '../builders/type-builder';
+import { Hooks } from '../builder-props/hooks';
+import { contextBuilder } from '../builders/context-builder';
 import { INJECTABLE } from '../di/consts';
 import {
   InjectionDef,
@@ -65,44 +66,46 @@ export type PublicModel<T> = Unwrap<PublicProps<Model<T>>>;
 
 export type Context<T> = (scope: Scope) => PublicProps<T>;
 
-export function context<T1 extends ExecutionContext & BuilderPartialContext>(
-  s1: BuilderStepConfig<Unwrap<ExecutionContext>, T1>
+export type BuilderContext = Omit<ExecutionContext, '_exec'>;
+
+export function context<T1 extends BuilderContext & BuilderPartialContext>(
+  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>
 ): Context<T1>;
 export function context<
-  T1 extends ExecutionContext & BuilderPartialContext,
+  T1 extends BuilderContext & BuilderPartialContext,
   T2 extends T1
 >(
-  s1: BuilderStepConfig<Unwrap<ExecutionContext>, T1>,
+  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
   s2: BuilderStepConfig<Unwrap<T1>, T2>
 ): Context<T2>;
 export function context<
-  T1 extends ExecutionContext & BuilderPartialContext,
+  T1 extends BuilderContext & BuilderPartialContext,
   T2 extends T1,
   T3 extends T2
 >(
-  s1: BuilderStepConfig<Unwrap<ExecutionContext>, T1>,
+  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
   s2: BuilderStepConfig<Unwrap<T1>, T2>,
   s3: BuilderStepConfig<Unwrap<T2>, T3>
 ): Context<T3>;
 export function context<
-  T1 extends ExecutionContext & BuilderPartialContext,
+  T1 extends BuilderContext & BuilderPartialContext,
   T2 extends T1,
   T3 extends T2,
   T4 extends T3
 >(
-  s1: BuilderStepConfig<Unwrap<ExecutionContext>, T1>,
+  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
   s2: BuilderStepConfig<Unwrap<T1>, T2>,
   s3: BuilderStepConfig<Unwrap<T2>, T3>,
   s4: BuilderStepConfig<Unwrap<T3>, T4>
 ): Context<T4>;
 export function context<
-  T1 extends ExecutionContext & BuilderPartialContext,
+  T1 extends BuilderContext & BuilderPartialContext,
   T2 extends T1,
   T3 extends T2,
   T4 extends T3,
   T5 extends T4
 >(
-  s1: BuilderStepConfig<Unwrap<ExecutionContext>, T1>,
+  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
   s2: BuilderStepConfig<Unwrap<T1>, T2>,
   s3: BuilderStepConfig<Unwrap<T2>, T3>,
   s4: BuilderStepConfig<Unwrap<T3>, T4>,
@@ -113,11 +116,15 @@ export function context(...steps: BuilderStepConfig<any, any>[]): any {
   const factory = (scope: Scope) => {
     // const container = scope.rootInjector.get(Container);
 
-    const result = typeBuilder((initialContext) =>
+    const result = contextBuilder(scope, (initialContext) =>
       steps.reduce((context, step) => step(context), initialContext)
-    );
+    ) as ExecutionContext & Hooks;
 
-    return new result(scope);
+    if (result?.onInit) {
+      result.onInit();
+    }
+
+    return result;
   };
 
   factory[INJECTABLE] = true;

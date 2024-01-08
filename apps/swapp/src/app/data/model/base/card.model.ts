@@ -53,6 +53,7 @@ export const cardModel = (providers: CardModelProviders): Context<CardModel> =>
     diDependencies({
       ...providers,
       _store: resolveCardStore(),
+      //() => map(resolveCardStore(), ({store}) => ({store, }),
     }),
     fragments({
       _totalPages: totalPages$,

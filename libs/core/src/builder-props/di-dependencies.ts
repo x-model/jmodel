@@ -1,11 +1,12 @@
-import { CreationContext, ExecutionContext } from '../fragment/types';
+import { CreationContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
 import { Container, containerToken } from '../di/container';
 import { INJECTABLE } from '../di/consts';
 import { InjectionDef, InjectionResult, InjectionToken } from '../di/types';
+import { BuilderInitialContext } from '../builder/types';
 
 export function diDependencies<
-  Input extends ExecutionContext,
+  Input extends BuilderInitialContext,
   Output extends Record<
     string,
     InjectionToken<unknown> | InjectionDef<unknown>
