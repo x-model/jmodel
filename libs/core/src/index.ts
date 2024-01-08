@@ -51,7 +51,7 @@ export {
 export { ApiError, ApiResult, sendRequest } from './fragments/api-fragment';
 export { fragment } from './fragments/fragment';
 export { memoFragment } from './fragments/memo-fragment';
-export { pureFragment } from './fragments/pure-fragment';
+// export { pureFragment } from './fragments/pure-fragment';
 export { abstract } from './utils/abstract';
 export { Method, Factory, Unwrap, INTERNAL, PUBLIC } from './types';
 
