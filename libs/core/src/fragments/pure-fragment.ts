@@ -2,7 +2,7 @@ import { build } from '../builder/build';
 import {
   fragmentTemplateBuilder,
   onExecute,
-} from '../builders/fragment-template-builder';
+} from '../builders/fragment-template-builder.deprecated';
 import { props } from '../builder-props/props';
 import {
   FragmentFactory,
@@ -10,7 +10,7 @@ import {
   FragmentOptions,
   FragmentTemplate,
 } from '../fragment/types';
-import { fragmentFactory } from '../fragment/factory';
+import { fragmentFactory } from '../fragment/factory.deprecated';
 
 export function pureFragmentTemplate<
   TFragmentIn,

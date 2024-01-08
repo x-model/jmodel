@@ -11,6 +11,7 @@ import {
   CardMap,
   CardRepository,
   draw$,
+  getCard$,
   totalPages$,
 } from './card.fragment';
 import { CardStore, resolveCardStore } from './card-store';
@@ -55,6 +56,7 @@ export const cardModel = (providers: CardModelProviders): Context<CardModel> =>
     }),
     fragments({
       _totalPages: totalPages$,
+      _getCard: getCard$,
       draw: draw$,
     }),
     props(({ _store }) => ({

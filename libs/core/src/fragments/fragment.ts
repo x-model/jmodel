@@ -1,20 +1,12 @@
 import {
-  FragmentCreationContext,
-  FragmentFactory,
+  Fragment,
   FragmentFn,
   FragmentFunctionContext,
-  FragmentOptions,
 } from '../fragment/types';
 
 export function fragment<TFragmentIn, TFragmentOut>(
-  fragmentFn: FragmentFn<TFragmentIn, TFragmentOut>,
-  options?: FragmentOptions
-): FragmentFactory<TFragmentIn, TFragmentOut> {
-  return (creationContext: FragmentCreationContext) => {
-    return {
-      execute: (context: FragmentFunctionContext<TFragmentIn>): TFragmentOut =>
-        fragmentFn({ ...context }),
-      creationContext,
-    };
-  };
+  fragmentFn: FragmentFn<TFragmentIn, TFragmentOut>
+): Fragment<TFragmentIn, TFragmentOut> {
+  return (context: FragmentFunctionContext<TFragmentIn>): TFragmentOut =>
+    fragmentFn({ ...context });
 }

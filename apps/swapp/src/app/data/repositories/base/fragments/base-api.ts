@@ -11,7 +11,7 @@ export type Input<T> = { _input: T };
 
 export const baseUrl = 'https://www.swapi.tech/api';
 
-export const baseGetAll = (resource: string) =>
+export const baseGetAll = (resource: string) => () =>
   fragment(
     async ({
       client,
@@ -29,18 +29,20 @@ export const baseGetAll = (resource: string) =>
     }
   );
 
-export const baseGet = <T>(resource: string) =>
-  fragment<number, Promise<ApiResult<T>>>(
-    async ({ client, _input: id }: ApiContext & Input<number>) => {
-      try {
-        const response = await client(`${baseUrl}/${resource}/${id}`);
-        const result = await response.json();
-        return { data: adaptToDetailResult(result), error: null };
-      } catch (error) {
-        return Promise.resolve({ data: null, error });
+export const baseGet =
+  <T>(resource: string) =>
+  () =>
+    fragment<number, Promise<ApiResult<T>>>(
+      async ({ client, _input: id }: ApiContext & Input<number>) => {
+        try {
+          const response = await client(`${baseUrl}/${resource}/${id}`);
+          const result = await response.json();
+          return { data: adaptToDetailResult(result), error: null };
+        } catch (error) {
+          return Promise.resolve({ data: null, error });
+        }
       }
-    }
-  );
+    );
 
 const adaptToDetailResult = <T extends object, R>(model: T): R | null => {
   if (!model) {

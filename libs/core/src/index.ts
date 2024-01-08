@@ -16,10 +16,10 @@ export { hooks, Hooks } from './builder-props/hooks';
 export { methods } from './builder-props/methods';
 export { props } from './builder-props/props';
 export { publicProps } from './builder-props/public-props';
-export {
-  fragmentTemplateBuilder,
-  onExecute,
-} from './builders/fragment-template-builder';
+// export {
+//   fragmentTemplateBuilder,
+//   onExecute,
+// } from './builders/fragment-template-builder.deprecated';
 export { from } from './builders/from';
 // export { partialBuilder } from './builders/partial-builder';
 // export { createState, Ref, State } from './builders/store-builder';
@@ -34,7 +34,7 @@ export {
   InjectionToken,
   InjectionDef,
 } from './di/types';
-export { fragmentFactory } from './fragment/factory';
+export { fragmentFactory } from './fragment/factory.deprecated';
 export { resolveFragment } from './fragment/resolver';
 export {
   Fragment,

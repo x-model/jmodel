@@ -1,11 +1,5 @@
-import {
-  CreationContext,
-  ExecutionContext,
-  Fragment,
-  FragmentFactory,
-} from '../fragment/types';
+import { CreationContext, ExecutionContext, Fragment } from '../fragment/types';
 import { BuilderPartialContext } from '../builder/types';
-import { resolveFragment } from '../fragment/resolver';
 import { Hooks } from '../builder-props/hooks';
 import { Factory } from '../types';
 import { ProviderToken, Scope, Type } from '../di/types';
@@ -89,9 +83,8 @@ export function typeBuilder<FactoryResult extends BuilderPartialContext>(
     }
 
     _exec<TFragmentIn, TFragmentOut>(
-      fragmentOrFactory:
-        | FragmentFactory<TFragmentIn, TFragmentOut>
-        | Fragment<TFragmentIn, TFragmentOut>,
+      fragmentOrFactory: // | FragmentFactory<TFragmentIn, TFragmentOut>
+      Fragment<TFragmentIn, TFragmentOut>,
       input?: TFragmentIn
     ): TFragmentOut {
       let context = {};
@@ -103,28 +96,22 @@ export function typeBuilder<FactoryResult extends BuilderPartialContext>(
           ...this._innerContext,
         };
       }
-      const fragmentInstance = resolveFragment(fragmentOrFactory, {
-        contextId: this._id,
-        injector: {
-          get: <T>(token: ProviderToken<T>) =>
-            this._scope.inject(token as any) as T,
-        },
-      });
 
-      if (!fragmentInstance) {
-        throw new Error('Cannot resolve fragment');
-      }
+      const fragmentInstance = fragmentOrFactory;
+      // const fragmentInstance = resolveFragment(fragmentOrFactory, {
+      //   contextId: this._id,
+      //   injector: {
+      //     get: <T>(token: ProviderToken<T>) =>
+      //       this._scope.inject(token as any) as T,
+      //   },
+      // });
 
-      // At this moment we can't execute registered fragment from different context directly,
-      // instead in context we can create method and execute this fragment from different context using this method
-      if (fragmentInstance.creationContext.contextId !== this._id) {
-        throw new Error(
-          'Cannot execute registered fragment from different context'
-        );
-      }
+      // if (!fragmentInstance) {
+      //   throw new Error('Cannot resolve fragment');
+      // }
 
       // we don't have to run this from injectionContext, because developer should use context._inject method
-      return fragmentInstance.execute({
+      return fragmentInstance({
         ...this._executionContext,
         ...context,
         _input: input,

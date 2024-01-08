@@ -117,16 +117,8 @@ export function ngContextBuilder(
           throw new Error('Cannot resolve fragment');
         }
 
-        // At this moment we can't execute registered fragment from different context directly,
-        // instead in context we can create method and execute this fragment from different context using this method
-        if (fragmentInstance.creationContext.contextId !== this._id) {
-          throw new Error(
-            'Cannot execute registered fragment from different context'
-          );
-        }
-
         // we don't have to run this from injectionContext, because developer should use context._inject method
-        return fragmentInstance.execute({
+        return fragmentInstance({
           ...this._executionContext,
           ...context,
           _input: input,

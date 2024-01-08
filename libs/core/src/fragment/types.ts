@@ -4,9 +4,8 @@ export type Fragments = Record<string, Fragment<unknown, unknown>>;
 
 export type ExecutionContext = {
   _exec: <TFragmentIn, TFragmentOut>(
-    fragmentOrFactory:
-      | FragmentFactory<TFragmentIn, TFragmentOut>
-      | Fragment<TFragmentIn, TFragmentOut>,
+    fragmentOrFactory: // | FragmentFactory<TFragmentIn, TFragmentOut>
+    Fragment<TFragmentIn, TFragmentOut>,
     input?: TFragmentIn
   ) => TFragmentOut;
   _inject: <T>(token: ProviderToken<T>) => T;
@@ -31,7 +30,7 @@ export type FragmentError = {
 };
 
 export type FragmentFactory<TFragmentIn, TFragmentOut> = (
-  creationContext: FragmentCreationContext
+  creationContext?: FragmentCreationContext
 ) => Fragment<TFragmentIn, TFragmentOut>;
 
 export type FragmentFunctionContext<TFragmentIn> = {
@@ -80,10 +79,9 @@ export type FragmentFn<
   TFragmentFunctionContext = FragmentFunctionContext<TFragmentIn>
 > = (context: TFragmentFunctionContext) => TFragmentOut;
 
-export type Fragment<TFragmentIn, TFragmentOut> = {
-  creationContext: FragmentCreationContext;
-  execute(context: FragmentFunctionContext<TFragmentIn>): TFragmentOut;
-};
+export type Fragment<TFragmentIn, TFragmentOut> = (
+  context: FragmentFunctionContext<TFragmentIn>
+) => TFragmentOut;
 
 export type FragmentType<T> = T extends FragmentFactory<infer In, infer Out>
   ? Fragment<In, Out>
