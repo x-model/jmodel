@@ -36,7 +36,6 @@ export {
 } from './di/types';
 export { fragmentFactory } from './fragment/factory';
 export { resolveFragment } from './fragment/resolver';
-export { TemplateRegistry } from './fragment/template-registry';
 export {
   Fragment,
   FragmentResultType,

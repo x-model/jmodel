@@ -1,5 +1,5 @@
 import { BuilderPartialContext } from '../builder/types';
-import { resolveFragment } from '../fragment/resolver';
+import { resolveFragmentOld } from '../fragment/resolver';
 import {
   CreationContext,
   Fragment,
@@ -38,7 +38,7 @@ export function fromFragments<
         const resolver = fragmentFactories[fragmentKey];
 
         const fragment = resolver((fragmentFactory, input) => {
-          const fragment = resolveFragment(
+          const fragment = resolveFragmentOld(
             fragmentFactory,
             context._templateRegistry,
             { contextId: context._contextId, injector: context._injector }

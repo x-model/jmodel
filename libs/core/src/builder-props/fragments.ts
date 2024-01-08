@@ -27,11 +27,10 @@ export function fragments<
     const fragmentInstances =
       fragmentFactories &&
       (Object.keys(fragmentFactories).reduce((instances, fragmentKey) => {
-        const fragment = resolveFragment(
-          fragmentFactories[fragmentKey],
-          context._templateRegistry,
-          { contextId: context._contextId, injector: context._injector }
-        );
+        const fragment = resolveFragment(fragmentFactories[fragmentKey], {
+          contextId: context._contextId,
+          injector: context._injector,
+        });
 
         return {
           ...instances,

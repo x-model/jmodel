@@ -4,7 +4,6 @@ import {
   Fragment,
   FragmentFactory,
 } from '../fragment/types';
-import { TemplateRegistry } from '../fragment/template-registry';
 import { BuilderPartialContext } from '../builder/types';
 import { resolveFragment } from '../fragment/resolver';
 import { Hooks } from '../builder-props/hooks';
@@ -26,7 +25,6 @@ export function typeBuilder<FactoryResult extends BuilderPartialContext>(
      * prevents to use context during creation process
      */
     _created = false;
-    _templateRegistry = new TemplateRegistry();
     _innerContext: FactoryResult;
     _executionContext: ExecutionContext = {
       _exec: (fragment, input?) => this._exec(fragment, input),
@@ -34,7 +32,6 @@ export function typeBuilder<FactoryResult extends BuilderPartialContext>(
     };
     _creationContext: Partial<CreationContext> = {
       _contextId: this._id,
-      _templateRegistry: this._templateRegistry,
       ...this._executionContext,
     };
 
@@ -106,17 +103,13 @@ export function typeBuilder<FactoryResult extends BuilderPartialContext>(
           ...this._innerContext,
         };
       }
-      const fragmentInstance = resolveFragment(
-        fragmentOrFactory,
-        this._templateRegistry,
-        {
-          contextId: this._id,
-          injector: {
-            get: <T>(token: ProviderToken<T>) =>
-              this._scope.inject(token as any) as T,
-          },
-        }
-      );
+      const fragmentInstance = resolveFragment(fragmentOrFactory, {
+        contextId: this._id,
+        injector: {
+          get: <T>(token: ProviderToken<T>) =>
+            this._scope.inject(token as any) as T,
+        },
+      });
 
       if (!fragmentInstance) {
         throw new Error('Cannot resolve fragment');

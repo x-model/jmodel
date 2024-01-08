@@ -1,11 +1,10 @@
-import { ApiResult } from '@web-fragments/ng-fragments';
 import { mapResponseToCamelCase } from '../utils/response.util';
 import { CollectionApiResult } from '../models/collection-api-result';
 import { CollectionResult } from '../models/collection-result';
 import { DetailApiResult } from '../models/detail-api-result';
 import { CollectionParams } from '../models/collection-params';
 import { getCollectionParams } from '../utils/params.util';
-import { ExecutionContext, fragment } from '@web-fragments/core';
+import { ExecutionContext, fragment, ApiResult } from '@web-fragments/core';
 
 export type ApiContext = { client: typeof fetch } & ExecutionContext;
 export type Input<T> = { _input: T };

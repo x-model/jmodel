@@ -11,14 +11,13 @@ import {
   ExecutionContext,
   Fragment,
   FragmentFactory,
-  TemplateRegistry,
   Builder,
   BuilderPartialContext,
-  resolveFragment,
   Hooks,
   Factory,
   Container,
   Type,
+  resolveFragment,
 } from '@web-fragments/core';
 
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
@@ -50,7 +49,6 @@ export function ngContextBuilder(
        * prevents to use context during creation process
        */
       _created = false;
-      _templateRegistry = new TemplateRegistry();
       _innerContext: FactoryResult;
       _scope = this._container.createScope();
       _executionContext: ExecutionContext = {
@@ -60,7 +58,6 @@ export function ngContextBuilder(
       _creationContext: CreationContext = {
         _contextId: this._id,
         _injector: this._injector,
-        _templateRegistry: this._templateRegistry,
         _scope: this._scope,
         ...this._executionContext,
       };
@@ -111,14 +108,10 @@ export function ngContextBuilder(
             ...this._innerContext,
           };
         }
-        const fragmentInstance = resolveFragment(
-          fragmentOrFactory,
-          this._templateRegistry,
-          {
-            contextId: this._id,
-            injector: this._injector,
-          }
-        );
+        const fragmentInstance = resolveFragment(fragmentOrFactory, {
+          contextId: this._id,
+          injector: this._injector,
+        });
 
         if (!fragmentInstance) {
           throw new Error('Cannot resolve fragment');

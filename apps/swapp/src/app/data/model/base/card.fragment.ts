@@ -1,6 +1,10 @@
 import { InjectionToken } from '@angular/core';
-import { ExecutionContext, fragment, memoFragment } from '@web-fragments/core';
-import { ApiResult } from '@web-fragments/ng-fragments';
+import {
+  ExecutionContext,
+  fragment,
+  memoFragment,
+  ApiResult,
+} from '@web-fragments/core';
 import { getRandom } from '../../../common';
 import { CollectionParams } from '../../repositories/base/models/collection-params';
 import { CollectionResult } from '../../repositories/base/models/collection-result';

@@ -2,8 +2,7 @@ import { Injector, inject, EnvironmentInjector } from '@angular/core';
 import {
   Fragment,
   FragmentFactory,
-  TemplateRegistry,
-  resolveFragmentOld,
+  resolveFragment,
   Container,
   Type,
 } from '@web-fragments/core';
@@ -27,7 +26,6 @@ export class ExecutionContext {
   /**
    * prevents to use context during creation process
    */
-  _templateRegistry = new TemplateRegistry();
   _executionContext: Pick<ExecutionContext, '_exec'> = {
     _exec: (fragment, input?) => this._exec(fragment, input),
   };
@@ -42,14 +40,10 @@ export class ExecutionContext {
   ): TFragmentOut {
     let context = {};
 
-    const fragmentInstance = resolveFragmentOld(
-      fragmentOrFactory,
-      this._templateRegistry,
-      {
-        contextId: this._id,
-        injector: this._injector,
-      }
-    );
+    const fragmentInstance = resolveFragment(fragmentOrFactory, {
+      contextId: this._id,
+      injector: this._injector,
+    });
 
     if (!fragmentInstance) {
       throw new Error('Cannot resolve fragment');
