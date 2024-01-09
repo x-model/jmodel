@@ -50,6 +50,10 @@ export class Container {
       throw new Error('It is not injectable');
     }
 
+    if (injectionDef.lifetime === Lifetime.transient) {
+      return factory();
+    }
+
     const scopeId =
       injectionDef?.lifetime === Lifetime.singleton
         ? ROOT_SCOPE
