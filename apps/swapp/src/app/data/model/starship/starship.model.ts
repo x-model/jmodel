@@ -1,6 +1,6 @@
-import { Context, fromFactory, perLifetimeScope } from '@web-fragments/core';
+import { Context, InjectionDef, asScoped } from '@web-fragments/core';
 import { cardModel, CardModel } from '../base/card.model';
-import { resolveStarshipRepository } from '../../repositories/starships/starship.repository';
+import { starshipRepositoryResolver } from '../../repositories/starships/starship.repository';
 import { compareStarships } from './services/starship-comparer';
 import { mapStarship } from './services/starship-mapper';
 import {
@@ -13,14 +13,21 @@ import {
 
 // const dependencies = <T extends ExecutionContext>() =>
 //   diDependencies<T, any, { cardRepository: any }>({
-//     cardRepository: perLifetimeScope(
+//     cardRepository: asScoped(
 //       cardRepositoryToken,
 //       fromFactory(starshipRepositoryFactory)
 //     ),
 //   });
 
-export const resolveStarshipModel = () =>
-  perLifetimeScope(cardModelToken, fromFactory(starshipModelFactory));
+export const starshipModelResolver = (): InjectionDef<CardModel> =>
+  asScoped(cardModelToken, starshipModelFactory);
+
+export const starshipModelFactory = (): Context<CardModel> =>
+  cardModel({
+    _cardRepository: starshipRepositoryResolver,
+    _compare: () => asScoped(cardCompareToken, () => compareStarships),
+    _map: () => asScoped(cardMapToken, () => mapStarship),
+  });
 
 // do testów potrzebne będą jakieś fakeScopes
 // const extend = null;
@@ -46,13 +53,6 @@ export const resolveStarshipModel = () =>
 
 //   return publicCardModel(providers, partialCardModel());
 // }
-
-export const starshipModelFactory = (): Context<CardModel> =>
-  cardModel({
-    _cardRepository: resolveStarshipRepository(),
-    _compare: perLifetimeScope(cardCompareToken, () => compareStarships),
-    _map: perLifetimeScope(cardMapToken, () => mapStarship),
-  });
 
 // export function starshipModelFactory(context: ExecutionContext) {
 //   return build(

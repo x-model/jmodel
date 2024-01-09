@@ -1,15 +1,12 @@
 import {
-  DEPENDENCIES,
-  FRAGMENTS,
   PublicModel,
   context,
-  diDependencies,
-  fragments,
-  perLifetimeScope,
+  asScoped,
+  InjectionDef,
 } from '@web-fragments/core';
 import { starshipGet, starshipGetAll } from './starship.data-source';
 import { cardRepositoryToken } from '../../model/base/di-tokens';
-import { resolveHttpClient } from '../base/http-client/http-client';
+import { httpClientResolver } from '../base/http-client/http-client';
 
 // const starshipRepositoryFactory = (context: ExecutionContext) =>
 //   build(
@@ -26,22 +23,24 @@ import { resolveHttpClient } from '../base/http-client/http-client';
 //     get: starshipGet,
 //   });
 
-const starshipRepository = {
-  [DEPENDENCIES]: {
-    _client: resolveHttpClient(),
-  },
-  [FRAGMENTS]: {
-    getAll: starshipGetAll,
-    get: starshipGet,
-  },
-};
+// const starshipRepository = {
+//   [DEPENDENCIES]: {
+//     _client: resolveHttpClient,
+//   },
+//   [FRAGMENTS]: {
+//     getAll: starshipGetAll,
+//     get: starshipGet,
+//   },
+// };
 
 export type StarshipRepository = PublicModel<typeof starshipRepository>;
 
-export const resolveStarshipRepository = () =>
-  perLifetimeScope<StarshipRepository>(cardRepositoryToken, () =>
-    context(
-      diDependencies(starshipRepository[DEPENDENCIES]),
-      fragments(starshipRepository[FRAGMENTS])
-    )
-  );
+const starshipRepository = {
+  _client: httpClientResolver,
+  getAll: starshipGetAll,
+  get: starshipGet,
+};
+
+export const starshipRepositoryResolver =
+  (): InjectionDef<StarshipRepository> =>
+    asScoped(cardRepositoryToken, () => context(starshipRepository));

@@ -2,6 +2,7 @@ import { CreationContext, ExecutionContext, Fragment } from '../fragment/types';
 import { BuilderPartialContext } from '../builder/types';
 import { Factory } from '../types';
 import { ProviderToken, Scope } from '../di/types';
+import { contextToken } from '../fragment/resolver';
 
 export function contextBuilder<FactoryResult extends BuilderPartialContext>(
   scope: Scope,
@@ -9,10 +10,13 @@ export function contextBuilder<FactoryResult extends BuilderPartialContext>(
   name?: string
 ): ExecutionContext {
   const _id = Symbol('CONTEXT_ID');
-  let _innerContext: FactoryResult;
+  let _innerContext: FactoryResult = {} as any;
   let _executionContext: ExecutionContext;
 
   const _inject = <T>(token: ProviderToken<T>): T => {
+    if (token === (contextToken as any)) {
+      return _innerContext as any;
+    }
     return scope.inject(token as any);
   };
 
@@ -61,10 +65,21 @@ export function contextBuilder<FactoryResult extends BuilderPartialContext>(
     }
   });
 
-  _innerContext = getInnerContext<FactoryResult & CreationContext>(
+  const internalContext = getInnerContext<FactoryResult & CreationContext>(
     internalProps,
     contextFactory
   );
+
+  for (const key in internalContext) {
+    // do każdego value podpinać jakoś name (key), wtedy możemy tego używać do logs
+
+    Object.defineProperty(_innerContext, key, {
+      value: internalContext[key],
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+  }
 
   const publicContext = getInnerContext<FactoryResult & CreationContext>(
     publicProps,

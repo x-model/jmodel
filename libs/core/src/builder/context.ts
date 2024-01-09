@@ -1,3 +1,4 @@
+import { diDependencies } from '../builder-props/di-dependencies';
 import { Hooks } from '../builder-props/hooks';
 import { contextBuilder } from '../builders/context-builder';
 import { INJECTABLE } from '../di/consts';
@@ -23,16 +24,14 @@ type FragmentInputType<T> = T extends Fragment<infer TIn, unknown>
   ? TIn
   : never;
 
-export type ModelDependency<T> = T extends {
-  [DEPENDENCIES]: infer InjectionT extends Record<
+export type ModelDependency<
+  T extends Record<
     string,
-    InjectionToken<unknown> | InjectionDef<unknown>
-  >;
-}
-  ? {
-      [P in keyof InjectionT]: InjectionResult<InjectionT[P]>;
-    }
-  : never;
+    () => InjectionToken<unknown> | InjectionDef<unknown>
+  >
+> = {
+  [P in keyof T]: InjectionResult<ReturnType<T[P]>>;
+};
 
 export type ModelFragment<T> = T extends {
   [FRAGMENTS]: infer F extends Record<
@@ -62,59 +61,85 @@ export type Model<T> = T extends {
   ? ModelFragment<T>
   : never;
 
-export type PublicModel<T> = Unwrap<PublicProps<Model<T>>>;
+export type PublicModel<
+  T extends Record<
+    string,
+    () => InjectionToken<unknown> | InjectionDef<unknown>
+  >
+> = Unwrap<PublicProps<ModelDependency<T>>>;
 
 export type Context<T> = (scope: Scope) => PublicProps<T>;
 
 export type BuilderContext = Omit<ExecutionContext, '_exec'>;
 
-export function context<T1 extends BuilderContext & BuilderPartialContext>(
-  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>
+export function context<
+  Input extends Record<
+    string,
+    () => InjectionToken<unknown> | InjectionDef<unknown>
+  >,
+  InputResult extends {
+    [P in keyof Input]: InjectionResult<ReturnType<Input[P]>>;
+  }
+>(s1: Input): Context<InputResult>;
+export function context<
+  Input extends Record<
+    string,
+    () => InjectionToken<unknown> | InjectionDef<unknown>
+  >,
+  T1 extends BuilderPartialContext
+>(
+  s1: Input,
+  s2: BuilderStepConfig<
+    {
+      [P in keyof Input]: InjectionResult<ReturnType<Input[P]>>;
+    } & Unwrap<BuilderContext>,
+    T1
+  >
 ): Context<T1>;
-export function context<
-  T1 extends BuilderContext & BuilderPartialContext,
-  T2 extends T1
->(
-  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
-  s2: BuilderStepConfig<Unwrap<T1>, T2>
-): Context<T2>;
-export function context<
-  T1 extends BuilderContext & BuilderPartialContext,
-  T2 extends T1,
-  T3 extends T2
->(
-  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
-  s2: BuilderStepConfig<Unwrap<T1>, T2>,
-  s3: BuilderStepConfig<Unwrap<T2>, T3>
-): Context<T3>;
-export function context<
-  T1 extends BuilderContext & BuilderPartialContext,
-  T2 extends T1,
-  T3 extends T2,
-  T4 extends T3
->(
-  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
-  s2: BuilderStepConfig<Unwrap<T1>, T2>,
-  s3: BuilderStepConfig<Unwrap<T2>, T3>,
-  s4: BuilderStepConfig<Unwrap<T3>, T4>
-): Context<T4>;
-export function context<
-  T1 extends BuilderContext & BuilderPartialContext,
-  T2 extends T1,
-  T3 extends T2,
-  T4 extends T3,
-  T5 extends T4
->(
-  s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
-  s2: BuilderStepConfig<Unwrap<T1>, T2>,
-  s3: BuilderStepConfig<Unwrap<T2>, T3>,
-  s4: BuilderStepConfig<Unwrap<T3>, T4>,
-  s5: BuilderStepConfig<Unwrap<T4>, T5>
-): Context<T5>;
+// export function context<
+//   T1 extends BuilderContext & BuilderPartialContext,
+//   T2 extends T1,
+//   T3 extends T2
+// >(
+//   s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
+//   s2: BuilderStepConfig<Unwrap<T1>, T2>,
+//   s3: BuilderStepConfig<Unwrap<T2>, T3>
+// ): Context<T3>;
+// export function context<
+//   T1 extends BuilderContext & BuilderPartialContext,
+//   T2 extends T1,
+//   T3 extends T2,
+//   T4 extends T3
+// >(
+//   s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
+//   s2: BuilderStepConfig<Unwrap<T1>, T2>,
+//   s3: BuilderStepConfig<Unwrap<T2>, T3>,
+//   s4: BuilderStepConfig<Unwrap<T3>, T4>
+// ): Context<T4>;
+// export function context<
+//   T1 extends BuilderContext & BuilderPartialContext,
+//   T2 extends T1,
+//   T3 extends T2,
+//   T4 extends T3,
+//   T5 extends T4
+// >(
+//   s1: BuilderStepConfig<Unwrap<BuilderContext>, T1>,
+//   s2: BuilderStepConfig<Unwrap<T1>, T2>,
+//   s3: BuilderStepConfig<Unwrap<T2>, T3>,
+//   s4: BuilderStepConfig<Unwrap<T3>, T4>,
+//   s5: BuilderStepConfig<Unwrap<T4>, T5>
+// ): Context<T5>;
 
-export function context(...steps: BuilderStepConfig<any, any>[]): any {
+export function context<
+  Input extends Record<
+    string,
+    () => InjectionToken<unknown> | InjectionDef<unknown>
+  >
+>(s1: Input, s2?: any): any {
   const factory = (scope: Scope) => {
     // const container = scope.rootInjector.get(Container);
+    const deps = diDependencies(s1);
+    const steps = s2 ? [deps, s2] : [deps];
 
     const result = contextBuilder(scope, (initialContext) =>
       steps.reduce((context, step) => step(context), initialContext)

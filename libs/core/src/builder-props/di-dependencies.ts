@@ -9,10 +9,10 @@ export function diDependencies<
   Input extends BuilderInitialContext,
   Output extends Record<
     string,
-    InjectionToken<unknown> | InjectionDef<unknown>
+    () => InjectionToken<unknown> | InjectionDef<unknown>
   >,
   Result extends {
-    [P in keyof Output]: InjectionResult<Output[P]>;
+    [P in keyof Output]: InjectionResult<ReturnType<Output[P]>>;
   }
 >(deps: Output): Factory<Input, Unwrap<Input & Result>> {
   return (context: Input & CreationContext) => {
@@ -59,7 +59,7 @@ export function diDependencies<
     // }
 
     const resolvedDeps = Object.keys(deps).reduce((instances, key) => {
-      const dependency = deps[key];
+      const dependency = deps[key]();
       let instance;
 
       if (dependency.hasOwnProperty('resolveFn')) {
@@ -68,7 +68,7 @@ export function diDependencies<
         const factory = () => {
           const resolved = dep.resolveFn();
           if (typeof resolved === 'function' && resolved[INJECTABLE]) {
-            return resolved(scope);
+            return resolved(scope, { _inject: context._inject });
           }
           return resolved;
         };

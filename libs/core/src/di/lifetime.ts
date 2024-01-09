@@ -6,7 +6,7 @@ export enum Lifetime {
   scoped = 3,
 }
 
-export function singleton<T>(token: InjectionToken<T>, resolveFn) {
+export function asSingleton<T>(token: InjectionToken<T>, resolveFn) {
   return {
     token,
     lifetime: Lifetime.singleton,
@@ -14,7 +14,15 @@ export function singleton<T>(token: InjectionToken<T>, resolveFn) {
   };
 }
 
-export function perLifetimeScope<T>(token: InjectionToken<T>, resolveFn) {
+export function asTransient<T>(token: InjectionToken<T>, resolveFn) {
+  return {
+    token,
+    lifetime: Lifetime.transient,
+    resolveFn,
+  };
+}
+
+export function asScoped<T>(token: InjectionToken<T>, resolveFn) {
   return {
     token,
     lifetime: Lifetime.scoped,

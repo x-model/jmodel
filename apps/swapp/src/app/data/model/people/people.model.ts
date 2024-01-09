@@ -1,5 +1,5 @@
-import { Context, fromFactory, perLifetimeScope } from '@web-fragments/core';
-import { resolvePeopleRepository } from '../../repositories/people/people.repository';
+import { Context, asScoped } from '@web-fragments/core';
+import { peopleRepositoryResolver } from '../../repositories/people/people.repository';
 import { comparePeople } from './services/people-comparer';
 import { mapPeople } from './services/people-mapper';
 import { CardModel, cardModel } from '../base/card.model';
@@ -9,12 +9,12 @@ import {
   cardModelToken,
 } from '../base/di-tokens';
 
-export const resolvePeopleModel = () =>
-  perLifetimeScope(cardModelToken, fromFactory(peopleModelFactory));
+export const peopleModelResolver = () =>
+  asScoped(cardModelToken, peopleModelFactory);
 
 export const peopleModelFactory = (): Context<CardModel> =>
   cardModel({
-    _cardRepository: resolvePeopleRepository(),
-    _compare: perLifetimeScope(cardCompareToken, () => comparePeople),
-    _map: perLifetimeScope(cardMapToken, () => mapPeople),
+    _cardRepository: peopleRepositoryResolver,
+    _compare: () => asScoped(cardCompareToken, () => comparePeople),
+    _map: () => asScoped(cardMapToken, () => mapPeople),
   });

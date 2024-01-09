@@ -4,8 +4,7 @@ import { build, diDependencies } from '@web-fragments/core';
 import { ngContextBuilder } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
 import { CARD_COMPONENT_CONTEXT } from '../../../../../data/model/base/card.fragment';
-
-import { resolvePeopleModel } from '../../../../../data';
+import { peopleModelResolver } from '../../../../../data';
 
 const styles = `
   :host {
@@ -17,7 +16,7 @@ const styles = `
 @Injectable()
 export class PeopleComponentContext extends build(
   ngContextBuilder(),
-  diDependencies({ model: resolvePeopleModel() })
+  diDependencies({ model: peopleModelResolver })
 ) {}
 
 @Component({

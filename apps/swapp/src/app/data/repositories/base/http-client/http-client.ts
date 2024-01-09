@@ -1,6 +1,6 @@
-import { injectionToken, singleton } from '@web-fragments/core';
+import { injectionToken, asSingleton } from '@web-fragments/core';
 
 export const httpClientToken = injectionToken<typeof fetch>('httpClient');
 
-export const resolveHttpClient = () =>
-  singleton<typeof fetch>(httpClientToken, () => fetch);
+export const httpClientResolver = () =>
+  asSingleton<typeof fetch>(httpClientToken, () => fetch);

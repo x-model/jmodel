@@ -1,5 +1,14 @@
+import { INJECTABLE, injectionToken } from '../di/consts';
+import { Scope } from '../di/types';
 import { TemplateResolver } from './template-registry.deprecated';
-import { Fragment, FragmentCreationContext, FragmentFactory } from './types';
+import {
+  CreationContext,
+  Fragment,
+  FragmentCreationContext,
+  FragmentFactory,
+} from './types';
+
+export const contextToken = injectionToken('context');
 
 export function resolveFragmentOld<TFragmentIn, TFragmentOut>(
   fragmentOrFactory:
@@ -28,4 +37,18 @@ export function resolveFragment<TFragmentIn, TFragmentOut>(
         creationContext
       )
     : (fragmentOrFactory as Fragment<TFragmentIn, TFragmentOut>);
+}
+
+export function fragmentFactory(fragment: Fragment<any, any>) {
+  const factory = (scope: Scope, creationContext: CreationContext) => {
+    // const container = scope.rootInjector.get(Container);
+    const context: any = creationContext._inject(contextToken as any);
+
+    const result = (input?: any) => fragment({ ...context, _input: input });
+    return result;
+  };
+
+  factory[INJECTABLE] = true;
+
+  return factory;
 }

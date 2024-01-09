@@ -25,7 +25,7 @@ export { from } from './builders/from';
 // export { createState, Ref, State } from './builders/store-builder';
 export { di, registerAs, injectionToken } from './di/consts';
 export { Container } from './di/container';
-export { perLifetimeScope, singleton } from './di/lifetime';
+export { asScoped, asSingleton, asTransient } from './di/lifetime';
 export { fromFactory } from './di/resolvers';
 export {
   Type,

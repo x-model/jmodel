@@ -1,9 +1,8 @@
 import {
   Context,
   InjectionDef,
+  PublicModel,
   context,
-  diDependencies,
-  fragments,
   props,
 } from '@web-fragments/core';
 import {
@@ -14,7 +13,7 @@ import {
   getCard$,
   totalPages$,
 } from './card.fragment';
-import { CardStore, resolveCardStore } from './card-store';
+import { CardStore, cardStoreResolver } from './card-store';
 
 // export function partialCardModel() {
 //   return partial(
@@ -37,29 +36,28 @@ import { CardStore, resolveCardStore } from './card-store';
 // fragment powinien mieć też typ contextu, wtedy zabezpieczymy exec, jakby np. ktoś zapomniał czegoś zdefiniować,
 // a np. będzie użyte we fragmencie
 
-export type CardModel = {
-  draw: () => void;
+export type CardModelProviders = {
+  _cardRepository: () => InjectionDef<CardRepository>;
+  _map: () => InjectionDef<CardMap>;
+  _compare: () => InjectionDef<CardCompare>;
+};
+
+export type CardModel = PublicModel<typeof partialCardModel> & {
   state: CardStore['state'];
 };
 
-export type CardModelProviders = {
-  _cardRepository: InjectionDef<CardRepository>;
-  _map: InjectionDef<CardMap>;
-  _compare: InjectionDef<CardCompare>;
+const partialCardModel = {
+  _store: cardStoreResolver,
+  _totalPages: totalPages$,
+  _getCard: getCard$,
+  draw: draw$,
+  //() => map(resolveCardStore(), ({store}) => ({store, }),
 };
 
 export const cardModel = (providers: CardModelProviders): Context<CardModel> =>
   context(
-    diDependencies({
-      ...providers,
-      _store: resolveCardStore(),
-      //() => map(resolveCardStore(), ({store}) => ({store, }),
-    }),
-    fragments({
-      _totalPages: totalPages$,
-      _getCard: getCard$,
-      draw: draw$,
-    }),
+    { ...providers, ...partialCardModel },
+    // czemu w props jest odfiltrowany draw? w sumie dobrze, ale jak to działa
     props(({ _store }) => ({
       state: _store.state,
     }))

@@ -2,8 +2,7 @@ import {
   Method,
   createReactiveModel,
   createGraph,
-  perLifetimeScope,
-  fromFactory,
+  asScoped,
 } from '@web-fragments/core';
 import { CardPlayer } from './models/card-player';
 import { Card } from './models/card';
@@ -32,8 +31,8 @@ export const isLoadingQuery = query(
   ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
 );
 
-export const resolveCardStore = () =>
-  perLifetimeScope(cardStoreToken, fromFactory(cardStoreFactory));
+export const cardStoreResolver = () =>
+  asScoped(cardStoreToken, cardStoreFactory);
 
 export function _draw(): Method<CardState> {
   const _state = (player: CardPlayer) => ({
