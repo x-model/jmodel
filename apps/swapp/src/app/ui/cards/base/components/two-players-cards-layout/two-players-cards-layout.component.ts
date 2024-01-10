@@ -4,12 +4,12 @@ import { TranslateModule } from '@ngx-translate/core';
 import { refToSignal } from '@web-fragments/ng-fragments';
 import { CardsLayoutComponent } from '../cards-layout/cards-layout.component';
 import { CardPlayerComponent } from '../card-player/card-player.component';
-import { CARD_COMPONENT_CONTEXT } from '../../../../../data/model/base/card.fragment';
+import { CARD_COMPONENT_CONTEXT } from '../../../../../data/base/card.fragment';
 import {
   isLoadingQuery,
   player1Query,
   player2Query,
-} from '../../../../../data/model/base/card-store';
+} from '../../../../../data/base/card-store';
 
 @Component({
   selector: 'sw-two-players-cards-layout',

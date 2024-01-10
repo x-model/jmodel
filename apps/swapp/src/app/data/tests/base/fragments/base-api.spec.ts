@@ -6,7 +6,7 @@ import { ContextType, ngContextBuilder } from '@web-fragments/ng-fragments';
 import {
   baseGet,
   baseGetAll,
-} from '../../../repositories/base/fragments/base-api';
+} from '../../../../data-sources/base/base-data-source';
 
 const FakeContext = build(
   ngContextBuilder(),
