@@ -1,8 +1,10 @@
 import {
-  PublicModel,
   context,
   asScoped,
   InjectionDef,
+  DEPENDENCIES,
+  ACTIONS,
+  PublicModel,
 } from '@web-fragments/core';
 import {
   starshipGet,
@@ -26,22 +28,16 @@ import { httpClientResolver } from '../../data-sources/base/http-client/http-cli
 //     get: starshipGet,
 //   });
 
-// const starshipRepository = {
-//   [DEPENDENCIES]: {
-//     _client: resolveHttpClient,
-//   },
-//   [FRAGMENTS]: {
-//     getAll: starshipGetAll,
-//     get: starshipGet,
-//   },
-// };
-
 export type StarshipRepository = PublicModel<typeof starshipRepository>;
 
 const starshipRepository = {
-  _client: httpClientResolver,
-  getAll: starshipGetAll,
-  get: starshipGet,
+  [DEPENDENCIES]: {
+    _client: httpClientResolver,
+  },
+  [ACTIONS]: {
+    getAll: starshipGetAll,
+    get: starshipGet,
+  },
 };
 
 export const starshipRepositoryResolver =

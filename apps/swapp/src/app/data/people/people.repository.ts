@@ -1,4 +1,10 @@
-import { PublicModel, context, asScoped } from '@web-fragments/core';
+import {
+  context,
+  asScoped,
+  DEPENDENCIES,
+  ACTIONS,
+  PublicModel,
+} from '@web-fragments/core';
 import {
   peopleGet,
   peopleGetAll,
@@ -9,9 +15,13 @@ import { httpClientResolver } from '../../data-sources/base/http-client/http-cli
 export type PeopleRepository = PublicModel<typeof peopleRepository>;
 
 const peopleRepository = {
-  _client: httpClientResolver,
-  getAll: peopleGetAll,
-  get: peopleGet,
+  [DEPENDENCIES]: {
+    _client: httpClientResolver,
+  },
+  [ACTIONS]: {
+    getAll: peopleGetAll,
+    get: peopleGet,
+  },
 };
 
 export const peopleRepositoryResolver = () =>

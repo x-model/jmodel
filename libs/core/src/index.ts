@@ -4,8 +4,11 @@ export {
   context,
   Context,
   PublicModel,
-  FRAGMENTS,
+  ACTIONS,
   DEPENDENCIES,
+  SERVICE,
+  STORE,
+  REPOSITORY,
 } from './builder/context';
 export { partial } from './builder/partial';
 export { Builder, BuilderPartialContext } from './builder/types';

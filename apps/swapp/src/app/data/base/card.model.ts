@@ -1,9 +1,12 @@
 import {
+  ACTIONS,
   Context,
+  DEPENDENCIES,
   InjectionDef,
   PublicModel,
+  SERVICE,
+  STORE,
   context,
-  props,
 } from '@web-fragments/core';
 import {
   CardCompare,
@@ -13,7 +16,7 @@ import {
   getCard$,
   totalPages$,
 } from './card.fragment';
-import { CardStore, cardStoreResolver } from './card-store';
+import { cardStoreResolver } from './card-store';
 
 // export function partialCardModel() {
 //   return partial(
@@ -42,26 +45,26 @@ export type CardModelProviders = {
   _compare: () => InjectionDef<CardCompare>;
 };
 
-export type CardModel = PublicModel<typeof partialCardModel> & {
-  state: CardStore['state'];
-};
+export type CardModel = PublicModel<typeof partialCardModel>;
 
 const partialCardModel = {
-  _store: cardStoreResolver,
-  _totalPages: totalPages$,
-  _getCard: getCard$,
-  draw: draw$,
-  //() => map(resolveCardStore(), ({store}) => ({store, }),
+  [STORE]: cardStoreResolver,
+  [SERVICE]: {
+    _totalPages: totalPages$,
+    _getCard: getCard$,
+  },
+  [ACTIONS]: {
+    draw: draw$,
+  },
 };
 
 export const cardModel = (providers: CardModelProviders): Context<CardModel> =>
-  context(
-    { ...providers, ...partialCardModel },
-    // czemu w props jest odfiltrowany draw? w sumie dobrze, ale jak to działa
-    props(({ _store }) => ({
-      state: _store.state,
-    }))
-  );
+  // fix return type, at this moment it return all fields, even internal,
+  // context method should return only public fields
+  context({
+    ...partialCardModel,
+    [DEPENDENCIES]: { ...providers },
+  });
 
 // const result = publicCardModel([]);
 
