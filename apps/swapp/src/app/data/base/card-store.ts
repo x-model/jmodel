@@ -1,9 +1,9 @@
 import {
-  Method,
   createReactiveModel,
   createGraph,
   asScoped,
   InjectionDef,
+  ReactiveModel,
 } from '@web-fragments/core';
 import { CardPlayer } from './models/card-player';
 import { Card } from './models/card';
@@ -35,64 +35,78 @@ export const isLoadingQuery = query(
 export const cardStoreResolver = (): InjectionDef<CardStore> =>
   asScoped(cardStoreToken, cardStoreFactory);
 
-export function _draw(): Method<CardState> {
-  const _state = (player: CardPlayer) => ({
-    ...player,
-    isLoading: true,
-    card: null,
-    win: false,
-  });
-
-  return (state) => ({
-    player1: {
-      ..._state(state.player1),
-    },
-    player2: {
-      ..._state(state.player2),
-    },
-  });
+function draw(this: { state: ReactiveModel<CardState> }): void {
+  this.state.set(
+    query((state) => state),
+    (state) => ({
+      player1: {
+        ...state.player1,
+        isLoading: true,
+        card: null,
+        win: false,
+      },
+      player2: {
+        ...state.player2,
+        isLoading: true,
+        card: null,
+        win: false,
+      },
+    })
+  );
 }
 
-export function _drawSuccess(
+function drawSuccess(
+  this: { state: ReactiveModel<CardState> },
   [card1, card2]: [Card, Card],
   winner: number
-): Method<CardState> {
-  const isCard1Winner = [0, 1].includes(winner);
-  const isCard2Winner = [0, -1].includes(winner);
-  const _state = (player: CardPlayer, card: Card, isWinner: boolean) => ({
-    ...player,
-    card,
-    win: isWinner,
-    isLoading: false,
-    score: player.score + (isWinner ? 1 : 0),
-  });
+): void {
+  this.state.set(
+    query((state) => state),
+    (state) => {
+      const isCard1Winner = [0, 1].includes(winner);
+      const isCard2Winner = [0, -1].includes(winner);
+      const _state = (player: CardPlayer, card: Card, isWinner: boolean) => ({
+        ...player,
+        card,
+        win: isWinner,
+        isLoading: false,
+        score: player.score + (isWinner ? 1 : 0),
+      });
 
-  return (state: CardState) => ({
-    player1: {
-      ..._state(state.player1, card1, isCard1Winner),
-    },
-    player2: {
-      ..._state(state.player2, card2, isCard2Winner),
-    },
-  });
+      return {
+        player1: {
+          ..._state(state.player1, card1, isCard1Winner),
+        },
+        player2: {
+          ..._state(state.player2, card2, isCard2Winner),
+        },
+      };
+    }
+  );
 }
 
-export function _drawFailure(): Method<CardState> {
-  const _state = (player: CardPlayer) => ({
-    ...player,
-    isLoading: false,
-    card: null,
-    win: false,
-  });
+function drawFailure(this: { state: ReactiveModel<CardState> }): void {
+  this.state.set(
+    query((state) => state),
+    (state) => ({
+      player1: {
+        ...state.player1,
+        isLoading: false,
+        card: null,
+        win: false,
+      },
+      player2: {
+        ...state.player2,
+        isLoading: false,
+        card: null,
+        win: false,
+      },
+    })
+  );
+}
 
-  return (state) => ({
-    player1: {
-      ..._state(state.player1),
-    },
-    player2: {
-      ..._state(state.player2),
-    },
-  });
+function destroy(this: { state: ReactiveModel<CardState> }): void {
+  this.state.destroy();
 }
 
 export function cardStoreFactory() {
@@ -114,28 +128,6 @@ export function cardStoreFactory() {
   // );
 
   const model = createReactiveModel(initialState);
-
-  const draw = () =>
-    model.set(
-      query((state) => state),
-      _draw()
-    );
-
-  const drawSuccess = (cards: [Card, Card], winner: number) =>
-    model.set(
-      query((state) => state),
-      _drawSuccess(cards, winner)
-    );
-
-  const drawFailure = () =>
-    model.set(
-      query((state) => state),
-      _drawFailure()
-    );
-
-  const destroy = () => model.destroy();
-
-  // console.log('store initialized');
 
   return {
     state: model,
