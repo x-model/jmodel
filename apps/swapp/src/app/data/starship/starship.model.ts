@@ -1,6 +1,12 @@
-import { Context, InjectionDef, asScoped } from '@web-fragments/core';
-import { cardModel, CardModel } from '../base/card.model';
-import { starshipRepositoryResolver } from './starship.repository';
+import {
+  Context,
+  DEPENDENCIES,
+  InjectionDef,
+  asScoped,
+  context,
+} from '@web-fragments/core';
+import { CardModel, partialCardModel } from '../base/card.model';
+import { starshipRepository } from './starship.repository';
 import { compareStarships } from './starship-comparer';
 import { mapStarship } from './starship-mapper';
 import {
@@ -9,24 +15,18 @@ import {
   cardModelToken,
 } from '../base/di-tokens';
 
-// const providers = diDependencies;
-
-// const dependencies = <T extends ExecutionContext>() =>
-//   diDependencies<T, any, { cardRepository: any }>({
-//     cardRepository: asScoped(
-//       cardRepositoryToken,
-//       fromFactory(starshipRepositoryFactory)
-//     ),
-//   });
-
 export const starshipModelResolver = (): InjectionDef<CardModel> =>
   asScoped(cardModelToken, starshipModelFactory);
 
 export const starshipModelFactory = (): Context<CardModel> =>
-  cardModel({
-    _cardRepository: starshipRepositoryResolver,
-    _compare: () => asScoped(cardCompareToken, () => compareStarships),
-    _map: () => asScoped(cardMapToken, () => mapStarship),
+  context({
+    ...partialCardModel,
+    [DEPENDENCIES]: {
+      ...partialCardModel[DEPENDENCIES],
+      _cardRepository: starshipRepository,
+      _compare: () => asScoped(cardCompareToken, () => compareStarships),
+      _map: () => asScoped(cardMapToken, () => mapStarship),
+    },
   });
 
 // do testów potrzebne będą jakieś fakeScopes

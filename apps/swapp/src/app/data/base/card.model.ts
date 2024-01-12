@@ -1,21 +1,5 @@
-import {
-  ACTIONS,
-  Context,
-  DEPENDENCIES,
-  InjectionDef,
-  PublicModel,
-  SERVICE,
-  STORE,
-  context,
-} from '@web-fragments/core';
-import {
-  CardCompare,
-  CardMap,
-  CardRepository,
-  draw$,
-  getCard$,
-  totalPages$,
-} from './card.fragment';
+import { ACTIONS, PublicModel, SERVICE, STORE } from '@web-fragments/core';
+import { draw$, getCard$, totalPages$ } from './card.fragment';
 import { cardStoreResolver } from './card-store';
 
 // export function partialCardModel() {
@@ -39,15 +23,16 @@ import { cardStoreResolver } from './card-store';
 // fragment powinien mieć też typ contextu, wtedy zabezpieczymy exec, jakby np. ktoś zapomniał czegoś zdefiniować,
 // a np. będzie użyte we fragmencie
 
-export type CardModelProviders = {
-  _cardRepository: () => InjectionDef<CardRepository>;
-  _map: () => InjectionDef<CardMap>;
-  _compare: () => InjectionDef<CardCompare>;
-};
-
 export type CardModel = PublicModel<typeof partialCardModel>;
 
-const partialCardModel = {
+// const cardService = {
+//   [ACTIONS]: {
+//     _totalPages: totalPages$,
+//     _getCard: getCard$,
+//   },
+// };
+
+export const partialCardModel = {
   [STORE]: cardStoreResolver,
   [SERVICE]: {
     _totalPages: totalPages$,
@@ -57,14 +42,6 @@ const partialCardModel = {
     draw: draw$,
   },
 };
-
-export const cardModel = (providers: CardModelProviders): Context<CardModel> =>
-  // fix return type, at this moment it return all fields, even internal,
-  // context method should return only public fields
-  context({
-    ...partialCardModel,
-    [DEPENDENCIES]: { ...providers },
-  });
 
 // const result = publicCardModel([]);
 
