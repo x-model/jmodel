@@ -2,19 +2,21 @@ export { build } from './builder/build';
 export { builder } from './builder/builder';
 export {
   context,
-  Context,
   PublicModel,
   ACTIONS,
   DEPENDENCIES,
   SERVICE,
   STORE,
   REPOSITORY,
+  MODEL,
+  WATCH,
+  VALUE,
 } from './builder/context';
 export { partial } from './builder/partial';
 export { Builder, BuilderPartialContext } from './builder/types';
 export { dependencies } from './builder-props/dependencies';
 export { diDependencies } from './builder-props/di-dependencies';
-export { fragments } from './builder-props/fragments';
+// export { fragments } from './builder-props/fragments';
 export { hooks, Hooks } from './builder-props/hooks';
 export { methods } from './builder-props/methods';
 export { props } from './builder-props/props';
@@ -26,9 +28,18 @@ export { publicProps } from './builder-props/public-props';
 export { from } from './builders/from';
 // export { partialBuilder } from './builders/partial-builder';
 // export { createState, Ref, State } from './builders/store-builder';
-export { di, registerAs, injectionToken } from './di/consts';
+export {
+  di,
+  registerAs,
+  injectionToken,
+  Token,
+  TOKEN,
+  FACTORY,
+  LIFETIME,
+  PROVIDERS,
+} from './di/consts';
 export { Container } from './di/container';
-export { asScoped, asSingleton, asTransient } from './di/lifetime';
+export { Lifetime } from './di/lifetime';
 export { fromFactory } from './di/resolvers';
 export {
   Type,
@@ -37,7 +48,7 @@ export {
   InjectionToken,
   InjectionDef,
 } from './di/types';
-export { fragmentFactory } from './fragment/factory.deprecated';
+// export { fragmentFactory } from './fragment/factory.deprecated';
 export { resolveFragment } from './fragment/resolver';
 export {
   Fragment,
@@ -45,6 +56,7 @@ export {
   FragmentType,
   CreationContext,
   ExecutionContext,
+  Context,
   FragmentFactory,
   FragmentFn,
   FragmentFunctionContext,
@@ -52,8 +64,8 @@ export {
   FragmentTemplate,
 } from './fragment/types';
 export { ApiError, ApiResult, sendRequest } from './fragments/api-fragment';
-export { fragment } from './fragments/fragment';
-export { memoFragment } from './fragments/memo-fragment';
+// export { fragment } from './fragments/fragment';
+// export { memoFragment } from './fragments/memo-fragment';
 // export { pureFragment } from './fragments/pure-fragment';
 export { abstract } from './utils/abstract';
 export { Method, Factory, Unwrap, INTERNAL, PUBLIC } from './types';
@@ -61,5 +73,15 @@ export { Method, Factory, Unwrap, INTERNAL, PUBLIC } from './types';
 export {
   createReactiveModel,
   ReactiveModel,
+  computed,
+  isValid,
+  disable,
+  enable,
+  isFirstChange,
 } from './reactive-model/reactive-model';
-export { createGraph, Query } from './reactive-model/graph';
+export {
+  createGraph,
+  Query,
+  rSignal,
+  createSchemaModel,
+} from './reactive-model/graph';

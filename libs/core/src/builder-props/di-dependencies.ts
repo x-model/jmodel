@@ -1,87 +1,40 @@
-import { CreationContext } from '../fragment/types';
+import { Context, CreationContext } from '../fragment/types';
 import { Factory, Unwrap } from '../types';
 import { Container, containerToken } from '../di/container';
-import { INJECTABLE } from '../di/consts';
-import { InjectionDef, InjectionResult, InjectionToken } from '../di/types';
-import { BuilderInitialContext } from '../builder/types';
+import { FACTORY, LIFETIME, PROVIDERS, TOKEN } from '../di/consts';
+import { InjectionDef, InjectionResult } from '../di/types';
+import { Lifetime } from '../di/lifetime';
 
 export function diDependencies<
-  Input extends BuilderInitialContext,
-  Output extends Record<
-    string,
-    () => InjectionToken<unknown> | InjectionDef<unknown>
-  >,
+  Dependencies extends Record<string, InjectionDef<unknown>>,
   Result extends {
-    [P in keyof Output]: InjectionResult<ReturnType<Output[P]>>;
+    [P in keyof Dependencies]: InjectionResult<Dependencies[P]>;
   }
->(deps: Output): Factory<Input, Unwrap<Input & Result>> {
-  return (context: Input & CreationContext) => {
+>(deps: Dependencies): Factory<CreationContext, Unwrap<Context & Result>> {
+  return (context: Context & CreationContext) => {
     // creation context powinien mieć scope, w sumie mamy contextId
     // skąd brać identyfikator dla scope?
     const scope = context._scope;
     const scopeId = context._scope.id; // Symbol('scope');
-    const container = context._inject<Container>(containerToken as any);
-
-    // if (Array.isArray(deps)) {
-    //   deps.forEach((item) => {
-    //     let provider: {
-    //       token: InjectionToken<unknown>;
-    //       lifetime: Lifetime;
-    //       resolveFn: any;
-    //     };
-
-    //     // if (Array.isArray(item) && item.length === 2) {
-    //     //   provider = {
-    //     //     token: item[0].token,
-    //     //     type: null,
-    //     //     resolveFn: item[1],
-    //     //   };
-    //     // } else {
-
-    //     // }
-
-    //     provider = item;
-
-    //     const factory = () => {
-    //       const resolved = provider.resolveFn();
-    //       if (typeof resolved === 'function' && resolved[INJECTABLE]) {
-    //         return resolved(scope);
-    //       }
-    //       return resolved;
-    //     };
-
-    //     container.resolve(provider as any, factory, {
-    //       id: scopeId,
-    //     });
-    //   });
-
-    //   return context;
-    // }
+    const container: Container = context.inject(containerToken as any);
 
     const resolvedDeps = Object.keys(deps).reduce((instances, key) => {
-      const dependency = deps[key]();
-      let instance;
+      // dodać obsługę [PROVIDERS]
+      const dependency = deps[key];
+      resolveProviders(container, context, dependency[PROVIDERS]);
 
-      if (dependency.hasOwnProperty('resolveFn')) {
-        const dep = dependency as InjectionDef<unknown>;
+      let onInitHook = (context) => {};
 
-        const factory = () => {
-          const resolved = dep.resolveFn();
-          if (typeof resolved === 'function' && resolved[INJECTABLE]) {
-            return resolved(scope, { _inject: context._inject });
-          }
-          return resolved;
-        };
+      const onInit: (fn: (context) => void) => void = (fn) => (onInitHook = fn);
 
-        instance = container.resolve(dep, factory, {
-          id: scopeId,
-        });
-      } else {
-        const dep = dependency as InjectionToken<unknown>;
+      const factory = () => dependency[FACTORY](context, { onInit }); // scope, { _inject: context.inject });
 
-        instance = container.resolveByToken(dep, {
-          id: scopeId,
-        });
+      const instance = container.resolve(dependency, factory, {
+        id: scopeId,
+      });
+
+      if (onInitHook && typeof onInitHook === 'function') {
+        onInitHook(context);
       }
 
       return { ...instances, [key]: instance };
@@ -90,3 +43,33 @@ export function diDependencies<
     return { ...context, ...resolvedDeps };
   };
 }
+
+const resolveProviders = (container, context, providers: any) => {
+  const scope = context._scope;
+  const scopeId = context._scope.id;
+
+  Reflect.ownKeys(providers).forEach((key) => {
+    let dependency;
+
+    if (typeof providers[key] === 'function') {
+      dependency = {
+        [TOKEN]: key,
+        [LIFETIME]: Lifetime.scoped,
+        [FACTORY]: providers[key],
+      };
+    } else {
+      dependency = {
+        ...providers[key],
+        [TOKEN]: key,
+      };
+
+      if (Reflect.ownKeys(providers[key]).includes(PROVIDERS)) {
+        resolveProviders(container, context, providers[key]);
+      }
+    }
+
+    const factory = () => dependency[FACTORY](context); // scope, { _inject: context.inject });
+
+    container.register(dependency, factory, scopeId);
+  });
+};

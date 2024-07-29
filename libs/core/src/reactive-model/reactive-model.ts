@@ -1,4 +1,4 @@
-import { Query } from './graph';
+import { Query, VALIDATORS, createGraph2 } from './graph';
 import { TARGET, createGraph } from './graph';
 import { createModel } from './model';
 
@@ -6,8 +6,17 @@ const SOURCE = Symbol('SOURCE');
 const WATCHERS = Symbol('WATCHERS');
 const STATE = Symbol('STATE');
 const TRACKED = Symbol('TRACKED');
+const CALLBACK = Symbol('CALLBACK');
+const QUERY = Symbol('QUERY');
+const PATH = Symbol('PATH');
+const META_DATA = Symbol('META_DATA');
+const MODEL_REF = Symbol('MODEL_REF');
+const DISABLED = Symbol('DISABLED');
+const FIRST_CHANGE = Symbol('FIRST_CHANGE');
 
 export interface ReactiveModel<T> {
+  signals?: any;
+  graph?: any;
   [SOURCE]: Source<T>;
   get: <Value>(query?: Query<T, Value>) => Value | T;
   set: <Value, R>(query: Query<T, Value>, fn: (value: Value) => R) => void;
@@ -32,6 +41,8 @@ export function createReactiveModel<T>(model: T): ReactiveModel<T> {
   };
 
   const reactiveModel = {
+    signals: null,
+    graph: null,
     [SOURCE]: source,
     // TODO Poprawić get, bo teraz jest problem z typem jak używamy get, jest lub i nie wie co przypisać do pola
     get: function <Value>(query?: Query<T, Value>): Value | T {
@@ -58,6 +69,8 @@ export function createReactiveModel<T>(model: T): ReactiveModel<T> {
       } else {
         source[STATE] = newModel as any;
       }
+
+      // runValidators(reactiveModel);
 
       // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
       const filteredChanges = new Set(changes);
@@ -104,9 +117,184 @@ export function createReactiveModel<T>(model: T): ReactiveModel<T> {
     },
   };
 
+  reactiveModel.graph = createModelGraph(model);
+  reactiveModel.signals = createSignals(reactiveModel);
+
   console.log(reactiveModel);
   return reactiveModel;
 }
+
+const runValidators = (reactiveModel) => {
+  Object.keys(reactiveModel.signals).forEach((key) => {
+    (reactiveModel.signals[key][META_DATA].data[VALIDATORS] || []).forEach(
+      (validator) =>
+        validator(reactiveModel.signals[key].value, reactiveModel.get())
+    );
+  });
+};
+
+export const isValid = (model) => {
+  if (model?.$errors) {
+    return false;
+  }
+
+  let valid = true;
+  const params = Object.keys(model).filter((key) => !key.startsWith('$'));
+
+  for (let i = 0; i < params.length; i++) {
+    const param = params[i];
+    valid = valid && isValid(model[param]);
+
+    if (!valid) break;
+  }
+
+  return valid;
+};
+
+export const disable = (signal) => {
+  signal[DISABLED] = true;
+};
+
+export const isDisabled = (signal) => {
+  return !!signal[DISABLED];
+};
+
+export const isFirstChange = (signal) => {
+  return !!signal[FIRST_CHANGE];
+};
+
+export const enable = (signal) => {
+  signal[DISABLED] = false;
+};
+
+const createModelGraph = <T>(model: T) => {
+  const graph = createGraph2(model);
+  return graph;
+};
+
+export const computed = (
+  model,
+  signal1,
+  signal2,
+  callback: (result: any) => any
+) => {
+  const path1 = signal1[PATH];
+  const path2 = signal2[PATH];
+  const query = model.graph.queryFromPaths(path1, path2, callback);
+
+  const signalFn = (callback: (value) => void) => {
+    model.watch(query, () => callback);
+  };
+
+  const signal = {
+    $: signalFn,
+  };
+
+  signal[QUERY] = query;
+  signal[PATH] = query[TARGET];
+
+  Object.defineProperty(signal, '$value', {
+    get: function () {
+      return model.get(query);
+    },
+  });
+
+  return signal;
+};
+
+const createSignals = <T>(reactiveModel: ReactiveModel<T>) => {
+  const signals = reactiveModel.graph.signals.reduce((prev, next) => {
+    const key: string = reactiveModel.graph.getPathByKey(next.key)?.path;
+    const signal = createSignal(
+      next,
+      reactiveModel.graph.queryFromPath(next.key),
+      reactiveModel.graph.getPathByKey(next.key)?.path,
+      reactiveModel
+    );
+
+    const params = key.split('.');
+
+    if (params.length === 1) {
+      return { ...prev, [params[0]]: signal };
+    }
+
+    let obj = prev;
+    let lastParam;
+
+    params.forEach((param, index) => {
+      lastParam = param;
+
+      if (params.length === index + 1) {
+        return;
+      }
+
+      if (!obj.hasOwnProperty(param)) {
+        obj[param] = {};
+      }
+      obj = obj[param];
+    });
+
+    obj[lastParam] = signal;
+
+    return prev;
+  }, {});
+  return signals;
+};
+
+const createSignal = (signalDef, query, path, reactiveModel) => {
+  const signalFn = (callback: (value) => void) => {
+    reactiveModel.watch(query, () => callback);
+  };
+
+  const signal = {
+    $: signalFn,
+  };
+
+  signal[MODEL_REF] = reactiveModel;
+  signal[META_DATA] = signalDef;
+  signal[QUERY] = query;
+  signal[PATH] = path;
+  signal[FIRST_CHANGE] = false;
+
+  Object.defineProperty(signal, '$value', {
+    set: function (value) {
+      if (!signal[DISABLED]) {
+        reactiveModel.set(query, (state) => value);
+        signal[FIRST_CHANGE] = true;
+      }
+    },
+    get: function () {
+      if (signal[DISABLED]) {
+        return undefined;
+      }
+      return reactiveModel.get(query);
+    },
+  });
+
+  Object.defineProperty(signal, '$errors', {
+    get: function () {
+      if (signal[DISABLED]) {
+        return undefined;
+      }
+
+      const errors = (signalDef.data[VALIDATORS] || []).reduce(
+        (errors, validator) => {
+          return {
+            ...errors,
+            ...validator(reactiveModel.get(query), reactiveModel.get()),
+          };
+        },
+        {}
+      );
+
+      return !errors || Object.keys(errors).length === 0 ? undefined : errors;
+    },
+  });
+
+  return signal;
+};
+
+const createSelectors = (model) => {};
 
 function unwatch<T>(watchId: symbol, source: Source<T>): () => void {
   return () => {
@@ -141,6 +329,7 @@ function checkChanges<State, Model>(
   let changes: string[] = [];
   let tracked = source[TRACKED];
 
+  // TODO handle null - null is also object
   if (model && typeof model === 'object') {
     // jak zrobić watch na modelu? całym?
     if (value != model) {

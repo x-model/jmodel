@@ -7,8 +7,8 @@ import {
   ExecutionContext,
   from,
   di,
-  DiContainer,
-} from '@web-fragments/ng-fragments';
+  Container,
+} from '@web-fragments/core';
 import { starshipGet, starshipGetAll } from './starship.data-source';
 
 @Injectable({ providedIn: 'root' })
@@ -57,7 +57,7 @@ export const provide = (
     abstract[di.token] = Symbol('token');
   }
 
-  const container = context._inject(DiContainer);
+  const container = context._inject(Container);
   const scopeId = context.contextId;
   let instance = container.resolve(abstract[di.token], scopeId);
 

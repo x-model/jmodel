@@ -2,7 +2,8 @@ import { diDependencies } from '../builder-props/di-dependencies';
 import { Hooks } from '../builder-props/hooks';
 import { props } from '../builder-props/props';
 import { contextBuilder } from '../builders/context-builder';
-import { INJECTABLE } from '../di/consts';
+import { INJECTABLE, injectionToken } from '../di/consts';
+import { asTransient } from '../di/lifetime';
 import {
   InjectionDef,
   InjectionResult,
@@ -13,6 +14,9 @@ import { ExecutionContext, Fragment } from '../fragment/types';
 import { Unwrap } from '../types';
 import { BuilderPartialContext, BuilderStepConfig } from './types';
 
+export const WATCH = Symbol('WATCH');
+export const VALUE = Symbol('VALUE');
+export const MODEL = Symbol('MODEL');
 export const ACTIONS = Symbol('ACTIONS');
 export const DEPENDENCIES = Symbol('DEPENDENCIES');
 export const SERVICE = Symbol('SERVICE');
@@ -47,15 +51,27 @@ export type ModelStore<T> = T extends {
 export type ModelDependencies<T> = T extends {
   [DEPENDENCIES]: infer D extends Record<
     string,
-    () => InjectionToken<unknown> | InjectionDef<unknown>
+    ModelDef | (() => InjectionToken<unknown> | InjectionDef<unknown>)
   >;
 }
   ? {
-      [P in keyof D]: InjectionResult<ReturnType<D[P]>>;
+      [P in keyof D]: D[P] extends ModelDef
+        ? Model<D[P]>
+        : D[P] extends () => InjectionToken<unknown> | InjectionDef<unknown>
+        ? InjectionResult<ReturnType<D[P]>>
+        : never;
     }
   : never;
 
 export type ModelActions<T> = T extends {
+  [ACTIONS]: infer A extends Record<string, (args: unknown) => unknown>;
+}
+  ? {
+      [P in keyof A]: A[P];
+    }
+  : never;
+
+export type ModelActionsOld<T> = T extends {
   [ACTIONS]: infer A extends Record<string, () => InjectionDef<unknown>>;
 }
   ? {
@@ -73,6 +89,13 @@ export type ModelService<T> = T extends {
 
 export type PublicProps<T> = {
   [P in keyof T as Capitalize<string & P> extends P ? never : P]: T[P];
+};
+
+export type ModelDef = {
+  [DEPENDENCIES]?: unknown;
+  [ACTIONS]?: unknown;
+  [SERVICE]?: unknown;
+  [STORE]?: unknown;
 };
 
 export type InternalModel<T> = T extends {
@@ -151,7 +174,12 @@ export type Model<T> = T extends { [ACTIONS]: unknown; [STORE]: unknown }
 export type PublicModel<
   T extends Record<
     symbol,
-    | Record<string, () => InjectionToken<unknown> | InjectionDef<unknown>>
+    | Record<
+        string,
+        | ((args: any) => unknown)
+        | ModelDef
+        | (() => InjectionToken<unknown> | InjectionDef<unknown>)
+      >
     | (() => InjectionToken<unknown> | InjectionDef<unknown>)
   >
 > = Unwrap<Model<T>>;
@@ -163,14 +191,22 @@ export type BuilderContext = Omit<ExecutionContext, '_exec'>;
 export function context<
   Input extends Record<
     symbol,
-    | Record<string, () => InjectionToken<unknown> | InjectionDef<unknown>>
+    | Record<
+        string,
+        | ((args: any) => unknown)
+        | ModelDef
+        | (() => InjectionToken<unknown> | InjectionDef<unknown>)
+      >
     | (() => InjectionToken<unknown> | InjectionDef<unknown>)
   >
 >(s1: Input): Context<Unwrap<Model<Input>>>;
 export function context<
   Input extends Record<
     symbol,
-    | Record<string, () => InjectionToken<unknown> | InjectionDef<unknown>>
+    | Record<
+        string,
+        ModelDef | (() => InjectionToken<unknown> | InjectionDef<unknown>)
+      >
     | (() => InjectionToken<unknown> | InjectionDef<unknown>)
   >,
   T1 extends BuilderPartialContext
@@ -182,18 +218,34 @@ export function context<
   >
 ): Context<T1>;
 
-export function context<
-  Input extends Record<
-    symbol,
-    Record<string, () => InjectionToken<unknown> | InjectionDef<unknown>>
-  >
->(s1: Input, s2?: any): any {
+export function context(s1: any): any {
   const factory = (scope: Scope) => {
     // const container = scope.rootInjector.get(Container);
 
-    const extractedDependencies = Reflect.ownKeys(s1)
-      .filter((key) => key !== STORE)
-      .reduce((obj, key) => ({ ...obj, ...s1[key] }), {});
+    const extractedDependencies = Reflect.ownKeys(s1).reduce((obj, key) => {
+      let item = s1[key];
+
+      if (key === DEPENDENCIES) {
+        item = Object.keys(item).reduce((deps, depKey) => {
+          let dep = item[depKey];
+
+          if (typeof dep === 'object' && !Array.isArray(dep)) {
+            const contextDef = { ...dep };
+
+            dep = () =>
+              asTransient(injectionToken('dependecy'), () =>
+                context({ ...contextDef })
+              );
+          }
+
+          return { ...deps, [depKey]: dep };
+        }, {});
+      }
+
+      const result = { ...obj, ...item };
+
+      return result;
+    }, {});
 
     const hasStore = !!s1[STORE];
     const deps = diDependencies({
@@ -207,21 +259,23 @@ export function context<
       stateProps = props((ctx: any) => ({ state: ctx._store.state }));
     }
 
-    const steps = [
-      deps,
-      ...(s2 ? [s2] : []),
-      ...(hasStore ? [stateProps] : []),
-    ];
+    const steps = [deps, ...(hasStore ? [stateProps] : [])];
 
-    let result = contextBuilder(scope, (initialContext) =>
-      steps.reduce((context, step) => step(context), initialContext)
-    ) as ExecutionContext & Hooks;
+    // let result = contextBuilder(scope, (initialContext) => ({
+    //   ...steps.reduce((context, step) => step(context), initialContext),
+    //   ...(s1[ACTIONS]
+    //     ? Object.keys(s1[ACTIONS]).reduce(
+    //         (obj, key) => ({ ...obj, [key]: s1[ACTIONS][key] }),
+    //         {}
+    //       )
+    //     : {}),
+    // })) as ExecutionContext & Hooks;
 
-    if (result?.onInit) {
-      result.onInit();
-    }
+    // if (result?.onInit) {
+    //   result.onInit();
+    // }
 
-    return result;
+    return null; // result;
   };
 
   factory[INJECTABLE] = true;

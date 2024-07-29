@@ -17,7 +17,7 @@ const cardRepositoryToken = Symbol('cardRepository');
 const starshipModelToken = Symbol('cardModel');
 
 const dependencies = providers({
-  cardRepository: perLifetimeScope(
+  cardRepository: asScoped(
     cardRepositoryToken,
     fromFactory(starshipRepositoryFactory)
   ),

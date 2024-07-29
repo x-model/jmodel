@@ -4,43 +4,65 @@ import { CollectionResult } from './models/collection-result';
 import { DetailApiResult } from './models/detail-api-result';
 import { CollectionParams } from './models/collection-params';
 import { getCollectionParams } from '../../data/base/utils/params.util';
-import { fragment, ApiResult } from '@web-fragments/core';
-import { ApiContext, Input } from './http-client/http-client';
+import { ApiResult, Context } from '@web-fragments/core';
+import { httpClient } from './http-client/http-client';
 
 export const baseUrl = 'https://www.swapi.tech/api';
 
-export const baseGetAll = (resource: string) =>
-  fragment(
-    async ({
-      client,
-      _input: params,
-    }: ApiContext & Input<CollectionParams>) => {
-      try {
-        const response = await client(
-          `${baseUrl}/${resource}?${getCollectionParams(params)}`
-        );
-        const result = await response.json();
-        return { data: adaptToCollectionResult(result), error: null };
-      } catch (error) {
-        return Promise.resolve({ data: null, error });
-      }
-    }
-  );
+export async function getAll(
+  context: Context,
+  resource: string,
+  params: CollectionParams
+): Promise<ApiResult<CollectionResult>> {
+  const client = context.inject(httpClient as any);
 
-export const baseGet = <T>(resource: string) =>
-  fragment<number, Promise<ApiResult<T>>>(
-    async ({ client, _input: id }: ApiContext & Input<number>) => {
-      try {
-        const response = await client(`${baseUrl}/${resource}/${id}`);
-        const result = await response.json();
-        return { data: adaptToDetailResult(result), error: null };
-      } catch (error) {
-        return Promise.resolve({ data: null, error });
-      }
-    }
-  );
+  try {
+    const response = await client(
+      `${baseUrl}/${resource}?${getCollectionParams(params)}`
+    );
+    const result = await response.json();
+    return { data: adaptToCollectionResult(result), error: null };
+  } catch (error) {
+    return Promise.resolve({ data: null, error });
+  }
+}
 
-const adaptToDetailResult = <T extends object, R>(model: T): R | null => {
+// export function get<T>(resource: string) {
+//   return async function (this: ApiContext, id: number): Promise<ApiResult<T>> {
+//     const { resource } = this.params[get];
+
+//     try {
+//       const response = await this.client(`${baseUrl}/${resource}/${id}`);
+//       const result = await response.json();
+//       return { data: adaptToDetailResult(result), error: null };
+//     } catch (error) {
+//       return Promise.resolve({ data: null, error });
+//     }
+//   };
+// }
+
+export async function get<T>(
+  context: Context,
+  resource: string,
+  id: number
+): Promise<ApiResult<T>> {
+  // const { resource } = this.params['resource'];
+  // const resource = this.contextFor(get);
+  // const { resource } = this.context.get('resource');
+  const client = context.inject(httpClient as any);
+
+  try {
+    const response = await client(`${baseUrl}/${resource}/${id}`);
+    const result = await response.json();
+    return { data: adaptToDetailResult(result), error: null };
+  } catch (error) {
+    return Promise.resolve({ data: null, error });
+  }
+}
+
+export const adaptToDetailResult = <T extends object, R>(
+  model: T
+): R | null => {
   if (!model) {
     return null;
   }
@@ -59,7 +81,10 @@ const adaptToDetailResult = <T extends object, R>(model: T): R | null => {
   );
 };
 
-const adaptToCollectionResult = <T extends object, R extends CollectionResult>(
+export const adaptToCollectionResult = <
+  T extends object,
+  R extends CollectionResult
+>(
   model: T
 ): R | null => {
   if (!model) {

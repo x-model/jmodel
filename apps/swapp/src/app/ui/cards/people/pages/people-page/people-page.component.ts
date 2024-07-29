@@ -1,10 +1,10 @@
 import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { build, diDependencies } from '@web-fragments/core';
+import { diDependencies } from '@web-fragments/core';
 import { ngContextBuilder } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
-import { CARD_COMPONENT_CONTEXT } from '../../../../../data/base/card.fragment';
-import { peopleModelResolver } from '../../../../../data';
+import { peopleSource } from 'apps/swapp/src/app/data';
+import { CARD_COMPONENT_CONTEXT } from '../../../base/context/card-component.context';
 
 const styles = `
   :host {
@@ -14,9 +14,8 @@ const styles = `
 `;
 
 @Injectable()
-export class PeopleComponentContext extends build(
-  ngContextBuilder(),
-  diDependencies({ model: peopleModelResolver })
+export class PeopleComponentContext extends ngContextBuilder((initialContext) =>
+  diDependencies({ model: peopleSource })(initialContext)
 ) {}
 
 @Component({

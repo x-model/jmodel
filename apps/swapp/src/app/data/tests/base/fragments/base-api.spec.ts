@@ -3,16 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { build, fragments, methods } from '@web-fragments/core';
 import { ContextType, ngContextBuilder } from '@web-fragments/ng-fragments';
-import {
-  baseGet,
-  baseGetAll,
-} from '../../../../data-sources/base/base-data-source';
+import { get, getAll } from '../../../../data-sources/base/base-data-source';
 
 const FakeContext = build(
   ngContextBuilder(),
   fragments({
-    getAll$: baseGetAll(''),
-    get$: baseGet(''),
+    getAll$: getAll(''),
+    get$: get(''),
   }),
   methods(({ _exec, get$, getAll$ }) => ({
     get: () => _exec(get$),

@@ -1,39 +1,33 @@
-import { CreationContext, ExecutionContext, Fragment } from '../fragment/types';
+import { Context, CreationContext } from '../fragment/types';
 import { BuilderPartialContext } from '../builder/types';
 import { Factory } from '../types';
 import { ProviderToken, Scope } from '../di/types';
 import { contextToken } from '../fragment/resolver';
+import { Token } from '../di/consts';
 
 export function contextBuilder<FactoryResult extends BuilderPartialContext>(
   scope: Scope,
-  factory: Factory<ExecutionContext, FactoryResult>,
+  factory: Factory<Context, FactoryResult>,
   name?: string
-): ExecutionContext {
+): Context {
   const _id = Symbol('CONTEXT_ID');
   let _innerContext: FactoryResult = {} as any;
-  let _executionContext: ExecutionContext;
+  let _executionContext: Context;
 
-  const _inject = <T>(token: ProviderToken<T>): T => {
+  const inject = <T extends Token<unknown>>(token: T): T['_'] => {
     if (token === (contextToken as any)) {
       return _innerContext as any;
     }
     return scope.inject(token as any);
   };
 
-  const _exec = <TFragmentIn, TFragmentOut>(
-    fragment: Fragment<TFragmentIn, TFragmentOut>,
-    input?: TFragmentIn
-  ): TFragmentOut => {
-    return fragment({
-      ..._executionContext,
-      ..._innerContext,
-      _input: input,
-    });
+  const execute = (fn: (...args: any[]) => unknown, ...params): any => {
+    return fn.call(this, ...params);
   };
 
   _executionContext = {
-    _exec,
-    _inject,
+    execute,
+    inject,
   };
 
   const _creationContext: Partial<CreationContext> = {
@@ -45,41 +39,17 @@ export function contextBuilder<FactoryResult extends BuilderPartialContext>(
   const contextFactory = {
     ..._creationContext,
     _injector: {
-      get: <T>(token: ProviderToken<T>) => _inject(token as any) as T,
+      get: <T>(token: ProviderToken<T>) => inject(token as any) as T,
     },
     _scope: scope,
   } as CreationContext;
 
   const config = factory(contextFactory) as FactoryResult & CreationContext;
-  let internalProps;
   let publicProps;
 
   Object.keys(config as any).forEach((key) => {
-    if (key.startsWith('_')) {
-      internalProps = {
-        ...internalProps,
-        [key.replace(/^_/, '')]: config[key],
-      };
-    } else {
-      publicProps = { ...publicProps, [key]: config[key] };
-    }
+    publicProps = { ...publicProps, [key]: config[key] };
   });
-
-  const internalContext = getInnerContext<FactoryResult & CreationContext>(
-    internalProps,
-    contextFactory
-  );
-
-  for (const key in internalContext) {
-    // do każdego value podpinać jakoś name (key), wtedy możemy tego używać do logs
-
-    Object.defineProperty(_innerContext, key, {
-      value: internalContext[key],
-      writable: true,
-      configurable: true,
-      enumerable: true,
-    });
-  }
 
   const publicContext = getInnerContext<FactoryResult & CreationContext>(
     publicProps,
@@ -89,8 +59,8 @@ export function contextBuilder<FactoryResult extends BuilderPartialContext>(
   let context = {
     _id,
     _contextName: name,
-    _inject,
-    _exec,
+    inject,
+    execute,
   };
 
   for (const key in publicContext) {

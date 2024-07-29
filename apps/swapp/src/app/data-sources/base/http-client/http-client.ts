@@ -1,13 +1,9 @@
-import {
-  injectionToken,
-  asSingleton,
-  ExecutionContext,
-} from '@web-fragments/core';
+import { Token, TOKEN, Lifetime, LIFETIME, FACTORY } from '@web-fragments/core';
 
-export const httpClientToken = injectionToken<typeof fetch>('httpClient');
+export const HTTP_CLIENT: Token<typeof fetch> = Symbol('HTTP_CLIENT');
 
-export const httpClientResolver = () =>
-  asSingleton<typeof fetch>(httpClientToken, () => fetch);
-
-export type ApiContext = { client: typeof fetch } & ExecutionContext;
-export type Input<T> = { _input: T };
+export const httpClient = {
+  [TOKEN]: HTTP_CLIENT,
+  [LIFETIME]: Lifetime.singleton,
+  [FACTORY]: () => (url) => fetch(url),
+};

@@ -128,6 +128,7 @@ export function createModel(model: any): any {
   let facade = {};
   if (
     model &&
+    // TODO handle null - null is also object
     typeof model === 'object' &&
     ['Array', 'Object'].includes(model.contructor.name)
   ) {

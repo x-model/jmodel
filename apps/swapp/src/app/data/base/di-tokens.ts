@@ -1,15 +1,6 @@
-import { injectionToken } from '@web-fragments/core';
-import { CardCompare, CardMap, CardRepository } from './card.fragment';
-import { CardStore } from './card-store';
-import { CardModel } from './card.model';
+import { Token } from '@web-fragments/core';
+import { CardCompare, CardMap, CardRepository } from './models/card-context';
 
-export const cardStoreToken = injectionToken<CardStore>('cardStore');
-
-export const cardRepositoryToken =
-  injectionToken<CardRepository>('cardRepository');
-
-export const cardModelToken = injectionToken<CardModel>('cardModel');
-
-export const cardCompareToken = injectionToken<CardCompare>('cardCompareToken');
-
-export const cardMapToken = injectionToken<CardMap>('cardMapToken');
+export const REPOSITORY: Token<CardRepository> = Symbol('CARD_REPOSITORY');
+export const CARD_COMPARE: Token<CardCompare> = Symbol('CARD_COMPARE');
+export const CARD_MAP: Token<CardMap> = Symbol('CARD_MAP');

@@ -1,23 +1,17 @@
 import {
   DestroyRef,
-  Injectable,
   Injector,
-  ProviderToken,
   inject,
   EnvironmentInjector,
 } from '@angular/core';
 import {
   CreationContext,
-  ExecutionContext,
-  Fragment,
-  FragmentFactory,
-  Builder,
   BuilderPartialContext,
-  Hooks,
   Factory,
   Container,
   Type,
-  resolveFragment,
+  Context,
+  Token,
 } from '@web-fragments/core';
 
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
@@ -29,115 +23,63 @@ export type BuilderConfig = {
   name?: string;
 };
 
-export function ngContextBuilder(
-  builderConfig?: BuilderConfig
-): Builder<ExecutionContext, Type<ExecutionContext>> {
-  return function <FactoryResult extends BuilderPartialContext>(
-    factory: Factory<ExecutionContext, FactoryResult>
-  ): Type<ExecutionContext> {
-    @Injectable({ providedIn: builderConfig?.providedIn })
-    // TODO Rename
-    class Context implements ExecutionContext {
-      _contextName = builderConfig?.name;
-      _injector = inject(Injector);
-      _rootInjector = inject(EnvironmentInjector);
-      _container = inject(Container);
-      // Symbol(builderConfig?.name || 'CONTEXT_ID')
-      // Ułatwi potem debugowanie
-      _id = Symbol('CONTEXT_ID');
-      /**
-       * prevents to use context during creation process
-       */
-      _created = false;
-      _innerContext: FactoryResult;
-      _scope = this._container.createScope();
-      _executionContext: ExecutionContext = {
-        _exec: (fragment, input?) => this._exec(fragment, input),
-        _inject: (token) => this._inject(token),
-      };
-      _creationContext: CreationContext = {
-        _contextId: this._id,
-        _injector: this._injector,
-        _scope: this._scope,
-        ...this._executionContext,
-      };
+export function ngContextBuilder<FactoryResult extends Record<string, unknown>>(
+  factory: Factory<CreationContext, FactoryResult>
+): Type<Context> {
+  class CONTEXT implements Context {
+    _injector = inject(Injector);
+    _rootInjector = inject(EnvironmentInjector);
+    _container = inject(Container);
+    // Symbol(builderConfig?.name || 'CONTEXT_ID')
+    // Ułatwi potem debugowanie
+    _id = Symbol('CONTEXT_ID');
+    /**
+     * prevents to use context during creation process
+     */
+    _innerContext: FactoryResult;
+    _scope = this._container.createScope();
 
-      constructor() {
-        this._injector
-          .get(DestroyRef)
-          .onDestroy(() => this._container.destroyScope(this._scope.id));
+    _creationContext: CreationContext = {
+      _contextId: this._id,
+      _injector: this._injector,
+      _scope: this._scope,
+      execute: (fn, ...args) => this.execute(fn, ...args),
+      inject: (token) => this.inject<any>(token),
+    };
 
-        const config = factory(this._creationContext) as FactoryResult &
-          CreationContext;
+    constructor() {
+      this._injector
+        .get(DestroyRef)
+        .onDestroy(() => this._container.destroyScope(this._scope.id));
 
-        this._innerContext = getInnerContext<FactoryResult & CreationContext>(
-          config,
-          this._creationContext
-        );
+      const config = factory(this._creationContext) as FactoryResult &
+        CreationContext;
 
-        for (const key in this._innerContext) {
-          // do każdego value podpinać jakoś name (key), wtedy możemy tego używać do logs
+      this._innerContext = getInnerContext<FactoryResult & CreationContext>(
+        config,
+        this._creationContext
+      );
 
-          Object.defineProperty(this, key, {
-            value: this._innerContext[key],
-            writable: false,
-          });
-        }
+      for (const key in this._innerContext) {
+        // do każdego value podpinać jakoś name (key), wtedy możemy tego używać do logs
 
-        this._created = true;
-
-        registerHooks(this._innerContext as Hooks, this._injector);
-      }
-
-      _inject<T>(token: ProviderToken<T>): T {
-        return this._scope.inject(token as any);
-      }
-
-      _exec<TFragmentIn, TFragmentOut>(
-        fragmentOrFactory:
-          | FragmentFactory<TFragmentIn, TFragmentOut>
-          | Fragment<TFragmentIn, TFragmentOut>,
-        input?: TFragmentIn
-      ): TFragmentOut {
-        let context = {};
-
-        if (!this._created) {
-          console.warn('Cannot use context during creation');
-        } else {
-          context = {
-            ...this._innerContext,
-          };
-        }
-        const fragmentInstance = resolveFragment(fragmentOrFactory, {
-          contextId: this._id,
-          injector: this._injector,
-        });
-
-        if (!fragmentInstance) {
-          throw new Error('Cannot resolve fragment');
-        }
-
-        // we don't have to run this from injectionContext, because developer should use context._inject method
-        return fragmentInstance({
-          ...this._executionContext,
-          ...context,
-          _input: input,
+        Object.defineProperty(this, key, {
+          value: this._innerContext[key],
+          writable: false,
         });
       }
     }
 
-    return Context;
-  };
-}
+    inject<T extends Token<unknown>>(token: T): T['_'] {
+      return this._scope.inject(token as any);
+    }
 
-function registerHooks(hooks: Hooks, injector: Injector): void {
-  if (hooks.onInit) {
-    hooks.onInit();
+    execute(fn: (...args: any[]) => unknown, ...params): any {
+      return fn.call(this, ...params);
+    }
   }
 
-  if (hooks.onDestroy && injector) {
-    this._injector.get(DestroyRef).onDestroy(() => hooks.onDestroy());
-  }
+  return CONTEXT;
 }
 
 function getInnerContext<

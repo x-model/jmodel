@@ -24,14 +24,11 @@ import { Query, ReactiveModel } from '@web-fragments/core';
 // })
 
 export function refToSignal<T, Value>(
-  model: ReactiveModel<T>,
-  query: Query<T, Value>
+  ref: { $: (value: any) => any; $value: any }
   // onCleanUp?: Ref<T>
 ): Signal<Value> {
-  const value = model.get(query) as Value;
-  const _signal = signal(value);
-
-  model.watch(query, () => (value) => {
+  const _signal = signal(ref.$value);
+  ref.$((value) => {
     console.log('value changed', value);
     _signal.set(value);
   });

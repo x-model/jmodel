@@ -42,7 +42,7 @@ export function resolveFragment<TFragmentIn, TFragmentOut>(
 export function fragmentFactory(fragment: Fragment<any, any>) {
   const factory = (scope: Scope, creationContext: CreationContext) => {
     // const container = scope.rootInjector.get(Container);
-    const context: any = creationContext._inject(contextToken as any);
+    const context: any = creationContext.inject(contextToken as any);
 
     const result = (input?: any) => fragment({ ...context, _input: input });
     return result;

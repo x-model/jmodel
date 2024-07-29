@@ -1,24 +1,30 @@
-import { Context, DEPENDENCIES, asScoped, context } from '@web-fragments/core';
+import {
+  FACTORY,
+  LIFETIME,
+  Lifetime,
+  PROVIDERS,
+  TOKEN,
+  rSignal,
+} from '@web-fragments/core';
 import { comparePeople } from './people-comparer';
 import { mapPeople } from './people-mapper';
-import { CardModel, partialCardModel } from '../base/card.model';
-import {
-  cardCompareToken,
-  cardMapToken,
-  cardModelToken,
-} from '../base/di-tokens';
+import { CARD_COMPARE, CARD_MAP, REPOSITORY } from '../base/di-tokens';
 import { peopleRepository } from './people.repository';
+import { CARD_STORE, cardStore } from '../base/card-store';
+import { sourceFactory } from '../base/models/card-context';
+import { createModel } from 'libs/core/src/reactive-model/model';
 
-export const peopleModelResolver = () =>
-  asScoped(cardModelToken, peopleModelFactory);
-
-export const peopleModelFactory = (): Context<CardModel> =>
-  context({
-    ...partialCardModel,
-    [DEPENDENCIES]: {
-      ...partialCardModel[DEPENDENCIES],
-      _cardRepository: peopleRepository,
-      _compare: () => asScoped(cardCompareToken, () => comparePeople),
-      _map: () => asScoped(cardMapToken, () => mapPeople),
-    },
-  });
+export const peopleSource = {
+  [TOKEN]: Symbol('PEOPLE_SOURCE'),
+  [LIFETIME]: Lifetime.scoped,
+  [PROVIDERS]: {
+    // [MEMO]: {
+    //   totalPages$,
+    // },
+    [REPOSITORY]: peopleRepository,
+    [CARD_STORE]: cardStore,
+    [CARD_COMPARE]: () => comparePeople,
+    [CARD_MAP]: () => mapPeople,
+  },
+  [FACTORY]: sourceFactory,
+};

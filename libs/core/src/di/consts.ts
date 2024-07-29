@@ -2,6 +2,12 @@ import { Lifetime } from './lifetime';
 import { InjectionToken } from './types';
 
 export const INJECTABLE = Symbol('INJECTABLE');
+export const TOKEN = Symbol('TOKEN');
+export const LIFETIME = Symbol('LIFETIME');
+export const FACTORY = Symbol('FACTORY');
+export const PROVIDERS = Symbol('PROVIDERS');
+
+export type Token<T> = Partial<{ _: T }> & symbol;
 
 export function injectionToken<T>(description: string): InjectionToken<T> {
   return { token: Symbol(description) };

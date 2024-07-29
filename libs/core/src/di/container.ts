@@ -1,4 +1,4 @@
-import { injectionToken } from './consts';
+import { FACTORY, LIFETIME, TOKEN, Token, injectionToken } from './consts';
 import { Lifetime } from './lifetime';
 import { InjectionDef, InjectionToken, ManagedScope } from './types';
 import { Scope, ScopeOptions } from './types';
@@ -23,7 +23,7 @@ export class Container {
     this.createRootScope();
   }
 
-  resolveByToken<T>(token: InjectionToken<T>, scopeInfo?: ScopeInfo) {
+  resolveByToken<T>(token: Token<T>, scopeInfo?: ScopeInfo) {
     if (!token) {
       throw new Error('It is not injectable');
     }
@@ -38,7 +38,7 @@ export class Container {
       throw new Error('Cannot resolve. Provider not exists');
     }
 
-    return this.registrations.get(id).get(token.token).value;
+    return this.registrations.get(id).get(token).value;
   }
 
   resolve<T>(
@@ -46,16 +46,16 @@ export class Container {
     factory: any,
     scopeInfo?: ScopeInfo
   ) {
-    if (!injectionDef.token) {
+    if (!injectionDef[TOKEN]) {
       throw new Error('It is not injectable');
     }
 
-    if (injectionDef.lifetime === Lifetime.transient) {
+    if (injectionDef[LIFETIME] === Lifetime.transient) {
       return factory();
     }
 
     const scopeId =
-      injectionDef?.lifetime === Lifetime.singleton
+      injectionDef?.[LIFETIME] === Lifetime.singleton
         ? ROOT_SCOPE
         : scopeInfo?.id;
 
@@ -65,13 +65,13 @@ export class Container {
       this.register(injectionDef, factory, id);
     }
 
-    const instance = this.registrations.get(id).get(injectionDef.token.token);
+    const instance = this.registrations.get(id).get(injectionDef[TOKEN]);
 
     if (!instance) {
       this.register(injectionDef, factory, id);
     }
 
-    return this.registrations.get(id).get(injectionDef.token.token).value;
+    return this.registrations.get(id).get(injectionDef[TOKEN]).value;
   }
 
   getDependency<T>(token: symbol, scopeId: symbol, scopeParentId?: symbol): T {
@@ -127,20 +127,20 @@ export class Container {
     if (!scopeMap) {
       this.registrations.set(
         scopeId,
-        new Map([[injectionDef.token.token, { value: factory() }]])
+        new Map([[injectionDef[TOKEN], { value: factory() }]])
       );
 
-      console.log('DI: Registered', injectionDef.resolveFn.name);
+      // console.log('DI: Registered', injectionDef.resolveFn.name);
     } else {
-      if (scopeMap.has(injectionDef.token.token)) {
+      if (scopeMap.has(injectionDef[TOKEN])) {
         throw new Error('This object is already registered');
       }
 
-      scopeMap.set(injectionDef.token.token, {
+      scopeMap.set(injectionDef[TOKEN], {
         value: factory(),
       });
 
-      console.log('DI: Registered', injectionDef.resolveFn.name);
+      // console.log('DI: Registered', injectionDef.resolveFn.name);
     }
 
     // const _scope = this.scopes.get(scopeId);
@@ -151,8 +151,8 @@ export class Container {
   }
 
   private unregister<T>(injectionDef: InjectionDef<T>, scopeInfo?: ScopeInfo) {
-    console.log('destroyed', injectionDef.resolveFn.name);
-    this.registrations.get(scopeInfo.id).delete(injectionDef.token.token);
+    // console.log('destroyed', injectionDef.resolveFn.name);
+    this.registrations.get(scopeInfo.id).delete(injectionDef[TOKEN]);
 
     if (this.registrations.get(scopeInfo.id).size === 0) {
       this.registrations.delete(scopeInfo.id);
@@ -171,7 +171,12 @@ export class Container {
       if (token === containerToken) {
         return this;
       }
-      return this.getDependency(token.token, id, parentId);
+
+      if ((token as any)[LIFETIME] === Lifetime.singleton) {
+        return this.resolve(token as any, () => (token as any)[FACTORY]());
+      }
+
+      return this.getDependency(token as any, id, parentId);
     };
     const onRelease = (callback: () => void) => cleanUps.push(callback);
 

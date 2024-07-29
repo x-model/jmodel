@@ -1,5 +1,11 @@
-import { ACTIONS, PublicModel, SERVICE, STORE } from '@web-fragments/core';
-import { draw$, getCard$, totalPages$ } from './card.fragment';
+import {
+  ACTIONS,
+  MODEL,
+  PublicModel,
+  SERVICE,
+  STORE,
+} from '@web-fragments/core';
+import { draw, getCard$, totalPages$ } from './card.fragment';
 import { cardStoreResolver } from './card-store';
 
 // export function partialCardModel() {
@@ -23,7 +29,7 @@ import { cardStoreResolver } from './card-store';
 // fragment powinien mieć też typ contextu, wtedy zabezpieczymy exec, jakby np. ktoś zapomniał czegoś zdefiniować,
 // a np. będzie użyte we fragmencie
 
-export type CardModel = PublicModel<typeof partialCardModel>;
+// export type CardModel = PublicModel<typeof partialCardModel>;
 
 // const cardService = {
 //   [ACTIONS]: {
@@ -32,14 +38,21 @@ export type CardModel = PublicModel<typeof partialCardModel>;
 //   },
 // };
 
-export const partialCardModel = {
-  [STORE]: cardStoreResolver,
-  [SERVICE]: {
-    _totalPages: totalPages$,
-    _getCard: getCard$,
-  },
+// export const partialCardModel = {
+//   [STORE]: cardStoreResolver,
+//   [SERVICE]: {
+//     _totalPages: totalPages$,
+//     _getCard: getCard$,
+//   },
+//   [ACTIONS]: {
+//     draw,
+//   },
+// };
+
+export const cardSource = {
+  [MODEL]: cardStoreResolver,
   [ACTIONS]: {
-    draw: draw$,
+    draw,
   },
 };
 

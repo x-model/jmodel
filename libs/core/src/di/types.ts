@@ -1,3 +1,4 @@
+import { FACTORY, LIFETIME, PROVIDERS, TOKEN, Token } from './consts';
 import { Lifetime } from './lifetime';
 
 export interface Type<T> extends Function {
@@ -20,9 +21,10 @@ export type InjectionTokenType<T> = T extends InjectionToken<infer TInner>
   : T;
 
 export type InjectionDef<T> = {
-  token: InjectionToken<T>;
-  lifetime: Lifetime;
-  resolveFn;
+  [TOKEN]: Token<unknown>;
+  [LIFETIME]: Lifetime;
+  [PROVIDERS]?: any;
+  [FACTORY]: any;
 };
 
 export type InjectionResult<T> = T extends InjectionToken<infer IType>

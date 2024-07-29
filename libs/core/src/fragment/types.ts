@@ -1,6 +1,13 @@
+import { Token } from '../di/consts';
 import { Injector, ProviderToken, Scope } from '../di/types';
 
 export type Fragments = Record<string, Fragment<unknown, unknown>>;
+
+export type InjectFn = <T extends Token<unknown>>(value: T) => T['_'];
+export type ExecuteFn = <T extends (...params: any[]) => unknown>(
+  fn: T,
+  ...params
+) => ReturnType<T>;
 
 export type ExecutionContext = {
   _exec: <TFragmentIn, TFragmentOut>(
@@ -11,11 +18,16 @@ export type ExecutionContext = {
   _inject: <T>(token: ProviderToken<T>) => T;
 };
 
+export type Context = {
+  inject: InjectFn;
+  execute: ExecuteFn;
+};
+
 export type CreationContext = {
   _contextId: symbol;
   _injector: Injector;
   _scope: Scope;
-} & ExecutionContext;
+} & Context;
 
 export type FragmentContext<T> = T extends {
   new (): infer R;
