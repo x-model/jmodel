@@ -82,6 +82,6 @@ export {
 export {
   createGraph,
   Query,
-  rSignal,
+  $,
   createSchemaModel,
 } from './reactive-model/graph';

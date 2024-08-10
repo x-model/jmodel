@@ -4,7 +4,6 @@ import {
   Lifetime,
   PROVIDERS,
   TOKEN,
-  rSignal,
 } from '@web-fragments/core';
 import { comparePeople } from './people-comparer';
 import { mapPeople } from './people-mapper';

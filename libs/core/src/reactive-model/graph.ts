@@ -55,11 +55,7 @@ export type Graph<T> = {
   ): Query<T, R>;
 };
 
-export function rSignal<T>(
-  value: T,
-  validators?: any[],
-  options?: { value?: any }
-) {
+export function $<T>(value: T, validators?: any[], options?: { value?: any }) {
   return {
     [SIGNAL]: value,
     [VALIDATORS]: validators,
@@ -291,7 +287,7 @@ function createChildSchemaModel(
     // TODO
   }
 
-  // przypadek model = rSignal({...})
+  // przypadek model = $({...})
   // TODO handle null - null is also object
   if (typeof model === 'object' && Reflect.ownKeys(model).includes(SIGNAL)) {
     if (typeof model[SIGNAL] === 'object') {

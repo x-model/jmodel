@@ -1,14 +1,14 @@
 import { FROM_SCHEMA, SIGNAL, SIGNAL_VALUE } from './graph';
 
 // export const cardModel = {
-//   player1: rSignal({
+//   player1: $({
 //     score: 0,
-//     isLoading: rSignal(false),
+//     isLoading: $(false),
 //     win: false,
 //   }),
-//   player2: rSignal({
+//   player2: $({
 //     score: 0,
-//     isLoading: rSignal(false),
+//     isLoading: $(false),
 //     win: false,
 //   }),
 //   person: {

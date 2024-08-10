@@ -7,7 +7,7 @@ import {
   Lifetime,
   FACTORY,
   Token,
-  rSignal,
+  $,
   computed,
 } from '@web-fragments/core';
 import { CardPlayer } from './models/card-player';
@@ -46,10 +46,6 @@ const initialState: CardState = {
 //   },
 // };
 
-// const rSignal = null,
-//   wSignal = null;
-// const store = null;
-
 const min = (options: any) => (value: any, state: any) => {
   console.log('min validator');
 };
@@ -58,27 +54,27 @@ const max = (options: any) => (value: any, state: any) => {
 };
 
 export const cardModel = {
-  player1: rSignal({
+  player1: $({
     score: 0,
-    isLoading: rSignal(false),
+    isLoading: $(false),
     win: false,
   }),
-  player2: rSignal({
+  player2: $({
     score: 0,
-    isLoading: rSignal(false),
+    isLoading: $(false),
     win: false,
   }),
 };
 
 // export const cardModel = {
-//   player1: rSignal({
-//     score: rSignal(0, [min(0), max(10)]),
-//     isLoading: rSignal(false),
+//   player1: $({
+//     score: $(0, [min(0), max(10)]),
+//     isLoading: $(false),
 //     win: false,
 //   }),
-//   player2: rSignal({
+//   player2: $({
 //     score: 0,
-//     isLoading: rSignal(false),
+//     isLoading: $(false),
 //     win: false,
 //   }),
 // };
@@ -101,74 +97,60 @@ const { query } = graph;
 //   ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
 // );
 
-function draw(this: { state: ReactiveModel<CardState> }): void {
-  this.state.set(
-    query((state) => state),
-    (state) => ({
-      player1: {
-        ...state.player1,
-        isLoading: true,
-        card: null,
-        win: false,
-      },
-      player2: {
-        ...state.player2,
-        isLoading: true,
-        card: null,
-        win: false,
-      },
-    })
-  );
+function draw(this: { signals: { player1: any; player2: any } }): void {
+  this.signals.player1.$value = {
+    ...this.signals.player1.$value,
+    isLoading: true,
+    card: null,
+    win: false,
+  };
+
+  this.signals.player2.$value = {
+    ...this.signals.player2.$value,
+    isLoading: true,
+    card: null,
+    win: false,
+  };
 }
 
 function drawSuccess(
-  this: { state: ReactiveModel<CardState> },
+  this: { signals: { player1: any; player2: any } },
   [card1, card2]: [Card, Card],
   winner: number
 ): void {
-  this.state.set(
-    query((state) => state),
-    (state) => {
-      const isCard1Winner = [0, 1].includes(winner);
-      const isCard2Winner = [0, -1].includes(winner);
-      const _state = (player: CardPlayer, card: Card, isWinner: boolean) => ({
-        ...player,
-        card,
-        win: isWinner,
-        isLoading: false,
-        score: player.score + (isWinner ? 1 : 0),
-      });
+  const isCard1Winner = [0, 1].includes(winner);
+  const isCard2Winner = [0, -1].includes(winner);
+  const _state = (player: CardPlayer, card: Card, isWinner: boolean) => ({
+    ...player,
+    card,
+    win: isWinner,
+    isLoading: false,
+    score: player.score + (isWinner ? 1 : 0),
+  });
 
-      return {
-        player1: {
-          ..._state(state.player1, card1, isCard1Winner),
-        },
-        player2: {
-          ..._state(state.player2, card2, isCard2Winner),
-        },
-      };
-    }
-  );
+  this.signals.player1.$value = {
+    ..._state(this.signals.player1.$value, card1, isCard1Winner),
+  };
+
+  this.signals.player2.$value = {
+    ..._state(this.signals.player2.$value, card2, isCard2Winner),
+  };
 }
 
-function drawFailure(this: { state: ReactiveModel<CardState> }): void {
-  this.state.set(
-    query((state) => state),
-    (state) => ({
-      player1: {
-        ...state.player1,
-        isLoading: false,
-        card: null,
-        win: false,
-      },
-      player2: {
-        ...state.player2,
-        isLoading: false,
-        card: null,
-        win: false,
-      },
-    })
-  );
+function drawFailure(this: { signals: { player1: any; player2: any } }): void {
+  this.signals.player1.$value = {
+    ...this.signals.player1.$value,
+    isLoading: false,
+    card: null,
+    win: false,
+  };
+
+  this.signals.player2.$value = {
+    ...this.signals.player2.$value,
+    isLoading: false,
+    card: null,
+    win: false,
+  };
 }
 
 function destroy(this: { state: ReactiveModel<CardState> }): void {
@@ -176,23 +158,6 @@ function destroy(this: { state: ReactiveModel<CardState> }): void {
 }
 
 export function cardStoreFactory() {
-  // co gdyby metodki budować ze fragmentów? głównie chodzi o to,
-  // żeby przekazać context i żeby metodki miały dostęp do state
-  // const store = build(
-  //   storeBuilder(state),
-  //   props((store) => ({
-  //     player1: store.select((state) => state.player1),
-  //     player2: store.select((state) => state.player2),
-  //     isLoading: store.select(
-  //       (state) => state.player1.isLoading && state.player2.isLoading
-  //     ),
-  //     draw: () => store.update(draw()),
-  //     drawSuccess: (cards: [Card, Card], winner: number) =>
-  //       store.update(drawSuccess(cards, winner)),
-  //     drawFailure: () => store.update(drawFailure()),
-  //   }))
-  // );
-
   const model: ReactiveModel<CardState> = createReactiveModel(
     cardModel
   ) as unknown as ReactiveModel<CardState>;
@@ -211,8 +176,6 @@ export function cardStoreFactory() {
   // przy testach formularza dodać np. zależność, że zmiana jednej wartości wymusza zmianę innej (np. odblokowywanie dropdownów)
 
   return {
-    state: model,
-    graph: model.graph,
     draw,
     drawSuccess,
     drawFailure,
@@ -224,9 +187,6 @@ export function cardStoreFactory() {
     },
   };
 }
-
-// const storeFactory = () =>
-//   store(cardModel, actions({ draw, drawSuccess, drawFailure, destroy }));
 
 export type CardStore = ReturnType<typeof cardStoreFactory>;
 export const CARD_STORE: Token<CardStore> = Symbol('CARD_STORE');

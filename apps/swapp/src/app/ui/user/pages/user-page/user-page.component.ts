@@ -1,6 +1,7 @@
 import { Component, Injectable, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import {
+  $,
   Context,
   FACTORY,
   LIFETIME,
@@ -13,7 +14,6 @@ import {
   diDependencies,
   disable,
   isValid,
-  rSignal,
 } from '@web-fragments/core';
 import { ngContextBuilder } from '@web-fragments/ng-fragments';
 import { FormBuilder, FormsModule, NgModel } from '@angular/forms';
@@ -30,8 +30,8 @@ const required = (value: any, state: any) => {
 };
 
 export const userModel = {
-  firstName: rSignal('', [required]),
-  lastName: rSignal('', [required]),
+  firstName: $('', [required]),
+  lastName: $('', [required]),
 };
 
 export const createProfileForm = (state) => {
