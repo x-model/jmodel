@@ -37,6 +37,7 @@ export {
   FACTORY,
   LIFETIME,
   PROVIDERS,
+  FactoryResult,
 } from './di/consts';
 export { Container } from './di/container';
 export { Lifetime } from './di/lifetime';

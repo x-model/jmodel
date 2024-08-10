@@ -27,7 +27,11 @@ export function diDependencies<
 
       const onInit: (fn: (context) => void) => void = (fn) => (onInitHook = fn);
 
-      const factory = () => dependency[FACTORY](context, { onInit }); // scope, { _inject: context.inject });
+      const factory = () => ({
+        inject: context.inject,
+        execute: context.execute,
+        ...dependency[FACTORY](context, { onInit }),
+      }); // scope, { _inject: context.inject });
 
       const instance = container.resolve(dependency, factory, {
         id: scopeId,

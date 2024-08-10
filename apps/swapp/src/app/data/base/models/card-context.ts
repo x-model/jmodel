@@ -1,4 +1,4 @@
-import { ApiResult, Context } from '@web-fragments/core';
+import { ApiResult, Context, FactoryResult } from '@web-fragments/core';
 import { CollectionParams } from '../../../data-sources/base/models/collection-params';
 import { CollectionResult } from '../../../data-sources/base/models/collection-result';
 import { Card } from './card';
@@ -13,11 +13,11 @@ export type CardRepository = {
 export type CardCompare = ([card1, card2]: [Card, Card]) => number;
 export type CardMap = (model: unknown) => Card;
 
-export const sourceFactory = ({ inject, execute }: Context) => ({
-  draw: () => execute(draw),
+export const sourceFactory = ({ inject }: Context) => ({
+  draw,
   signals: inject(CARD_STORE).signals,
 });
 
 export type CardContext = {
-  model: ReturnType<typeof sourceFactory>;
+  model: FactoryResult<typeof sourceFactory>;
 };

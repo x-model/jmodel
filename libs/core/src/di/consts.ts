@@ -1,3 +1,4 @@
+import { Context } from '../fragment/types';
 import { Lifetime } from './lifetime';
 import { InjectionToken } from './types';
 
@@ -6,6 +7,9 @@ export const TOKEN = Symbol('TOKEN');
 export const LIFETIME = Symbol('LIFETIME');
 export const FACTORY = Symbol('FACTORY');
 export const PROVIDERS = Symbol('PROVIDERS');
+
+export type FactoryResult<T extends (context: Context) => unknown> =
+  ReturnType<T> & Context;
 
 export type Token<T> = Partial<{ _: T }> & symbol;
 
