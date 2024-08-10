@@ -8,6 +8,15 @@ export const LIFETIME = Symbol('LIFETIME');
 export const FACTORY = Symbol('FACTORY');
 export const PROVIDERS = Symbol('PROVIDERS');
 
+export type ApiError = {
+  message: string;
+};
+
+export type ApiResult<T> = {
+  data: T;
+  error: ApiError;
+};
+
 export type FactoryResult<T extends (context: Context) => unknown> =
   ReturnType<T> & Context;
 

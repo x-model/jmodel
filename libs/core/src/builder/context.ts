@@ -1,7 +1,5 @@
 import { diDependencies } from '../builder-props/di-dependencies';
-import { Hooks } from '../builder-props/hooks';
 import { props } from '../builder-props/props';
-import { contextBuilder } from '../builders/context-builder';
 import { INJECTABLE, injectionToken } from '../di/consts';
 import { asTransient } from '../di/lifetime';
 import {
@@ -10,7 +8,7 @@ import {
   InjectionToken,
   Scope,
 } from '../di/types';
-import { ExecutionContext, Fragment } from '../fragment/types';
+import { ExecutionContext } from '../fragment/types';
 import { Unwrap } from '../types';
 import { BuilderPartialContext, BuilderStepConfig } from './types';
 
@@ -22,10 +20,6 @@ export const DEPENDENCIES = Symbol('DEPENDENCIES');
 export const SERVICE = Symbol('SERVICE');
 export const STORE = Symbol('STORE');
 export const REPOSITORY = Symbol('REPOSITORY');
-
-type FragmentInputType<T> = T extends Fragment<infer TIn, unknown>
-  ? TIn
-  : never;
 
 export type PublicModelStore<T> = T extends {
   [STORE]: infer S extends () =>

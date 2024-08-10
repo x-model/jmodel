@@ -8,10 +8,12 @@ import {
 import { comparePeople } from './people-comparer';
 import { mapPeople } from './people-mapper';
 import { CARD_COMPARE, CARD_MAP, REPOSITORY } from '../base/di-tokens';
-import { peopleRepository } from './people.repository';
 import { CARD_STORE, cardStore } from '../base/card-store';
 import { sourceFactory } from '../base/models/card-context';
-import { createModel } from 'libs/core/src/reactive-model/model';
+import {
+  peopleGet,
+  peopleGetAll,
+} from '../../data-sources/people/people.data-source';
 
 export const peopleSource = {
   [TOKEN]: Symbol('PEOPLE_SOURCE'),
@@ -20,7 +22,12 @@ export const peopleSource = {
     // [MEMO]: {
     //   totalPages$,
     // },
-    [REPOSITORY]: peopleRepository,
+    [REPOSITORY]: {
+      [FACTORY]: () => ({
+        getAll: peopleGetAll,
+        get: peopleGet,
+      }),
+    },
     [CARD_STORE]: cardStore,
     [CARD_COMPARE]: () => comparePeople,
     [CARD_MAP]: () => mapPeople,

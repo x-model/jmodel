@@ -16,18 +16,9 @@ export { partial } from './builder/partial';
 export { Builder, BuilderPartialContext } from './builder/types';
 export { dependencies } from './builder-props/dependencies';
 export { diDependencies } from './builder-props/di-dependencies';
-// export { fragments } from './builder-props/fragments';
-export { hooks, Hooks } from './builder-props/hooks';
 export { methods } from './builder-props/methods';
 export { props } from './builder-props/props';
 export { publicProps } from './builder-props/public-props';
-// export {
-//   fragmentTemplateBuilder,
-//   onExecute,
-// } from './builders/fragment-template-builder.deprecated';
-export { from } from './builders/from';
-// export { partialBuilder } from './builders/partial-builder';
-// export { createState, Ref, State } from './builders/store-builder';
 export {
   di,
   registerAs,
@@ -38,6 +29,8 @@ export {
   LIFETIME,
   PROVIDERS,
   FactoryResult,
+  ApiError,
+  ApiResult,
 } from './di/consts';
 export { Container } from './di/container';
 export { Lifetime } from './di/lifetime';
@@ -49,12 +42,9 @@ export {
   InjectionToken,
   InjectionDef,
 } from './di/types';
-// export { fragmentFactory } from './fragment/factory.deprecated';
 export { resolveFragment } from './fragment/resolver';
 export {
   Fragment,
-  FragmentResultType,
-  FragmentType,
   CreationContext,
   ExecutionContext,
   Context,
@@ -64,13 +54,8 @@ export {
   FragmentOptions,
   FragmentTemplate,
 } from './fragment/types';
-export { ApiError, ApiResult, sendRequest } from './fragments/api-fragment';
-// export { fragment } from './fragments/fragment';
-// export { memoFragment } from './fragments/memo-fragment';
-// export { pureFragment } from './fragments/pure-fragment';
 export { abstract } from './utils/abstract';
 export { Method, Factory, Unwrap, INTERNAL, PUBLIC } from './types';
-
 export {
   createReactiveModel,
   ReactiveModel,

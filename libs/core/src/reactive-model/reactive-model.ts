@@ -242,8 +242,15 @@ const createSignals = <T>(reactiveModel: ReactiveModel<T>) => {
 };
 
 const createSignal = (signalDef, query, path, reactiveModel) => {
+  // dodawanie validatora do grupy czyli całego obiektu, albo dziecka obiektu
+  // asyncValidator => ustawia status pending? albo zwraca Promise
+  // co z testami? np. dla async validatora? w sumie możemy nadpisac fetcha
+  // onStateChange = new Map<symbol, (value: unknown) => void>([]);
+
   const signalFn = (callback: (value) => void) => {
-    reactiveModel.watch(query, () => callback);
+    // watchers.push(watcher);
+    // this.onStateChange.set(watcher, (state: T) => fn(selector(state)));
+    return reactiveModel.watch(query, () => callback);
   };
 
   const signal = {

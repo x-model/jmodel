@@ -1,4 +1,4 @@
-import { LIFETIME, Lifetime, TOKEN, FACTORY } from '@web-fragments/core';
+import { TOKEN, FACTORY } from '@web-fragments/core';
 import {
   peopleGet,
   peopleGetAll,
@@ -6,9 +6,8 @@ import {
 
 export const peopleRepository = {
   [TOKEN]: Symbol('PEOPLE_REPOSITORY'),
-  [LIFETIME]: Lifetime.transient,
-  [FACTORY]: ({ execute }) => ({
-    getAll: (params) => execute(peopleGetAll, params),
-    get: (id) => execute(peopleGet, id),
+  [FACTORY]: () => ({
+    getAll: peopleGetAll,
+    get: peopleGet,
   }),
 };

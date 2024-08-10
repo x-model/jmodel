@@ -54,8 +54,9 @@ const resolveProviders = (container, context, providers: any) => {
 
   Reflect.ownKeys(providers).forEach((key) => {
     let dependency;
+    let isProviderFn = typeof providers[key] === 'function';
 
-    if (typeof providers[key] === 'function') {
+    if (isProviderFn) {
       dependency = {
         [TOKEN]: key,
         [LIFETIME]: Lifetime.scoped,
@@ -72,8 +73,22 @@ const resolveProviders = (container, context, providers: any) => {
       }
     }
 
-    const factory = () => dependency[FACTORY](context); // scope, { _inject: context.inject });
+    let onInitHook = (context) => {};
+
+    const onInit: (fn: (context) => void) => void = (fn) => (onInitHook = fn);
+
+    const factory = isProviderFn
+      ? () => dependency[FACTORY](context)
+      : () => ({
+          inject: context.inject,
+          execute: context.execute,
+          ...dependency[FACTORY](context, { onInit }),
+        }); // scope, { _inject: context.inject });
 
     container.register(dependency, factory, scopeId);
+
+    if (onInitHook && typeof onInitHook === 'function') {
+      onInitHook(context);
+    }
   });
 };

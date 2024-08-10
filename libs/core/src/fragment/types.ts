@@ -94,13 +94,3 @@ export type FragmentFn<
 export type Fragment<TFragmentIn, TFragmentOut> = (
   context: FragmentFunctionContext<TFragmentIn>
 ) => TFragmentOut;
-
-export type FragmentType<T> = T extends FragmentFactory<infer In, infer Out>
-  ? Fragment<In, Out>
-  : never;
-
-export type FragmentResultType<T> = T extends Fragment<unknown, infer TOut>
-  ? TOut
-  : T extends FragmentFactory<unknown, infer TOut>
-  ? TOut
-  : never;
