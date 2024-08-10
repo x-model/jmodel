@@ -7,7 +7,7 @@ import {
 } from '@web-fragments/core';
 import { comparePeople } from './people-comparer';
 import { mapPeople } from './people-mapper';
-import { CARD_COMPARE, CARD_MAP, REPOSITORY } from '../base/di-tokens';
+import { CARD_COMPARE, CARD_MAP, CARD_REPOSITORY } from '../base/di-tokens';
 import { CARD_STORE, cardStore } from '../base/card-store';
 import { sourceFactory } from '../base/models/card-context';
 import {
@@ -22,7 +22,7 @@ export const peopleSource = {
     // [MEMO]: {
     //   totalPages$,
     // },
-    [REPOSITORY]: {
+    [CARD_REPOSITORY]: {
       [FACTORY]: () => ({
         getAll: peopleGetAll,
         get: peopleGet,

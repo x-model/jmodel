@@ -2,14 +2,14 @@ import { Context } from '@web-fragments/core';
 import { getRandom } from '../../common';
 import { Card } from './models/card';
 import { CARD_STORE } from './card-store';
-import { CARD_COMPARE, CARD_MAP, REPOSITORY } from './di-tokens';
+import { CARD_COMPARE, CARD_MAP, CARD_REPOSITORY } from './di-tokens';
 
 // Czy to powinno być w modelu czy w repository?
 // W sumie to już jest jakaś logika, to już jest obróbka danych z data sources
 // w repositories też by to mogło być tylko zrobiliśmy repository jako singleton
 // repository powinno się traktować jak dawne api serwisy?
 async function totalPages(this: Context): Promise<number> {
-  const { data, error } = await this.inject(REPOSITORY).getAll({
+  const { data, error } = await this.inject(CARD_REPOSITORY).getAll({
     page: 1,
     limit: 1,
   });
@@ -22,7 +22,7 @@ async function totalPages(this: Context): Promise<number> {
 // że zapomniało się wyciągnąć z context
 async function getCard(this: Context): Promise<Card> {
   // const totalPages = this.inject(CARD_MEMO).totalPages;
-  const repository = this.inject(REPOSITORY);
+  const repository = this.inject(CARD_REPOSITORY);
   const map = this.inject(CARD_MAP);
 
   const total = await this.execute(totalPages);

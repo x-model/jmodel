@@ -1,6 +1,5 @@
 import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { diDependencies } from '@web-fragments/core';
 import { ngContextBuilder } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
 import { peopleSource } from 'apps/swapp/src/app/data';
@@ -14,9 +13,9 @@ const styles = `
 `;
 
 @Injectable()
-export class PeopleComponentContext extends ngContextBuilder((initialContext) =>
-  diDependencies({ model: peopleSource })(initialContext)
-) {}
+export class PeopleComponentContext extends ngContextBuilder({
+  model: peopleSource,
+}) {}
 
 @Component({
   selector: 'sw-people-page',

@@ -1,13 +1,3 @@
-import {
-  ACTIONS,
-  MODEL,
-  PublicModel,
-  SERVICE,
-  STORE,
-} from '@web-fragments/core';
-import { draw, getCard$, totalPages$ } from './card.fragment';
-import { cardStoreResolver } from './card-store';
-
 // export function partialCardModel() {
 //   return partial(
 //     diDependencies({
@@ -49,12 +39,12 @@ import { cardStoreResolver } from './card-store';
 //   },
 // };
 
-export const cardSource = {
-  [MODEL]: cardStoreResolver,
-  [ACTIONS]: {
-    draw,
-  },
-};
+// export const cardSource = {
+//   [MODEL]: cardStoreResolver,
+//   [ACTIONS]: {
+//     draw,
+//   },
+// };
 
 // const result = publicCardModel([]);
 

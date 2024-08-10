@@ -19,26 +19,6 @@ export function a<T>(param: T, validator?: any): T {
 // const e = () => {}; // enumerable
 // const i = () => {}; // iterable
 
-type State = {
-  field: string;
-  child: {
-    field_1_1: string;
-    child_1_1: {
-      field_2_1: number;
-      child_2_1: {
-        field_3_1: number;
-      };
-    };
-    field_1_2: string;
-    child_1_2: {
-      field_2_1: number;
-      child_2_1: {
-        field_3_1: number;
-      };
-    };
-  };
-};
-
 const obj = o({
   field: '',
   child: o({

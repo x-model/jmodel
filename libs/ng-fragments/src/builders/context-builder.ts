@@ -5,14 +5,15 @@ import {
   EnvironmentInjector,
 } from '@angular/core';
 import {
-  CreationContext,
-  BuilderPartialContext,
-  Factory,
   Container,
   Type,
   Context,
   Token,
+  diDependencies,
+  CreationContext,
 } from '@web-fragments/core';
+
+export type BuilderPartialContext = Record<string, unknown>;
 
 export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
 
@@ -23,8 +24,8 @@ export type BuilderConfig = {
   name?: string;
 };
 
-export function ngContextBuilder<FactoryResult extends Record<string, unknown>>(
-  factory: Factory<CreationContext, FactoryResult>
+export function ngContextBuilder<BuilderModel extends Record<string, unknown>>(
+  model: BuilderModel
 ): Type<Context> {
   class CONTEXT implements Context {
     _injector = inject(Injector);
@@ -36,7 +37,7 @@ export function ngContextBuilder<FactoryResult extends Record<string, unknown>>(
     /**
      * prevents to use context during creation process
      */
-    _innerContext: FactoryResult;
+    _innerContext: BuilderModel;
     _scope = this._container.createScope();
 
     _creationContext: CreationContext = {
@@ -52,10 +53,11 @@ export function ngContextBuilder<FactoryResult extends Record<string, unknown>>(
         .get(DestroyRef)
         .onDestroy(() => this._container.destroyScope(this._scope.id));
 
-      const config = factory(this._creationContext) as FactoryResult &
-        CreationContext;
+      const config = diDependencies(model)(
+        this._creationContext
+      ) as BuilderModel & CreationContext;
 
-      this._innerContext = getInnerContext<FactoryResult & CreationContext>(
+      this._innerContext = getInnerContext<BuilderModel & CreationContext>(
         config,
         this._creationContext
       );

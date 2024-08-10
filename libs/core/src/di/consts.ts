@@ -1,4 +1,4 @@
-import { Context } from '../fragment/types';
+import { Context } from '../builder/types';
 import { Lifetime } from './lifetime';
 import { InjectionToken } from './types';
 

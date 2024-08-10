@@ -11,19 +11,17 @@ import {
   TOKEN,
   Token,
   createReactiveModel,
-  diDependencies,
   disable,
   isValid,
 } from '@web-fragments/core';
 import { ngContextBuilder } from '@web-fragments/ng-fragments';
-import { FormBuilder, FormsModule, NgModel } from '@angular/forms';
+import { FormBuilder, FormsModule } from '@angular/forms';
 import { JsonPipe, NgIf } from '@angular/common';
 import {
   enable,
   isDisabled,
   isFirstChange,
 } from 'libs/core/src/reactive-model/reactive-model';
-// import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 
 const required = (value: any, state: any) => {
   return !value ? { required: true } : null;
@@ -86,9 +84,9 @@ export const userSource = {
 };
 
 @Injectable()
-export class UserComponentContext extends ngContextBuilder((initialContext) =>
-  diDependencies({ model: userSource })(initialContext)
-) {}
+export class UserComponentContext extends ngContextBuilder({
+  model: userSource,
+}) {}
 
 @Component({
   selector: 'sw-user-page',

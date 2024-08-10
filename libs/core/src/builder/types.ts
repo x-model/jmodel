@@ -1,28 +1,19 @@
-import { Type } from '../di/types';
-import { Factory } from '../types';
+import { Token } from '../di/consts';
+import { Injector, Scope } from '../di/types';
 
-export type BuilderInitialContext = Record<string, unknown>;
+export type CreationContext = {
+  _contextId: symbol;
+  _injector: Injector;
+  _scope: Scope;
+} & Context;
 
-export type BuilderPartialContext = Record<string, unknown>;
+export type InjectFn = <T extends Token<unknown>>(value: T) => T['_'];
+export type ExecuteFn = <T extends (...params: any[]) => unknown>(
+  fn: T,
+  ...params
+) => ReturnType<T>;
 
-export type BuilderStepConfig<
-  Input extends BuilderPartialContext,
-  Output extends BuilderPartialContext
-> = Output | Factory<Input, Output>;
-
-export type Builder<InitialContext extends BuilderInitialContext, Result> = (
-  factory: <FactoryResult extends InitialContext & BuilderPartialContext>(
-    context: InitialContext
-  ) => FactoryResult
-) => Result;
-
-export type BuildResult<
-  TBuilderResult,
-  TBuilderStepsResult = BuilderPartialContext
-> = TBuilderResult extends Type<unknown>
-  ? Type<TBuilderStepsResult>
-  : TBuilderStepsResult extends TBuilderResult
-  ? TBuilderStepsResult
-  : TBuilderResult extends Factory<infer Input, unknown>
-  ? Factory<Input, TBuilderStepsResult>
-  : TBuilderResult;
+export type Context = {
+  inject: InjectFn;
+  execute: ExecuteFn;
+};

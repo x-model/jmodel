@@ -1,12 +1,6 @@
-import { Component, Injectable, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { build, diDependencies } from '@web-fragments/core';
-import { ngContextBuilder } from '@web-fragments/ng-fragments';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
-// import { CARD_COMPONENT_CONTEXT } from '../../../../../data/base/card.fragment';
-// import { starshipModelResolver } from '../../../../../data';
-import { FormBuilder } from '@angular/forms';
-// import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 
 // @Injectable()
 // export class StarshipComponentContext extends build(

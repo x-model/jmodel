@@ -1,12 +1,12 @@
-import { Context, CreationContext } from '../fragment/types';
+import { Context, CreationContext } from './types';
 import { Factory, Unwrap } from '../types';
 import { Container, containerToken } from '../di/container';
 import { FACTORY, LIFETIME, PROVIDERS, TOKEN } from '../di/consts';
-import { InjectionDef, InjectionResult } from '../di/types';
+import { InjectionResult } from '../di/types';
 import { Lifetime } from '../di/lifetime';
 
 export function diDependencies<
-  Dependencies extends Record<string, InjectionDef<unknown>>,
+  Dependencies extends Record<string, any>,
   Result extends {
     [P in keyof Dependencies]: InjectionResult<Dependencies[P]>;
   }

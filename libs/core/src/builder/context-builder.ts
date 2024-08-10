@@ -1,9 +1,11 @@
-import { Context, CreationContext } from '../fragment/types';
-import { BuilderPartialContext } from '../builder/types';
 import { Factory } from '../types';
 import { ProviderToken, Scope } from '../di/types';
-import { contextToken } from '../fragment/resolver';
-import { Token } from '../di/consts';
+import { Token, injectionToken } from '../di/consts';
+import { Context, CreationContext } from './types';
+
+export const contextToken = injectionToken('context');
+
+export type BuilderPartialContext = Record<string, unknown>;
 
 export function contextBuilder<FactoryResult extends BuilderPartialContext>(
   scope: Scope,
