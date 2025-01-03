@@ -22,19 +22,21 @@ export {
   InjectionToken,
   InjectionDef,
 } from './di/types';
-export { Method, Factory, Unwrap, INTERNAL, PUBLIC } from './types';
+export { Method, Factory, Unwrap } from './types';
 export {
   createReactiveModel,
-  ReactiveModel,
   computed,
   isValid,
+  isDisabled,
   disable,
   enable,
   isFirstChange,
 } from './reactive-model/reactive-model';
+export { Query, $field, $schema, _ } from './reactive-model/model-utils';
 export {
-  createGraph,
-  Query,
-  $,
-  createSchemaModel,
-} from './reactive-model/graph';
+  Validator,
+  $Value,
+  $Model,
+  ReactiveModel,
+} from './reactive-model/new-types';
+export { required } from './reactive-model/validators';

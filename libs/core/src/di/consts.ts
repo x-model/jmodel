@@ -22,6 +22,8 @@ export type FactoryResult<T extends (context: Context) => unknown> =
 
 export type Token<T> = Partial<{ _: T }> & symbol;
 
+export const Token: <T>(name: string) => Token<T> = Symbol;
+
 export function injectionToken<T>(description: string): InjectionToken<T> {
   return { token: Symbol(description) };
 }

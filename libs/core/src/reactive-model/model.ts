@@ -1,55 +1,70 @@
-import { FROM_SCHEMA, SIGNAL, SIGNAL_VALUE } from './graph';
+import { _, FIELD, INITIAL_VALUE, SCHEMA_FIELD } from './model-utils';
+import { SignalDef, Unwrap } from './new-types';
 
-// export const cardModel = {
-//   player1: $({
-//     score: 0,
-//     isLoading: $(false),
-//     win: false,
-//   }),
-//   player2: $({
-//     score: 0,
-//     isLoading: $(false),
-//     win: false,
-//   }),
-//   person: {
-//     name: 'WK',
-//     address: {
-//       street: '',
-//     },
-//   },
-// };
+export type SignalObject<T extends { [key: string]: unknown }> = {
+  [Property in keyof T]: T[Property] extends SignalDef<
+    infer SInner,
+    infer SGraph
+  >
+    ? SInner extends { [key: string]: unknown }
+      ? Unwrap<SignalObject<SInner>>
+      : SInner extends symbol
+      ? SGraph extends { [key: string]: unknown }
+        ? Unwrap<SignalObject<SGraph>>
+        : SGraph
+      : SInner
+    : T[Property];
+};
 
-export function createModel<T>(model: T): T {
-  if (typeof model !== 'object') {
-    throw new Error('Model is not an object');
+export type ExtractedSignalModel<T> = T extends SignalDef<infer M>
+  ? M extends { [key: string]: unknown }
+    ? Unwrap<SignalObject<M>>
+    : M
+  : T;
+
+export function getRawModel<T extends SignalDef<unknown>>(
+  model: T
+): ExtractedSignalModel<T> | any[] {
+  const parsedModel = parseModel(model);
+
+  if (parsedModel == null || typeof parsedModel !== 'object') {
+    return parsedModel;
   }
 
-  let modelCopy = {};
+  let objectModel;
 
-  // TODO handle null - null is also object
-  if (typeof model === 'object' && Reflect.ownKeys(model).includes(SIGNAL)) {
-    const valueKey =
-      model[SIGNAL_VALUE] === FROM_SCHEMA ? SIGNAL : SIGNAL_VALUE;
-
-    // TODO handle null - null is also object
-    if (typeof model[valueKey] === 'object') {
-      modelCopy = createModel(model[valueKey]);
+  if (typeof parsedModel === 'object') {
+    if (Array.isArray(parsedModel)) {
+      return parsedModel.map((item) => getRawModel(item));
     } else {
-      return model[valueKey];
+      objectModel = {};
+
+      for (const key in parsedModel) {
+        const value = parsedModel[key];
+        objectModel[key] = getRawModel(value);
+      }
     }
   }
-  // TODO handle null - null is also object
-  if (typeof model === 'object' && Array.isArray(model)) {
-    modelCopy = structuredClone(model);
+
+  return objectModel;
+}
+
+function parseModel(model): any {
+  if (
+    model &&
+    typeof model === 'object' &&
+    Reflect.ownKeys(model).includes(FIELD)
+  ) {
+    return model[INITIAL_VALUE];
   }
 
-  Object.keys(model).map((key) => {
-    if (typeof model[key] === 'object') {
-      modelCopy[key] = createModel(model[key]);
-    } else {
-      modelCopy[key] = model[key];
-    }
-  });
+  if (
+    model &&
+    typeof model === 'object' &&
+    Reflect.ownKeys(model).includes(SCHEMA_FIELD)
+  ) {
+    return _;
+  }
 
-  return modelCopy as T;
+  return model;
 }

@@ -1,13 +1,11 @@
 import {
   createReactiveModel,
-  createGraph,
   ReactiveModel,
   TOKEN,
   LIFETIME,
   Lifetime,
   FACTORY,
   Token,
-  $,
   computed,
 } from '@web-fragments/core';
 import { CardPlayer } from './models/card-player';
@@ -18,84 +16,23 @@ interface CardState {
   player2: CardPlayer;
 }
 
-const initialState: CardState = {
-  player1: { score: 0, isLoading: false, win: false },
-  player2: { score: 0, isLoading: false, win: false },
-};
-
-// const PLAYER_1 = Symbol('');
-// const PLAYER_2 = Symbol('');
-// const IS_LOADING = Symbol('');
-
-// const model = {
-//   player1: {
-//     [WATCH]: PLAYER_1,
-//     [VALUE]: {
-//       score: 0,
-//       isLoading: { [WATCH]: IS_LOADING, [VALUE]: false },
-//       win: false,
-//     },
-//   },
-//   player2: {
-//     [WATCH]: PLAYER_2,
-//     [VALUE]: {
-//       score: 0,
-//       isLoading: { [WATCH]: IS_LOADING, [VALUE]: false },
-//       win: false,
-//     },
-//   },
+// type CardStoreSignals = {
+//   isLoading: boolean;
+//   player1:
 // };
-
-const min = (options: any) => (value: any, state: any) => {
-  console.log('min validator');
-};
-const max = (options: any) => (value: any, state: any) => {
-  console.log('max validator', { value, state });
-};
 
 export const cardModel = {
-  player1: $({
+  player1: {
     score: 0,
-    isLoading: $(false),
+    isLoading: false,
     win: false,
-  }),
-  player2: $({
+  },
+  player2: {
     score: 0,
-    isLoading: $(false),
+    isLoading: false,
     win: false,
-  }),
+  },
 };
-
-// export const cardModel = {
-//   player1: $({
-//     score: $(0, [min(0), max(10)]),
-//     isLoading: $(false),
-//     win: false,
-//   }),
-//   player2: $({
-//     score: 0,
-//     isLoading: $(false),
-//     win: false,
-//   }),
-// };
-
-// const newModel = createReactiveModel(cardModel);
-
-// signals = source({ [MODEL]: model2 }).getSignals({
-//   isLoading: (signals, state) =>
-//     signals.player1.isLoading() || signals.player2.isLoading(),
-// });
-
-const graph = createGraph(initialState);
-const { query } = graph;
-
-// export const player1Query = query((state) => state.player1);
-// export const player2Query = query((state) => state.player2);
-// export const isLoadingQuery = query(
-//   (state) => state.player1.isLoading,
-//   (state) => state.player2.isLoading,
-//   ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
-// );
 
 function draw(this: { signals: { player1: any; player2: any } }): void {
   this.signals.player1.$value = {
@@ -157,22 +94,44 @@ function destroy(this: { state: ReactiveModel<CardState> }): void {
   this.state.destroy();
 }
 
-export function cardStoreFactory() {
-  const model: ReactiveModel<CardState> = createReactiveModel(
-    cardModel
-  ) as unknown as ReactiveModel<CardState>;
-  // potrzebne nazwy dla signali, unikalne, czyli najlepiej z path
-  // isLoading - ogarnąć computed
+// const authModel = $({
+//   isAuth: $(_<boolean>(), { validators: [], disabled: true }),
+//   authUser: $(_<{ name: string }>()),
+//   userContext: $(_<{ id: number }>()),
+//   session: $(_(), {
+//     graph: {
+//       user: $object({
+//         id: $field<number>({ readonly: true }),
+//       }),
+//     },
+//     validators: [],
+//   }),
+//   isSigningIn: $(false),
+//   isLoadingUserContext: $(false),
+//   isLoginLinkSent: $(false),
+//   version: 1,
+//   details: { title: 'title ' },
+// });
+
+function cardStoreFactory() {
+  // const model2 = createModel(cardModel);
+  // const authModel2 = createModel(authModel);
+  const model = createReactiveModel(cardModel as any);
+  const player1 = model.getRef((schema) => schema.player1);
+  const player2 = model.getRef((schema) => schema.player2);
+  // const formModel = model.toSignals();
+  console.log(player1.$value);
+  console.log(player2.$value);
+
+  // model.player1.$value;
+
   const isLoading = computed(
-    model,
-    model.signals.player1.isLoading,
-    model.signals.player2.isLoading,
+    model.getRef((schema) => schema.player1.isLoading),
+    model.getRef((schema) => schema.player2.isLoading),
     ([p1IsLoading, p2IsLoading]) => p1IsLoading || p2IsLoading
   );
 
   // dodawanie wielu callbacks
-  // dobieranie się do signals jak do normalnego obiektu, a nie nazwa typu player1.isLoading, bo to potem może być nieczytelne,
-  // no i też potem w formularzach chyba będzie gorzej się dobierać do wartości
   // przy testach formularza dodać np. zależność, że zmiana jednej wartości wymusza zmianę innej (np. odblokowywanie dropdownów)
 
   return {
@@ -181,15 +140,15 @@ export function cardStoreFactory() {
     drawFailure,
     destroy,
     signals: {
-      isLoading: isLoading,
-      player1: model.signals.player1,
-      player2: model.signals.player2,
+      isLoading,
+      player1,
+      player2,
     },
   };
 }
 
 export type CardStore = ReturnType<typeof cardStoreFactory>;
-export const CARD_STORE: Token<CardStore> = Symbol('CARD_STORE');
+export const CARD_STORE = Token<CardStore>('CARD_STORE');
 
 export const cardStore = {
   [TOKEN]: CARD_STORE,

@@ -1,36 +1,23 @@
 import { Component, Injectable, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import {
-  $,
-  Context,
+  $field,
   FACTORY,
   LIFETIME,
   Lifetime,
-  PROVIDERS,
-  ReactiveModel,
   TOKEN,
   Token,
   createReactiveModel,
   disable,
+  enable,
+  isDisabled,
+  isFirstChange,
   isValid,
+  required,
 } from '@web-fragments/core';
 import { ngContextBuilder } from '@web-fragments/ng-fragments';
 import { FormBuilder, FormsModule } from '@angular/forms';
 import { JsonPipe, NgIf } from '@angular/common';
-import {
-  enable,
-  isDisabled,
-  isFirstChange,
-} from 'libs/core/src/reactive-model/reactive-model';
-
-const required = (value: any, state: any) => {
-  return !value ? { required: true } : null;
-};
-
-export const userModel = {
-  firstName: $('', [required]),
-  lastName: $('', [required]),
-};
 
 export const createProfileForm = (state) => {
   const form = inject(FormBuilder).group({
@@ -51,41 +38,27 @@ export const createProfileForm = (state) => {
 type UserState = { firstName: string; lastName: string };
 
 export function storeFactory() {
-  const model: ReactiveModel<UserState> = createReactiveModel(
-    userModel
-  ) as unknown as ReactiveModel<UserState>;
+  const userModel = createReactiveModel({
+    firstName: $field('', { validators: [required] }),
+    lastName: $field('', { validators: [required] }),
+  } as any);
 
-  return {
-    state: model,
-    graph: model.graph,
-    signals: model.signals,
-  };
+  const model = userModel.getRefs((schema) => schema);
+
+  return model;
 }
 
-const Store: Token<ReturnType<typeof storeFactory>> = Symbol('Store');
+const USER_STORE = Token<ReturnType<typeof storeFactory>>('USER_STORE');
 
 export const userStore = {
-  [TOKEN]: Store,
+  [TOKEN]: USER_STORE,
   [LIFETIME]: Lifetime.scoped,
   [FACTORY]: storeFactory,
 };
 
-export const sourceFactory = ({ inject, execute }: Context) => ({
-  signals: inject(Store).signals,
-});
-
-export const userSource = {
-  [TOKEN]: Symbol('USER_SOURCE'),
-  [LIFETIME]: Lifetime.scoped,
-  [PROVIDERS]: {
-    [Store]: userStore,
-  },
-  [FACTORY]: sourceFactory,
-};
-
 @Injectable()
 export class UserComponentContext extends ngContextBuilder({
-  model: userSource,
+  model: userStore,
 }) {}
 
 @Component({
@@ -98,7 +71,7 @@ export class UserComponentContext extends ngContextBuilder({
 })
 export class UserPageComponent {
   ctx = inject(UserComponentContext);
-  model = this.ctx.inject(Store)?.signals;
+  model = (this.ctx as any).model;
 
   firstName = '';
   value = { name: '' };

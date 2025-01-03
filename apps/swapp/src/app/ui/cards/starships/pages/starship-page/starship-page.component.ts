@@ -1,6 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
+import { ngContextBuilder } from '@web-fragments/ng-fragments';
+import { CARD_COMPONENT_CONTEXT } from '../../../base/context/card-component.context';
+import { starshipSource } from 'apps/swapp/src/app/data/starship/starship.model';
 
 // @Injectable()
 // export class StarshipComponentContext extends build(
@@ -14,12 +17,17 @@ import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-pla
 // ) {}
 // implements CardComponentContext {}
 
+@Injectable()
+export class StarshipComponentContext extends ngContextBuilder({
+  model: starshipSource,
+}) {}
+
 @Component({
   selector: 'sw-starship-page',
   standalone: true,
   imports: [TranslateModule, TwoPlayersCardsLayoutComponent],
   providers: [
-    // { provide: CARD_COMPONENT_CONTEXT, useClass: StarshipComponentContext },
+    { provide: CARD_COMPONENT_CONTEXT, useClass: StarshipComponentContext },
   ],
   templateUrl: './starship-page.component.html',
   styleUrls: ['./starship-page.component.scss'],
@@ -40,43 +48,3 @@ export class StarshipPageComponent {
   //   mySig.counter.
   // }
 }
-
-// const myProxy = new Proxy(
-//   {
-//     browsers: ['Firefox', 'Chrome'],
-//     test: {
-//       loading: false,
-//       parent: 1,
-//       description: 'test'
-//     }
-//   },
-//   {
-//     get(obj, prop) {
-//       console.log('get', prop);
-
-//       return obj[prop];
-//     },
-//     set(obj, prop, value) {
-//       console.log('set', prop, value)
-
-//       obj[prop] = value;
-
-//       return true;
-//     },
-//   }
-// );
-
-// console.log(products.browsers);
-// //  ['Firefox', 'Chrome']
-
-// products.browsers = 'Safari';
-
-// console.log(products.browsers);
-
-// products.latestBrowser = 'Edge';
-
-// console.log(products.browsers);
-// //  ['Safari', 'Edge']
-
-// console.log(products.latestBrowser);
-//  'Edge'

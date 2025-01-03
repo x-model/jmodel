@@ -1,6 +1,6 @@
 import { Token, TOKEN, Lifetime, LIFETIME, FACTORY } from '@web-fragments/core';
 
-export const HTTP_CLIENT: Token<typeof fetch> = Symbol('HTTP_CLIENT');
+export const HTTP_CLIENT = Token<typeof fetch>('HTTP_CLIENT');
 
 export const httpClient = {
   [TOKEN]: HTTP_CLIENT,

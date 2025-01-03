@@ -1,64 +1,57 @@
-import { Query, VALIDATORS, createGraph2 } from './graph';
-import { TARGET, createGraph } from './graph';
-import { createModel } from './model';
+import { getRawModel } from './model';
+import {
+  DISABLED,
+  FIRST_CHANGE,
+  GraphMember,
+  META_DATA,
+  MODEL_REF,
+  PATH,
+  QUERY,
+  Query,
+  Source,
+  SOURCE,
+  STATE,
+  TARGET,
+  TRACKED,
+  VALIDATORS,
+  WATCHERS,
+} from './model-utils';
+import { createGraph } from './new-schema-graph';
+import {
+  $Model,
+  $Value,
+  ExtractedSignalModel,
+  ReactiveModel,
+  SignalDef,
+} from './new-types';
 
-const SOURCE = Symbol('SOURCE');
-const WATCHERS = Symbol('WATCHERS');
-const STATE = Symbol('STATE');
-const TRACKED = Symbol('TRACKED');
-const CALLBACK = Symbol('CALLBACK');
-const QUERY = Symbol('QUERY');
-const PATH = Symbol('PATH');
-const META_DATA = Symbol('META_DATA');
-const MODEL_REF = Symbol('MODEL_REF');
-const DISABLED = Symbol('DISABLED');
-const FIRST_CHANGE = Symbol('FIRST_CHANGE');
-
-export interface ReactiveModel<T> {
-  signals?: any;
-  graph?: any;
-  [SOURCE]: Source<T>;
-  get: <Value>(query?: Query<T, Value>) => Value | T;
-  set: <Value, R>(query: Query<T, Value>, fn: (value: Value) => R) => void;
-  watch<Value>(
-    query: Query<T, Value>,
-    connect: () => (value: Value) => void
-  ): () => void;
-  destroy: () => void;
-}
-
-type Source<T> = {
-  [STATE]: T;
-  [WATCHERS]: Map<symbol, any>;
-  [TRACKED]: [string, symbol][];
-};
-
-export function createReactiveModel<T>(model: T): ReactiveModel<T> {
-  const source: Source<T> = {
-    [STATE]: createModel(model),
+export function createReactiveModel<T extends SignalDef<unknown>>(
+  model: T
+): $Model<T> {
+  const source: Source<ExtractedSignalModel<T>> = {
+    [STATE]: getRawModel(model) as any,
     [WATCHERS]: new Map<symbol, any>([]),
     [TRACKED]: [],
   };
 
-  const reactiveModel = {
-    signals: null,
-    graph: null,
+  const reactiveModel: ReactiveModel<T> = {
+    graph: createGraph(model),
     [SOURCE]: source,
     // TODO Poprawić get, bo teraz jest problem z typem jak używamy get, jest lub i nie wie co przypisać do pola
     get: function <Value>(query?: Query<T, Value>): Value | T {
-      return query ? query(source[STATE]) : source[STATE];
+      return (query ? query(source[STATE] as any) : source[STATE]) as any;
     },
     set: function <Value, R>(
       query: Query<T, Value>,
       fn: (value: Value) => R
     ): void {
       const target = query[TARGET][0];
-      const pathSegments = !!target ? target.split('.') : [];
-      const newModel = fn(query(source[STATE]));
+      const pathSegments = target ? target.split('.') : [];
+      const newModel = fn(query(source[STATE] as any));
       const changes = checkChanges(source, newModel, pathSegments);
 
-      if (!!target) {
-        let lastSegment = pathSegments[pathSegments.length - 1];
+      if (target) {
+        const lastSegment = pathSegments[pathSegments.length - 1];
         let parent = source[STATE];
 
         for (let i = 0; i < pathSegments.length - 1; i++) {
@@ -72,7 +65,7 @@ export function createReactiveModel<T>(model: T): ReactiveModel<T> {
 
       // runValidators(reactiveModel);
 
-      // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
+      // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
       const filteredChanges = new Set(changes);
       const watchIds = [];
 
@@ -91,7 +84,6 @@ export function createReactiveModel<T>(model: T): ReactiveModel<T> {
         watchFn();
       });
     },
-
     watch: function <Value>(
       query: Query<T, Value>,
       connect: () => (value: Value) => void
@@ -102,206 +94,32 @@ export function createReactiveModel<T>(model: T): ReactiveModel<T> {
       });
 
       const watcherFn = connect();
-      const watchFn = () => watcherFn(query(source[STATE]));
+      const watchFn = () => watcherFn(query(source[STATE] as any));
       source[WATCHERS].set(watchId, watchFn);
 
       console.log('watcher registered');
 
       return unwatch(watchId, source);
     },
-
     destroy: function (): void {
       source[STATE] = null;
       source[TRACKED] = [];
       source[WATCHERS].clear();
     },
+    getRef: function (selector: (schema: any) => any): any {
+      const field = createField(reactiveModel, selector);
+
+      return field;
+    },
+    getRefs: function (selector?: (schema: any) => any): any {
+      const fields = createFields(reactiveModel, selector);
+
+      return fields;
+    },
   };
 
-  reactiveModel.graph = createModelGraph(model);
-  reactiveModel.signals = createSignals(reactiveModel);
-
-  console.log(reactiveModel);
-  return reactiveModel;
+  return reactiveModel as any;
 }
-
-const runValidators = (reactiveModel) => {
-  Object.keys(reactiveModel.signals).forEach((key) => {
-    (reactiveModel.signals[key][META_DATA].data[VALIDATORS] || []).forEach(
-      (validator) =>
-        validator(reactiveModel.signals[key].value, reactiveModel.get())
-    );
-  });
-};
-
-export const isValid = (model) => {
-  if (model?.$errors) {
-    return false;
-  }
-
-  let valid = true;
-  const params = Object.keys(model).filter((key) => !key.startsWith('$'));
-
-  for (let i = 0; i < params.length; i++) {
-    const param = params[i];
-    valid = valid && isValid(model[param]);
-
-    if (!valid) break;
-  }
-
-  return valid;
-};
-
-export const disable = (signal) => {
-  signal[DISABLED] = true;
-};
-
-export const isDisabled = (signal) => {
-  return !!signal[DISABLED];
-};
-
-export const isFirstChange = (signal) => {
-  return !!signal[FIRST_CHANGE];
-};
-
-export const enable = (signal) => {
-  signal[DISABLED] = false;
-};
-
-const createModelGraph = <T>(model: T) => {
-  const graph = createGraph2(model);
-  return graph;
-};
-
-export const computed = (
-  model,
-  signal1,
-  signal2,
-  callback: (result: any) => any
-) => {
-  const path1 = signal1[PATH];
-  const path2 = signal2[PATH];
-  const query = model.graph.queryFromPaths(path1, path2, callback);
-
-  const signalFn = (callback: (value) => void) => {
-    model.watch(query, () => callback);
-  };
-
-  const signal = {
-    $: signalFn,
-  };
-
-  signal[QUERY] = query;
-  signal[PATH] = query[TARGET];
-
-  Object.defineProperty(signal, '$value', {
-    get: function () {
-      return model.get(query);
-    },
-  });
-
-  return signal;
-};
-
-const createSignals = <T>(reactiveModel: ReactiveModel<T>) => {
-  const signals = reactiveModel.graph.signals.reduce((prev, next) => {
-    const key: string = reactiveModel.graph.getPathByKey(next.key)?.path;
-    const signal = createSignal(
-      next,
-      reactiveModel.graph.queryFromPath(next.key),
-      reactiveModel.graph.getPathByKey(next.key)?.path,
-      reactiveModel
-    );
-
-    const params = key.split('.');
-
-    if (params.length === 1) {
-      return { ...prev, [params[0]]: signal };
-    }
-
-    let obj = prev;
-    let lastParam;
-
-    params.forEach((param, index) => {
-      lastParam = param;
-
-      if (params.length === index + 1) {
-        return;
-      }
-
-      if (!obj.hasOwnProperty(param)) {
-        obj[param] = {};
-      }
-      obj = obj[param];
-    });
-
-    obj[lastParam] = signal;
-
-    return prev;
-  }, {});
-  return signals;
-};
-
-const createSignal = (signalDef, query, path, reactiveModel) => {
-  // dodawanie validatora do grupy czyli całego obiektu, albo dziecka obiektu
-  // asyncValidator => ustawia status pending? albo zwraca Promise
-  // co z testami? np. dla async validatora? w sumie możemy nadpisac fetcha
-  // onStateChange = new Map<symbol, (value: unknown) => void>([]);
-
-  const signalFn = (callback: (value) => void) => {
-    // watchers.push(watcher);
-    // this.onStateChange.set(watcher, (state: T) => fn(selector(state)));
-    return reactiveModel.watch(query, () => callback);
-  };
-
-  const signal = {
-    $: signalFn,
-  };
-
-  signal[MODEL_REF] = reactiveModel;
-  signal[META_DATA] = signalDef;
-  signal[QUERY] = query;
-  signal[PATH] = path;
-  signal[FIRST_CHANGE] = false;
-
-  Object.defineProperty(signal, '$value', {
-    set: function (value) {
-      if (!signal[DISABLED]) {
-        reactiveModel.set(query, (state) => value);
-        signal[FIRST_CHANGE] = true;
-      }
-    },
-    get: function () {
-      if (signal[DISABLED]) {
-        return undefined;
-      }
-      return reactiveModel.get(query);
-    },
-  });
-
-  Object.defineProperty(signal, '$errors', {
-    get: function () {
-      if (signal[DISABLED]) {
-        return undefined;
-      }
-
-      const errors = (signalDef.data[VALIDATORS] || []).reduce(
-        (errors, validator) => {
-          return {
-            ...errors,
-            ...validator(reactiveModel.get(query), reactiveModel.get()),
-          };
-        },
-        {}
-      );
-
-      return !errors || Object.keys(errors).length === 0 ? undefined : errors;
-    },
-  });
-
-  return signal;
-};
-
-const createSelectors = (model) => {};
 
 function unwatch<T>(watchId: symbol, source: Source<T>): () => void {
   return () => {
@@ -334,7 +152,7 @@ function checkChanges<State, Model>(
   // jak nie będziemy zmieniać referencji to będziemy musieli skanować potem cały model
   const value = getByPath(source[STATE], pathSegments);
   let changes: string[] = [];
-  let tracked = source[TRACKED];
+  const tracked = source[TRACKED];
 
   // TODO handle null - null is also object
   if (model && typeof model === 'object') {
@@ -344,7 +162,7 @@ function checkChanges<State, Model>(
       const isTracked = tracked.find((item) => item[0] === watchersKey);
 
       if (isTracked) {
-        // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
+        // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
         changes.push(watchersKey);
       }
     }
@@ -361,7 +179,7 @@ function checkChanges<State, Model>(
     });
   } else {
     if (value !== model) {
-      let rootPath = pathSegments.slice(0, -1);
+      const rootPath = pathSegments.slice(0, -1);
       const key = pathSegments[pathSegments.length - 1];
 
       const watchersKey = pathSegments.join('.');
@@ -383,114 +201,203 @@ function checkChanges<State, Model>(
   return changes;
 }
 
-// export function main(): void {
-//   const initialState = {
-//     firstName: 'Adalbertus',
-//     lastName: 'Chris',
-//     address: {
-//       street: 'Ważniaka',
-//       state: {
-//         id: 1,
-//         name: 'LA',
-//       },
+// Problem że nie można zrobić computed na dwóch różnych modelach
+export const computed = <
+  TS1 extends $Value<unknown>,
+  TS2 extends $Value<unknown>,
+  R
+>(
+  signal1: TS1,
+  signal2: TS2,
+  callback: (result: [TS1['$value'], TS2['$value']]) => R
+): $Value<R> => {
+  const signalFn = (signalCallback: (value) => void) => {
+    signal1?.$((value) => {
+      signalCallback(callback([value, signal2.$value]));
+    });
+
+    signal2?.$((value) => {
+      signalCallback(callback([signal1.$value, value]));
+    });
+  };
+
+  const signal = {
+    [META_DATA]: [signal1[META_DATA], signal2[META_DATA]] as SignalDef<any>[],
+    [FIRST_CHANGE]: false,
+    [DISABLED]: false,
+    $: signalFn,
+    get $value(): R {
+      return callback([signal1.$value, signal2.$value]);
+    },
+    get $errors(): { [key: string]: any } {
+      return { '0': signal1.$errors, '1': signal2.$errors };
+    },
+  };
+
+  return signal as any;
+};
+
+const createFields = <T>(
+  reactiveModel: ReactiveModel<T>,
+  selector: (schema: any) => any
+): $Model => {
+  const graph = reactiveModel.graph.getGraph(selector);
+  const signal = createModelFields(reactiveModel, graph);
+
+  return signal;
+};
+
+const createField = <T>(
+  reactiveModel: ReactiveModel<T>,
+  selector: (schema: any) => any
+): $Value<T> => {
+  const path = reactiveModel.graph.getPath(selector);
+  const query = reactiveModel.graph.query(selector);
+  const signal = createModelField(query, path, reactiveModel);
+
+  return signal as any;
+};
+
+const createModelField = <T>(
+  query,
+  path: GraphMember<any>,
+  reactiveModel
+): $Value<T> => {
+  // dodawanie validatora do grupy czyli całego obiektu, albo dziecka obiektu
+  // asyncValidator => ustawia status pending? albo zwraca Promise
+  // co z testami? np. dla async validatora? w sumie możemy nadpisac fetcha
+  // onStateChange = new Map<symbol, (value: unknown) => void>([]);
+  const signalMetaData = (reactiveModel.graph.fieldsConfigs || []).find(
+    (item) => item.key === path.pathKey
+  );
+  const validators = signalMetaData?.config?.validators;
+  const isDisabled = !!signalMetaData?.config?.disabled;
+
+  const signalFn = (callback: (value) => void) => {
+    // watchers.push(watcher);
+    // this.onStateChange.set(watcher, (state: T) => fn(selector(state)));
+    return reactiveModel.watch(query, () => callback);
+  };
+
+  const signal = {
+    [MODEL_REF]: reactiveModel,
+    [META_DATA]: {
+      data: validators ? { [VALIDATORS]: validators } : null,
+    },
+    [QUERY]: query,
+    [PATH]: path.path,
+    [FIRST_CHANGE]: false,
+    [DISABLED]: isDisabled,
+    $: signalFn,
+    set $value(value: any) {
+      if (!this[DISABLED]) {
+        this[MODEL_REF].set(query, (state) => value);
+        this[FIRST_CHANGE] = true;
+      }
+    },
+    get $value(): any {
+      if (this[DISABLED]) {
+        return undefined;
+      }
+      return this[MODEL_REF].get(query);
+    },
+    get $errors(): any {
+      if (this[DISABLED]) {
+        return undefined;
+      }
+
+      const errors = (this[META_DATA].data?.[VALIDATORS] || []).reduce(
+        (errors, validator) => {
+          return {
+            ...errors,
+            ...validator(this[MODEL_REF].get(query), this[MODEL_REF].get()),
+          };
+        },
+        {}
+      );
+
+      return !errors || Object.keys(errors).length === 0 ? undefined : errors;
+    },
+  };
+
+  return signal as any;
+};
+
+// ex.
+// const model = {
+//   name: '',
+//   address: {
+//     street: {
+//       name: '',
+//       [PATH]: 2,
 //     },
-//     phones: ['123456789', '987654321'],
-//   };
+//     [PATH]: 1,
+//   },
+//   [PATH]: 0,
+// };
+function createModelFields(reactiveModel, obj) {
+  if (!obj || typeof obj !== 'object') {
+    return undefined;
+  }
 
-//   const schema = createGraph(initialState);
-//   const { query } = schema;
+  const keys = Reflect.ownKeys(obj);
+  const parentPathKey = `${obj[PATH]}`;
+  const parentQuery = reactiveModel.graph.queryFromPath(parentPathKey);
+  const parentPath = reactiveModel.graph.getPathByKey(parentPathKey);
+  const result = createModelField(parentQuery, parentPath, reactiveModel);
 
-//   const model = createReactiveModel(initialState);
+  for (const key of keys) {
+    if (key === PATH) {
+      continue;
+    }
 
-//   // nie działa
-//   //   rootModel.watch(
-//   //     '',
-//   //     () => (value) => console.log('value changes: [Address]', value)
-//   //   );
+    if (
+      typeof obj[key] === 'object' &&
+      obj[key] !== null &&
+      !Array.isArray(obj[key])
+    ) {
+      result[key] = createModelFields(reactiveModel, obj[key]);
+    } else {
+      const pathKey = obj[key];
+      const query = reactiveModel.graph.queryFromPath(pathKey);
+      const path = reactiveModel.graph.getPathByKey(pathKey);
+      result[key] = createModelField(query, path, reactiveModel);
+    }
+  }
 
-//   const streetQuery = query((state) => state.address.street);
+  return result;
+}
 
-//   const unwatch = model.watch(
-//     streetQuery,
-//     () => (value) => console.log('value changes: [Address]', value)
-//   );
+export const isValid = <T>(signal: $Value<T>) => {
+  if (signal?.$errors) {
+    return false;
+  }
 
-//   const unwatchPhone = model.watch(
-//     query((state) => state.phones),
-//     () => (value) => console.log('value changes: [Phones]', value)
-//   );
+  let valid = true;
+  const params = Object.keys(signal).filter((key) => !key.startsWith('$'));
 
-//   // toSignal(model.slice(query((state) => state.phones)));
-//   // toSignal(model.slice((state) => state.phones));
-//   const phonesQuery = query((state) => state.phones);
-//   // toSignal(model, phonesQuery);
-//   // .watch(() => (value) => console.log('value changes: [Phones]', value));
+  for (let i = 0; i < params.length; i++) {
+    const param = params[i];
+    valid = valid && isValid(signal[param]);
 
-//   const unwatchName = model.watch(
-//     query(
-//       (state) => state.firstName,
-//       (state) => state.lastName,
-//       ([firstName, lastName]) => `${firstName} + ${lastName}`
-//     ),
-//     () => (value) => console.log('value changes: [My name is]', value)
-//   );
+    if (!valid) break;
+  }
 
-//   // rootModel.watch(
-//   //   path((state) => state.phones[0]),
-//   //   // schema.address.state.name,
-//   //   // schema.firstName
-//   //   // select('address', 'state', 'name'),
-//   //   () => (value) => console.log('value changes: [Phones]', value)
-//   // );
+  return valid;
+};
 
-//   //   rootModel.watch(
-//   //     path('address.state'),
-//   //     () => (value) => console.log('value changes: [Street]', value)
-//   //   );
+export const disable = <T>(signal: $Value<T>) => {
+  signal[DISABLED] = true;
+};
 
-//   model.set(
-//     query((state) => state.address),
-//     (value) => ({
-//       ...value,
-//       street: 'Akacjowa',
-//     })
-//   );
+export const isDisabled = <T>(signal: $Value<T>) => {
+  return !!signal[DISABLED];
+};
 
-//   // unwatch();
+export const isFirstChange = <T>(signal: $Value<T>) => {
+  return !!signal[FIRST_CHANGE];
+};
 
-//   model.set(
-//     query((state) => state.address.street),
-//     (value) => 'Wierzbowa'
-//   );
-
-//   // zablokować możliwość wyboru 2 pól
-//   model.set(
-//     query((state) => state.phones),
-//     (value) => [...value, '66554433']
-//   );
-
-//   // unwatchName();
-
-//   model.watch(
-//     query((state) => state),
-//     () => (value) => console.log('value changes: [Root model]', value)
-//   );
-
-//   model.set(
-//     query((state) => state),
-//     (value) => ({
-//       ...value,
-//       firstName: 'Wiesław',
-//       lastName: 'Paleta',
-//     })
-//   );
-
-//   console.log('Root model state', model.get());
-//   console.log(
-//     'Phones from Root model state',
-//     model.get(query((state) => state.address.street))
-//   );
-
-//   // watch na address powinien to wychwytywać?
-//   //   rootModel.set(path('address.state.name'), (value) => 'NY');
-// }
+export const enable = <T>(signal: $Value<T>) => {
+  signal[DISABLED] = false;
+};

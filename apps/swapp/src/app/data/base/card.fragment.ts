@@ -6,7 +6,7 @@ import { CARD_COMPARE, CARD_MAP, CARD_REPOSITORY } from './di-tokens';
 
 // Czy to powinno być w modelu czy w repository?
 // W sumie to już jest jakaś logika, to już jest obróbka danych z data sources
-// w repositories też by to mogło być tylko zrobiliśmy repository jako singleton
+// w repositories też by to mogło być tylko zrobiliśmy repository jako singleton
 // repository powinno się traktować jak dawne api serwisy?
 async function totalPages(this: Context): Promise<number> {
   const { data, error } = await this.inject(CARD_REPOSITORY).getAll({
@@ -16,10 +16,6 @@ async function totalPages(this: Context): Promise<number> {
   return error ? 0 : data?.totalPages;
 }
 
-// przydałoby się resolverować te fragmenty, wtedy nikt się nie pomyli z wywołaniem
-// wtedy nikt nie wywoła _exec(totalPages$) jak fragment jest zarejestrowany, a np. zapomniał wstrzyknąć,
-// bo wtedy wykonuje tego niezarejestrowanego z góry i już jest bug który ciężko ogarnąć co jest problem
-// że zapomniało się wyciągnąć z context
 async function getCard(this: Context): Promise<Card> {
   // const totalPages = this.inject(CARD_MEMO).totalPages;
   const repository = this.inject(CARD_REPOSITORY);

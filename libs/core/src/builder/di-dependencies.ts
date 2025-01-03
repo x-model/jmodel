@@ -49,12 +49,16 @@ export function diDependencies<
 }
 
 const resolveProviders = (container, context, providers: any) => {
+  if (!providers) {
+    return;
+  }
+
   const scope = context._scope;
   const scopeId = context._scope.id;
 
   Reflect.ownKeys(providers).forEach((key) => {
     let dependency;
-    let isProviderFn = typeof providers[key] === 'function';
+    const isProviderFn = typeof providers[key] === 'function';
 
     if (isProviderFn) {
       dependency = {

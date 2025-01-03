@@ -15,6 +15,23 @@
 //   cardModelToken,
 // } from '../base/di-tokens';
 
+import {
+  FACTORY,
+  Lifetime,
+  LIFETIME,
+  PROVIDERS,
+  TOKEN,
+} from '@web-fragments/core';
+import { CARD_COMPARE, CARD_MAP, CARD_REPOSITORY } from '../base/di-tokens';
+import {
+  starshipGet,
+  starshipGetAll,
+} from '../../data-sources/starships/starship.data-source';
+import { CARD_STORE, cardStore } from '../base/card-store';
+import { compareStarships } from './starship-comparer';
+import { mapStarship } from './starship-mapper';
+import { sourceFactory } from '../base/models/card-context';
+
 // export const starshipModelResolver = (params: {
 //   name: string;
 // }): InjectionDef<CardModel> => asScoped(cardModelToken, starshipModelFactory);
@@ -97,3 +114,23 @@
 // //     //   changeName: () => (formModel['name'] = 'test'),
 // //     // }))
 // //   );
+
+export const starshipSource = {
+  [TOKEN]: Symbol('STARSHIP_SOURCE'),
+  [LIFETIME]: Lifetime.scoped,
+  [PROVIDERS]: {
+    // [MEMO]: {
+    //   totalPages$,
+    // },
+    [CARD_REPOSITORY]: {
+      [FACTORY]: () => ({
+        getAll: starshipGetAll,
+        get: starshipGet,
+      }),
+    },
+    [CARD_STORE]: cardStore,
+    [CARD_COMPARE]: () => compareStarships,
+    [CARD_MAP]: () => mapStarship,
+  },
+  [FACTORY]: sourceFactory,
+};
