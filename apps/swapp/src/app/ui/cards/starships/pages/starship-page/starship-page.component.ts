@@ -1,7 +1,7 @@
 import { Component, Injectable } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
+import { ngContextBuilder } from '@x-model/ng-model';
 import { TwoPlayersCardsLayoutComponent } from '../../../base/components/two-players-cards-layout/two-players-cards-layout.component';
-import { ngContextBuilder } from '@web-fragments/ng-fragments';
 import { CARD_COMPONENT_CONTEXT } from '../../../base/context/card-component.context';
 import { starshipSource } from '../../../../../data/cards/starship/starship.model';
 

@@ -7,7 +7,7 @@ import {
   required,
   TOKEN,
   Token,
-} from '@web-fragments/core';
+} from '@x-model/jmodel';
 
 export function userStoreFactory() {
   const userModel = createReactiveModel({

@@ -11,7 +11,7 @@ import {
   Token,
   diDependencies,
   CreationContext,
-} from '@web-fragments/core';
+} from '@x-model/jmodel';
 
 export type BuilderPartialContext = Record<string, unknown>;
 

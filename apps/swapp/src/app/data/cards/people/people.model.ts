@@ -1,10 +1,4 @@
-import {
-  FACTORY,
-  LIFETIME,
-  Lifetime,
-  PROVIDERS,
-  TOKEN,
-} from '@web-fragments/core';
+import { FACTORY, LIFETIME, Lifetime, PROVIDERS, TOKEN } from '@x-model/jmodel';
 import { comparePeople } from './utils/people-comparer';
 import { mapPeople } from './utils/people-mapper';
 import { CARD_STORE, cardStore } from '../base/card.store';

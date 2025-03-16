@@ -1,4 +1,4 @@
-import { TOKEN, FACTORY } from '@web-fragments/core';
+import { TOKEN, FACTORY } from '@x-model/jmodel';
 import { peopleGet, peopleGetAll } from './people.resource';
 
 export const peopleRepository = {

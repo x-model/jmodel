@@ -1,4 +1,4 @@
-import { ApiResult, Context } from '@web-fragments/core';
+import { ApiResult, Context } from '@x-model/jmodel';
 import { PeopleDetailResult } from './models/api/people-detail.api-model';
 import { CollectionParams } from '../../common/resources/models/collection-params';
 import { CollectionResult } from '../../common/resources/models/collection-result';

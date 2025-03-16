@@ -1,18 +1,19 @@
 {
-  "name": "@fragments/source",
+  "name": "@x-model/core",
   "version": "0.0.0",
-  "description": "repo for web-fragments",
+  "description": "repo for x-model",
   "scripts": {},
   "keywords": [
-    "web-fragments",
-    "ng-fragments",
+    "x-model",
+    "jmodel",
+    "ng-model",
     "angular"
   ],
   "license": "MIT",
   "author": "Wojciech Krzysztofowicz",
   "repository": {
     "type": "git",
-    "url": "https://github.com/webfragments/fragments.git/"
+    "url": "https://github.com/x-model/jmodel.git/"
   },
   "dependencies": {
     "@angular/animations": "~17.0.0",

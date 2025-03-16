@@ -1,10 +1,4 @@
-import {
-  FACTORY,
-  Lifetime,
-  LIFETIME,
-  PROVIDERS,
-  TOKEN,
-} from '@web-fragments/core';
+import { FACTORY, Lifetime, LIFETIME, PROVIDERS, TOKEN } from '@x-model/jmodel';
 import { starshipGet, starshipGetAll } from './starship.resource';
 import { compareStarships } from './utils/starship-comparer';
 import { mapStarship } from './utils/starship-mapper';

@@ -1,5 +1,5 @@
 {
-  "name": "@web-fragments/core",
+  "name": "@x-model/jmodel",
   "version": "0.0.13",
   "dependencies": {
     "tslib": "^2.3.0"

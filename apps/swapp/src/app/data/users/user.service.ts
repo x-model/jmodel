@@ -1,4 +1,4 @@
-import { Context, disable, enable, isDisabled } from '@web-fragments/core';
+import { Context, disable, enable, isDisabled } from '@x-model/jmodel';
 import { USER_STORE } from './user.store';
 
 export function setDefaultName(this: Context) {

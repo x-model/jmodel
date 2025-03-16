@@ -7,7 +7,7 @@ import {
   FACTORY,
   Token,
   computed,
-} from '@web-fragments/core';
+} from '@x-model/jmodel';
 import { CardPlayer } from './models/card-player';
 import { Card } from './models/card';
 

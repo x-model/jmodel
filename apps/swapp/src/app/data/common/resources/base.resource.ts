@@ -1,8 +1,8 @@
+import { ApiResult, Context } from '@x-model/jmodel';
 import { CollectionApiResult } from './models/collection-api-result';
 import { CollectionResult } from './models/collection-result';
 import { DetailApiResult } from './models/detail-api-result';
 import { CollectionParams } from './models/collection-params';
-import { ApiResult, Context } from '@web-fragments/core';
 import { httpClient } from './http-client/http-client';
 import { getCollectionParams } from './utils/params.util';
 import { mapResponseToCamelCase } from './utils/response.util';

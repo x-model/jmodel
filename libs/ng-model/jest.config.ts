@@ -1,9 +1,9 @@
 /* eslint-disable */
 export default {
-  displayName: 'ng-fragments',
+  displayName: 'ng-model',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../coverage/libs/ng-fragments',
+  coverageDirectory: '../../coverage/libs/ng-model',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',

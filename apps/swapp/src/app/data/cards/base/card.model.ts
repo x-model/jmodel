@@ -1,4 +1,4 @@
-import { Context } from '@web-fragments/core';
+import { Context } from '@x-model/jmodel';
 import { draw } from './card.service';
 import { CARD_STORE } from './card.store';
 

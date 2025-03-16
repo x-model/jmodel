@@ -1,4 +1,4 @@
-import { ApiResult } from '@web-fragments/core';
+import { ApiResult } from '@x-model/jmodel';
 import { Card } from './card';
 import { CollectionParams } from '../../../common/resources/models/collection-params';
 import { CollectionResult } from '../../../common/resources/models/collection-result';

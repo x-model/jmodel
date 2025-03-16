@@ -1,7 +1,7 @@
 import { Component, Injectable, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { isFirstChange, isValid } from '@web-fragments/core';
-import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
+import { isFirstChange, isValid } from '@x-model/jmodel';
+import { ngContextBuilder, refToSignal } from '@x-model/ng-model';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe, NgIf } from '@angular/common';
 import { userSource } from '../../../../data/users/user.model';

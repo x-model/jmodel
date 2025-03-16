@@ -1,4 +1,4 @@
-import { Context } from '@web-fragments/core';
+import { Context } from '@x-model/jmodel';
 import { CARD_STORE } from './card.store';
 import { CARD_COMPARE, CARD_MAP, CARD_REPOSITORY } from './di-tokens';
 import { Card } from './models/card';

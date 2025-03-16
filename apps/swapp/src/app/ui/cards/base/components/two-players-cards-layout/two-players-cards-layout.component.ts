@@ -1,9 +1,9 @@
 import { Component, Input, Signal, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
+import { refToSignal } from '@x-model/ng-model';
 import { CardsLayoutComponent } from '../cards-layout/cards-layout.component';
 import { CardPlayerComponent } from '../card-player/card-player.component';
 import { CARD_COMPONENT_CONTEXT } from '../../context/card-component.context';
-import { refToSignal } from '@web-fragments/ng-fragments';
 import { CardPlayer } from '../../../../../data/cards/base/models/card-player';
 
 @Component({

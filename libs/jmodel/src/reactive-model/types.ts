@@ -140,12 +140,12 @@ export type $ValueProps<T> = T extends { [key: string]: unknown }
   : T;
 
 export type $Value<T> = {
-  [MODEL_REF]?: ReactiveModel<any>;
-  [META_DATA]: RefDef<any> | RefDef<any>[];
-  [QUERY]?: any;
-  [PATH]?: any;
-  [FIRST_CHANGE]: boolean;
-  [DISABLED]: boolean;
+  // [MODEL_REF]?: ReactiveModel<any>;
+  // [META_DATA]: RefDef<any> | RefDef<any>[];
+  // [QUERY]?: any;
+  // [PATH]?: any;
+  // [FIRST_CHANGE]: boolean;
+  // [DISABLED]: boolean;
   $value: T;
   $errors: { [key: string]: any };
   $: (callback: (value: T) => void) => void;

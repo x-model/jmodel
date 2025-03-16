@@ -1,4 +1,4 @@
-import { Token } from '@web-fragments/core';
+import { Token } from '@x-model/jmodel';
 import { CardCompare, CardMap, CardRepository } from './models/card-context';
 
 export const CARD_REPOSITORY = Token<CardRepository>('CARD_REPOSITORY');

@@ -1,5 +1,5 @@
 {
-  "name": "@web-fragments/ng-fragments",
+  "name": "@x-model/ng-model",
   "version": "0.0.16",
   "peerDependencies": {
     "@angular/common": "^17.0.0",

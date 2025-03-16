@@ -20,7 +20,7 @@
           "error",
           {
             "type": "attribute",
-            "prefix": "fragments",
+            "prefix": "sw",
             "style": "camelCase"
           }
         ],
@@ -28,7 +28,7 @@
           "error",
           {
             "type": "element",
-            "prefix": "fragments",
+            "prefix": "sw",
             "style": "kebab-case"
           }
         ]

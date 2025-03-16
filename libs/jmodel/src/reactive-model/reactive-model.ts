@@ -218,7 +218,7 @@ export const computed = <
     get $errors(): { [key: string]: any } {
       return { '0': ref1.$errors, '1': ref2.$errors };
     },
-  };
+  } as any;
 
   return ref as any;
 };

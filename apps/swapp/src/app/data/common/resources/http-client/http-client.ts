@@ -1,4 +1,4 @@
-import { Token, TOKEN, Lifetime, LIFETIME, FACTORY } from '@web-fragments/core';
+import { Token, TOKEN, Lifetime, LIFETIME, FACTORY } from '@x-model/jmodel';
 
 export const HTTP_CLIENT = Token<typeof fetch>('HTTP_CLIENT');
 

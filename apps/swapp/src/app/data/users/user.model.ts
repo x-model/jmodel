@@ -5,7 +5,7 @@ import {
   LIFETIME,
   PROVIDERS,
   TOKEN,
-} from '@web-fragments/core';
+} from '@x-model/jmodel';
 import { USER_STORE, userStore } from './user.store';
 import { setDefaultName, toggleLastName } from './user.service';
 

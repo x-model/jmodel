@@ -1,14 +1,21 @@
 {
-  "extends": ["../../.eslintrc.json"],
-  "ignorePatterns": ["!**/*"],
+  "extends": [
+    "../../.eslintrc.json"
+  ],
+  "ignorePatterns": [
+    "!**/*"
+  ],
   "overrides": [
     {
-      "files": ["*.ts"],
+      "files": [
+        "*.ts"
+      ],
       "extends": [
         "plugin:@nx/angular",
         "plugin:@angular-eslint/template/process-inline-templates"
       ],
       "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
         "@angular-eslint/directive-selector": [
           "error",
           {
@@ -28,12 +35,18 @@
       }
     },
     {
-      "files": ["*.html"],
-      "extends": ["plugin:@nx/angular-template"],
+      "files": [
+        "*.html"
+      ],
+      "extends": [
+        "plugin:@nx/angular-template"
+      ],
       "rules": {}
     },
     {
-      "files": ["*.json"],
+      "files": [
+        "*.json"
+      ],
       "parser": "jsonc-eslint-parser",
       "rules": {
         "@nx/dependency-checks": "error"

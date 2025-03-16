@@ -1,7 +1,7 @@
-# core
+# ng-model
 
 This library was generated with [Nx](https://nx.dev).
 
 ## Running unit tests
 
-Run `nx test core` to execute the unit tests.
+Run `nx test ng-model` to execute the unit tests.
