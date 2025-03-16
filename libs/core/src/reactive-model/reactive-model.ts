@@ -1,4 +1,5 @@
 import { getRawModel } from './model';
+import { createGraph } from './schema-graph';
 import {
   DISABLED,
   FIRST_CHANGE,
@@ -15,21 +16,18 @@ import {
   TRACKED,
   VALIDATORS,
   WATCHERS,
-} from './model-utils';
-import { createGraph } from './new-schema-graph';
-import {
   $Model,
   $Value,
-  ExtractedSignalModel,
+  Model$,
   ReactiveModel,
   SignalDef,
-} from './new-types';
+} from './types';
 
-export function createReactiveModel<T extends SignalDef<unknown>>(
+export function createReactiveModel<T extends { [key: string]: unknown }>(
   model: T
-): $Model<T> {
-  const source: Source<ExtractedSignalModel<T>> = {
-    [STATE]: getRawModel(model) as any,
+): Model$ {
+  const source: Source<any> = {
+    [STATE]: getRawModel(model as any) as any,
     [WATCHERS]: new Map<symbol, any>([]),
     [TRACKED]: [],
   };
@@ -55,10 +53,10 @@ export function createReactiveModel<T extends SignalDef<unknown>>(
         let parent = source[STATE];
 
         for (let i = 0; i < pathSegments.length - 1; i++) {
-          parent = parent[pathSegments[i]];
+          parent = parent[pathSegments[i]] as any;
         }
 
-        parent[lastSegment] = newModel;
+        parent[lastSegment] = newModel as any;
       } else {
         source[STATE] = newModel as any;
       }
@@ -323,18 +321,6 @@ const createModelField = <T>(
   return signal as any;
 };
 
-// ex.
-// const model = {
-//   name: '',
-//   address: {
-//     street: {
-//       name: '',
-//       [PATH]: 2,
-//     },
-//     [PATH]: 1,
-//   },
-//   [PATH]: 0,
-// };
 function createModelFields(reactiveModel, obj) {
   if (!obj || typeof obj !== 'object') {
     return undefined;
@@ -367,37 +353,3 @@ function createModelFields(reactiveModel, obj) {
 
   return result;
 }
-
-export const isValid = <T>(signal: $Value<T>) => {
-  if (signal?.$errors) {
-    return false;
-  }
-
-  let valid = true;
-  const params = Object.keys(signal).filter((key) => !key.startsWith('$'));
-
-  for (let i = 0; i < params.length; i++) {
-    const param = params[i];
-    valid = valid && isValid(signal[param]);
-
-    if (!valid) break;
-  }
-
-  return valid;
-};
-
-export const disable = <T>(signal: $Value<T>) => {
-  signal[DISABLED] = true;
-};
-
-export const isDisabled = <T>(signal: $Value<T>) => {
-  return !!signal[DISABLED];
-};
-
-export const isFirstChange = <T>(signal: $Value<T>) => {
-  return !!signal[FIRST_CHANGE];
-};
-
-export const enable = <T>(signal: $Value<T>) => {
-  signal[DISABLED] = false;
-};

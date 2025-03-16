@@ -23,20 +23,22 @@ export {
   InjectionDef,
 } from './di/types';
 export { Method, Factory, Unwrap } from './types';
+export { createReactiveModel, computed } from './reactive-model/reactive-model';
 export {
-  createReactiveModel,
-  computed,
+  $field,
+  $schema,
   isValid,
   isDisabled,
   disable,
   enable,
   isFirstChange,
-} from './reactive-model/reactive-model';
-export { Query, $field, $schema, _ } from './reactive-model/model-utils';
+} from './reactive-model/model-utils';
 export {
+  Query,
+  _,
   Validator,
   $Value,
   $Model,
   ReactiveModel,
-} from './reactive-model/new-types';
+} from './reactive-model/types';
 export { required } from './reactive-model/validators';

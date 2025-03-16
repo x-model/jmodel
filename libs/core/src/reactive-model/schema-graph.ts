@@ -5,8 +5,8 @@ import {
   PATH,
   Query,
   TARGET,
-} from './model-utils';
-import { buildGraph } from './new-graph';
+} from './types';
+import { buildGraph } from './graph';
 
 export function createGraph<Model>(initialModel: Model): Graph<Model> {
   const { graph, parents, parentProps, props, fieldsConfigs } =
@@ -71,13 +71,6 @@ export function createGraph<Model>(initialModel: Model): Graph<Model> {
       throw new Error(`Invalid selector: ${pathSelector}. ${description}`);
     }
 
-    // const flattenValue = flatObject(value);
-    // const paths = Object.keys(flattenValue).map((key) => ({
-    //   pathKey: `${flattenValue[key]}`,
-    //   path: key,
-    // }));
-
-    // return paths as GraphMember<R>[];
     return value;
   };
 

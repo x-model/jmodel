@@ -19,9 +19,6 @@ export const peopleSource = {
   [TOKEN]: Symbol('PEOPLE_SOURCE'),
   [LIFETIME]: Lifetime.scoped,
   [PROVIDERS]: {
-    // [MEMO]: {
-    //   totalPages$,
-    // },
     [CARD_REPOSITORY]: {
       [FACTORY]: () => ({
         getAll: peopleGetAll,

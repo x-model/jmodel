@@ -1,4 +1,37 @@
-import { buildGraph } from '../../src/reactive-model/new-graph';
+import { buildGraph } from '../../src/reactive-model/graph';
+
+// Model example
+// export const model = {
+//   player1: {
+//     currentEquipment: {
+//       sword: '',
+//       additionalEq: {
+//         sword: '',
+//       },
+//     },
+//     bags: [{ sword: '', children: [{ names: '' }] }],
+//     score: '',
+//   },
+//   player2: {
+//     currentEquipment: {
+//       sword: '',
+//     },
+//     bags: [{ sword: '' }, { sword: '' }],
+//     score: '',
+//   },
+//   names: ['uno', 'duo'],
+// };
+
+// primitive value
+// array with objects
+// array with primitives ex. [1, 2, 3]
+// object
+// field
+// schema
+// object with fields
+// object with schemas
+// object with primitive arrays
+// object with object arrays
 
 describe('graph', () => {
   test('return proper parents, parentsProps (simple model)', () => {
@@ -156,3 +189,9 @@ describe('graph', () => {
     expect([...result.props.values()]).toEqual(expectedProps);
   });
 });
+
+// getPath example usage:
+
+// console.log(getPath(model.player1.currentEquipment.sword)); // "player1.currentEquipment.sword"
+// console.log(getPath(model.player1.bags[0].sword)); // "player1.bags[0].sword"
+// console.log(getPath(model.player1.score)); // "player1.score"

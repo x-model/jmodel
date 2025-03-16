@@ -1,5 +1,11 @@
-import { _, FIELD, INITIAL_VALUE, SCHEMA_FIELD } from './model-utils';
-import { SignalDef, Unwrap } from './new-types';
+import {
+  SignalDef,
+  Unwrap,
+  _,
+  FIELD,
+  INITIAL_VALUE,
+  SCHEMA_FIELD,
+} from './types';
 
 export type SignalObject<T extends { [key: string]: unknown }> = {
   [Property in keyof T]: T[Property] extends SignalDef<
@@ -16,7 +22,7 @@ export type SignalObject<T extends { [key: string]: unknown }> = {
     : T[Property];
 };
 
-export type ExtractedSignalModel<T> = T extends SignalDef<infer M>
+export type ExtractedRawModel<T> = T extends SignalDef<infer M>
   ? M extends { [key: string]: unknown }
     ? Unwrap<SignalObject<M>>
     : M
@@ -24,7 +30,7 @@ export type ExtractedSignalModel<T> = T extends SignalDef<infer M>
 
 export function getRawModel<T extends SignalDef<unknown>>(
   model: T
-): ExtractedSignalModel<T> | any[] {
+): ExtractedRawModel<T> | any[] {
   const parsedModel = parseModel(model);
 
   if (parsedModel == null || typeof parsedModel !== 'object') {

@@ -4,10 +4,6 @@ import { Card } from './models/card';
 import { CARD_STORE } from './card-store';
 import { CARD_COMPARE, CARD_MAP, CARD_REPOSITORY } from './di-tokens';
 
-// Czy to powinno być w modelu czy w repository?
-// W sumie to już jest jakaś logika, to już jest obróbka danych z data sources
-// w repositories też by to mogło być tylko zrobiliśmy repository jako singleton
-// repository powinno się traktować jak dawne api serwisy?
 async function totalPages(this: Context): Promise<number> {
   const { data, error } = await this.inject(CARD_REPOSITORY).getAll({
     page: 1,
@@ -41,7 +37,6 @@ export async function draw(this: Context): Promise<void> {
   const store = this.inject(CARD_STORE);
   const compare = this.inject(CARD_COMPARE);
   store.draw();
-  // store.update(draw);
 
   const [card1, card2] = await Promise.all([
     this.execute(getCard),

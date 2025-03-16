@@ -116,7 +116,7 @@ function destroy(this: { state: ReactiveModel<CardState> }): void {
 function cardStoreFactory() {
   // const model2 = createModel(cardModel);
   // const authModel2 = createModel(authModel);
-  const model = createReactiveModel(cardModel as any);
+  const model = createReactiveModel(cardModel);
   const player1 = model.getRef((schema) => schema.player1);
   const player2 = model.getRef((schema) => schema.player2);
   // const formModel = model.toSignals();
