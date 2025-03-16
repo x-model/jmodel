@@ -97,7 +97,7 @@ export function processSchema(
             newParentIndex
           );
 
-          // check for nested arrays
+          // TODO check for nested arrays
           const childModel = {
             [PATH]: newParentIndex,
             [SCHEMA]: schemaModel,
@@ -105,7 +105,7 @@ export function processSchema(
 
           model[key] = createArrayProxy(newParentIndex, childModel);
         } else {
-          // check for nested arrays
+          // TODO check for nested arrays
           const childModel = {
             [PATH]: newParentIndex,
             [SCHEMA]: schemaModel, // TODO Verify is it correct model

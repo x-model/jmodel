@@ -1,64 +1,14 @@
 import { Component, Injectable, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import {
-  $field,
-  FACTORY,
-  LIFETIME,
-  Lifetime,
-  TOKEN,
-  Token,
-  createReactiveModel,
-  disable,
-  enable,
-  isDisabled,
-  isFirstChange,
-  isValid,
-  required,
-} from '@web-fragments/core';
-import { ngContextBuilder } from '@web-fragments/ng-fragments';
-import { FormBuilder, FormsModule } from '@angular/forms';
+import { isFirstChange, isValid } from '@web-fragments/core';
+import { ngContextBuilder, refToSignal } from '@web-fragments/ng-fragments';
+import { FormsModule } from '@angular/forms';
 import { JsonPipe, NgIf } from '@angular/common';
-
-export const createProfileForm = (state) => {
-  const form = inject(FormBuilder).group({
-    firstName: [state?.firstName || ''],
-    lastName: [state?.lastName || ''],
-  });
-
-  const updateForm = (profile: any): void => {
-    form.patchValue({
-      firstName: profile?.firstName,
-      lastName: profile?.lastName,
-    });
-  };
-
-  return { form, updateForm };
-};
-
-type UserState = { firstName: string; lastName: string };
-
-export function storeFactory() {
-  const userModel = createReactiveModel({
-    firstName: $field('', { validators: [required] }),
-    lastName: $field('', { validators: [required] }),
-  } as any);
-
-  const model = userModel.getRefs((schema) => schema);
-
-  return model;
-}
-
-const USER_STORE = Token<ReturnType<typeof storeFactory>>('USER_STORE');
-
-export const userStore = {
-  [TOKEN]: USER_STORE,
-  [LIFETIME]: Lifetime.scoped,
-  [FACTORY]: storeFactory,
-};
+import { userSource } from '../../../../data/users/user.model';
 
 @Injectable()
 export class UserComponentContext extends ngContextBuilder({
-  model: userStore,
+  model: userSource,
 }) {}
 
 @Component({
@@ -72,27 +22,22 @@ export class UserComponentContext extends ngContextBuilder({
 export class UserPageComponent {
   ctx = inject(UserComponentContext);
   model = (this.ctx as any).model;
+  form = this.model.state;
+  firstName = refToSignal(this.model.state.firstName);
 
-  firstName = '';
-  value = { name: '' };
-
-  updateName() {
-    this.model.firstName.$value = 'Jacek';
+  setDefaultName(): void {
+    this.model.setDefaultName();
   }
 
-  toggleLastName() {
-    if (isDisabled(this.model.lastName)) {
-      enable(this.model.lastName);
-    } else {
-      disable(this.model.lastName);
-    }
+  toggleLastName(): void {
+    this.model.toggleLastName();
   }
 
   isValid() {
     return isValid(this.model);
   }
 
-  isTouched(signal) {
-    return isFirstChange(signal);
+  isTouched(ref) {
+    return isFirstChange(ref);
   }
 }

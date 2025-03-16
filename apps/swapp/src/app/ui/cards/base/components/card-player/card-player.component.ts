@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
 import { CardComponent } from '../card/card.component';
-import { CardPlayer } from '../../../../../data/base/models/card-player';
+import { CardPlayer } from '../../../../../data/cards/base/models/card-player';
 
 @Component({
   selector: 'sw-card-player',

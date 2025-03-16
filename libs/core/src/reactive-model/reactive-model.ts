@@ -20,7 +20,7 @@ import {
   $Value,
   Model$,
   ReactiveModel,
-  SignalDef,
+  RefDef,
 } from './types';
 
 export function createReactiveModel<T extends { [key: string]: unknown }>(
@@ -35,7 +35,6 @@ export function createReactiveModel<T extends { [key: string]: unknown }>(
   const reactiveModel: ReactiveModel<T> = {
     graph: createGraph(model),
     [SOURCE]: source,
-    // TODO Poprawić get, bo teraz jest problem z typem jak używamy get, jest lub i nie wie co przypisać do pola
     get: function <Value>(query?: Query<T, Value>): Value | T {
       return (query ? query(source[STATE] as any) : source[STATE]) as any;
     },
@@ -61,9 +60,6 @@ export function createReactiveModel<T extends { [key: string]: unknown }>(
         source[STATE] = newModel as any;
       }
 
-      // runValidators(reactiveModel);
-
-      // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
       const filteredChanges = new Set(changes);
       const watchIds = [];
 
@@ -123,7 +119,6 @@ function unwatch<T>(watchId: symbol, source: Source<T>): () => void {
   return () => {
     source[TRACKED] = source[TRACKED].filter((item) => item[1] !== watchId);
     source[WATCHERS].delete(watchId);
-    console.log('unwatched');
   };
 }
 
@@ -140,27 +135,21 @@ function getByPath(source, pathSegments: string[]) {
   return value;
 }
 
-// co jak ktoś w modelu będzie miał więcej pól niż w source?
 function checkChanges<State, Model>(
   source: Source<State>,
   model: Model,
   pathSegments: string[]
 ): string[] {
-  // mozna sprawdzać referencje, jeżeli są takie same modelu i source to wtedy wgl nie wykonujemy metodki,
-  // jak nie będziemy zmieniać referencji to będziemy musieli skanować potem cały model
   const value = getByPath(source[STATE], pathSegments);
   let changes: string[] = [];
   const tracked = source[TRACKED];
 
-  // TODO handle null - null is also object
   if (model && typeof model === 'object') {
-    // jak zrobić watch na modelu? całym?
     if (value != model) {
       const watchersKey = pathSegments.join('.');
       const isTracked = tracked.find((item) => item[0] === watchersKey);
 
       if (isTracked) {
-        // przed dodaniem sprawdza czy już nie zostało dodane wcześniej i nie skonsumowane
         changes.push(watchersKey);
       }
     }
@@ -199,40 +188,39 @@ function checkChanges<State, Model>(
   return changes;
 }
 
-// Problem że nie można zrobić computed na dwóch różnych modelach
 export const computed = <
   TS1 extends $Value<unknown>,
   TS2 extends $Value<unknown>,
   R
 >(
-  signal1: TS1,
-  signal2: TS2,
+  ref1: TS1,
+  ref2: TS2,
   callback: (result: [TS1['$value'], TS2['$value']]) => R
 ): $Value<R> => {
-  const signalFn = (signalCallback: (value) => void) => {
-    signal1?.$((value) => {
-      signalCallback(callback([value, signal2.$value]));
+  const refFn = (refCallback: (value) => void) => {
+    ref1?.$((value) => {
+      refCallback(callback([value, ref2.$value]));
     });
 
-    signal2?.$((value) => {
-      signalCallback(callback([signal1.$value, value]));
+    ref2?.$((value) => {
+      refCallback(callback([ref1.$value, value]));
     });
   };
 
-  const signal = {
-    [META_DATA]: [signal1[META_DATA], signal2[META_DATA]] as SignalDef<any>[],
+  const ref = {
+    [META_DATA]: [ref1[META_DATA], ref2[META_DATA]] as RefDef<any>[],
     [FIRST_CHANGE]: false,
     [DISABLED]: false,
-    $: signalFn,
+    $: refFn,
     get $value(): R {
-      return callback([signal1.$value, signal2.$value]);
+      return callback([ref1.$value, ref2.$value]);
     },
     get $errors(): { [key: string]: any } {
-      return { '0': signal1.$errors, '1': signal2.$errors };
+      return { '0': ref1.$errors, '1': ref2.$errors };
     },
   };
 
-  return signal as any;
+  return ref as any;
 };
 
 const createFields = <T>(
@@ -240,9 +228,9 @@ const createFields = <T>(
   selector: (schema: any) => any
 ): $Model => {
   const graph = reactiveModel.graph.getGraph(selector);
-  const signal = createModelFields(reactiveModel, graph);
+  const ref = createModelFields(reactiveModel, graph);
 
-  return signal;
+  return ref;
 };
 
 const createField = <T>(
@@ -251,9 +239,9 @@ const createField = <T>(
 ): $Value<T> => {
   const path = reactiveModel.graph.getPath(selector);
   const query = reactiveModel.graph.query(selector);
-  const signal = createModelField(query, path, reactiveModel);
+  const ref = createModelField(query, path, reactiveModel);
 
-  return signal as any;
+  return ref as any;
 };
 
 const createModelField = <T>(
@@ -261,23 +249,17 @@ const createModelField = <T>(
   path: GraphMember<any>,
   reactiveModel
 ): $Value<T> => {
-  // dodawanie validatora do grupy czyli całego obiektu, albo dziecka obiektu
-  // asyncValidator => ustawia status pending? albo zwraca Promise
-  // co z testami? np. dla async validatora? w sumie możemy nadpisac fetcha
-  // onStateChange = new Map<symbol, (value: unknown) => void>([]);
-  const signalMetaData = (reactiveModel.graph.fieldsConfigs || []).find(
+  const refMetaData = (reactiveModel.graph.fieldsConfigs || []).find(
     (item) => item.key === path.pathKey
   );
-  const validators = signalMetaData?.config?.validators;
-  const isDisabled = !!signalMetaData?.config?.disabled;
+  const validators = refMetaData?.config?.validators;
+  const isDisabled = !!refMetaData?.config?.disabled;
 
-  const signalFn = (callback: (value) => void) => {
-    // watchers.push(watcher);
-    // this.onStateChange.set(watcher, (state: T) => fn(selector(state)));
+  const refFn = (callback: (value) => void) => {
     return reactiveModel.watch(query, () => callback);
   };
 
-  const signal = {
+  const ref = {
     [MODEL_REF]: reactiveModel,
     [META_DATA]: {
       data: validators ? { [VALIDATORS]: validators } : null,
@@ -286,7 +268,7 @@ const createModelField = <T>(
     [PATH]: path.path,
     [FIRST_CHANGE]: false,
     [DISABLED]: isDisabled,
-    $: signalFn,
+    $: refFn,
     set $value(value: any) {
       if (!this[DISABLED]) {
         this[MODEL_REF].set(query, (state) => value);
@@ -318,7 +300,7 @@ const createModelField = <T>(
     },
   };
 
-  return signal as any;
+  return ref as any;
 };
 
 function createModelFields(reactiveModel, obj) {

@@ -215,30 +215,3 @@ export function getComputedValue<
 
   return resolver(values as GraphMembersTypes<GraphMembers>);
 }
-
-function flatObject(obj, parentKey = '', result = {}) {
-  if (!obj || typeof obj !== 'object') {
-    return undefined;
-  }
-
-  for (const key of Reflect.ownKeys(obj)) {
-    const fullKey = parentKey
-      ? `${parentKey}${
-          key.toString() === PATH.toString() ? '[PATH]' : '.' + (key as string)
-        }`
-      : key.toString() === PATH.toString()
-      ? '[PATH]'
-      : (key as string);
-
-    if (
-      typeof obj[key] === 'object' &&
-      obj[key] !== null &&
-      !Array.isArray(obj[key])
-    ) {
-      flatObject(obj[key], fullKey, result); // Recursive call for nested objects
-    } else {
-      result[fullKey] = obj[key]; // Assign value for non-object properties
-    }
-  }
-  return result;
-}

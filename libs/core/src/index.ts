@@ -1,8 +1,6 @@
 export { diDependencies } from './builder/di-dependencies';
 export { Context, CreationContext } from './builder/types';
 export {
-  di,
-  registerAs,
   injectionToken,
   Token,
   TOKEN,

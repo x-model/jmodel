@@ -1,0 +1,55 @@
+import { Context } from '@web-fragments/core';
+import { CARD_STORE } from './card.store';
+import { CARD_COMPARE, CARD_MAP, CARD_REPOSITORY } from './di-tokens';
+import { Card } from './models/card';
+import { getRandom } from '../../common';
+
+async function totalPages(this: Context): Promise<number> {
+  const { data, error } = await this.inject(CARD_REPOSITORY).getAll({
+    page: 1,
+    limit: 1,
+  });
+  return error ? 0 : data?.totalPages;
+}
+
+async function getCard(this: Context): Promise<Card> {
+  const repository = this.inject(CARD_REPOSITORY);
+  const map = this.inject(CARD_MAP);
+
+  const total = await this.execute(totalPages);
+  const { data: resourceResult } = await repository.getAll({
+    page: getRandomPage(total),
+    limit: 1,
+  });
+
+  const itemId = resourceResult?.items?.[0]?.uid;
+
+  if (itemId && !isNaN(+itemId)) {
+    const { data: resourceItemResult } = await repository.get(+itemId);
+    return map(resourceItemResult);
+  } else {
+    return null;
+  }
+}
+
+export async function draw(this: Context): Promise<void> {
+  const store = this.inject(CARD_STORE);
+  const compare = this.inject(CARD_COMPARE);
+  store.draw();
+
+  const [card1, card2] = await Promise.all([
+    this.execute(getCard),
+    this.execute(getCard),
+  ]);
+
+  if (card1 && card2) {
+    const winner = compare([card1, card2]);
+    store.drawSuccess([card1, card2], winner);
+  } else {
+    store.drawFailure();
+  }
+}
+
+const getRandomPage = (range: number): number => {
+  return getRandom(1, range);
+};

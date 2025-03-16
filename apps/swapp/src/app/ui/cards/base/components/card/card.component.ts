@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { Card } from '../../../../../data/base/models/card';
+import { Card } from '../../../../../data/cards/base/models/card';
 
 @Component({
   selector: 'sw-card',

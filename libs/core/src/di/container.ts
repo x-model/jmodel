@@ -11,10 +11,7 @@ export type ScopeInfo = {
   parentId?: symbol;
 };
 
-// być może każdy framework/biblioteka musi mieć własną implementację swojego kontenera,
-// ale też fajnie byłoby mieć jakiś bazowy kod
 export class Container {
-  // private readonly _rootScope = Symbol('root');
   private registrations: Map<symbol, Map<symbol, any>> = new Map();
   private scopes: Map<symbol, ManagedScope> = new Map();
   private parents: [symbol, symbol][] = [];
@@ -129,8 +126,6 @@ export class Container {
         scopeId,
         new Map([[injectionDef[TOKEN], { value: factory() }]])
       );
-
-      // console.log('DI: Registered', injectionDef.resolveFn.name);
     } else {
       if (scopeMap.has(injectionDef[TOKEN])) {
         throw new Error('This object is already registered');
@@ -139,11 +134,7 @@ export class Container {
       scopeMap.set(injectionDef[TOKEN], {
         value: factory(),
       });
-
-      // console.log('DI: Registered', injectionDef.resolveFn.name);
     }
-
-    // const _scope = this.scopes.get(scopeId);
 
     // _scope.onRelease(() => {
     //   this.unregister(injectionDef, scope);
@@ -151,7 +142,6 @@ export class Container {
   }
 
   private unregister<T>(injectionDef: InjectionDef<T>, scopeInfo?: ScopeInfo) {
-    // console.log('destroyed', injectionDef.resolveFn.name);
     this.registrations.get(scopeInfo.id).delete(injectionDef[TOKEN]);
 
     if (this.registrations.get(scopeInfo.id).size === 0) {

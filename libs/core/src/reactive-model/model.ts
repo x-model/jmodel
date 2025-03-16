@@ -1,34 +1,24 @@
-import {
-  SignalDef,
-  Unwrap,
-  _,
-  FIELD,
-  INITIAL_VALUE,
-  SCHEMA_FIELD,
-} from './types';
+import { RefDef, Unwrap, _, FIELD, INITIAL_VALUE, SCHEMA_FIELD } from './types';
 
-export type SignalObject<T extends { [key: string]: unknown }> = {
-  [Property in keyof T]: T[Property] extends SignalDef<
-    infer SInner,
-    infer SGraph
-  >
+export type RefObject<T extends { [key: string]: unknown }> = {
+  [Property in keyof T]: T[Property] extends RefDef<infer SInner, infer SGraph>
     ? SInner extends { [key: string]: unknown }
-      ? Unwrap<SignalObject<SInner>>
+      ? Unwrap<RefObject<SInner>>
       : SInner extends symbol
       ? SGraph extends { [key: string]: unknown }
-        ? Unwrap<SignalObject<SGraph>>
+        ? Unwrap<RefObject<SGraph>>
         : SGraph
       : SInner
     : T[Property];
 };
 
-export type ExtractedRawModel<T> = T extends SignalDef<infer M>
+export type ExtractedRawModel<T> = T extends RefDef<infer M>
   ? M extends { [key: string]: unknown }
-    ? Unwrap<SignalObject<M>>
+    ? Unwrap<RefObject<M>>
     : M
   : T;
 
-export function getRawModel<T extends SignalDef<unknown>>(
+export function getRawModel<T extends RefDef<unknown>>(
   model: T
 ): ExtractedRawModel<T> | any[] {
   const parsedModel = parseModel(model);

@@ -12,14 +12,11 @@ export function diDependencies<
   }
 >(deps: Dependencies): Factory<CreationContext, Unwrap<Context & Result>> {
   return (context: Context & CreationContext) => {
-    // creation context powinien mieć scope, w sumie mamy contextId
-    // skąd brać identyfikator dla scope?
     const scope = context._scope;
     const scopeId = context._scope.id; // Symbol('scope');
     const container: Container = context.inject(containerToken as any);
 
     const resolvedDeps = Object.keys(deps).reduce((instances, key) => {
-      // dodać obsługę [PROVIDERS]
       const dependency = deps[key];
       resolveProviders(container, context, dependency[PROVIDERS]);
 
@@ -31,7 +28,7 @@ export function diDependencies<
         inject: context.inject,
         execute: context.execute,
         ...dependency[FACTORY](context, { onInit }),
-      }); // scope, { _inject: context.inject });
+      });
 
       const instance = container.resolve(dependency, factory, {
         id: scopeId,
@@ -87,7 +84,7 @@ const resolveProviders = (container, context, providers: any) => {
           inject: context.inject,
           execute: context.execute,
           ...dependency[FACTORY](context, { onInit }),
-        }); // scope, { _inject: context.inject });
+        });
 
     container.register(dependency, factory, scopeId);
 

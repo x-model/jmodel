@@ -8,7 +8,7 @@ export type CreationContext = {
 } & Context;
 
 export type InjectFn = <T extends Token<unknown>>(value: T) => T['_'];
-export type ExecuteFn = <T extends (...params: any[]) => unknown>(
+export type ExecuteFn = <T extends (...params: unknown[]) => unknown>(
   fn: T,
   ...params
 ) => ReturnType<T>;

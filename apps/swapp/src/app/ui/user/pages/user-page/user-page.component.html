@@ -1,31 +1,34 @@
+<p>First Name: {{ firstName?.() }}</p>
 <form>
   <input
     type="text"
     class="form-control"
     id="firstName"
-    [(ngModel)]="model.firstName.$value"
+    [(ngModel)]="form.firstName.$value"
     name="firstName"
     autocomplete="off"
-    #firstName="ngModel"
+    #firstNameControl="ngModel"
   />
-  Value: {{ model.firstName.$value }}
-  <div *ngIf="firstName.touched && model.firstName.$errors">
-    Errors: {{ model.firstName.$errors | json }}
+  Value: {{ form.firstName.$value }}
+  <div *ngIf="firstNameControl.touched && form.firstName.$errors">
+    Errors: {{ form.firstName.$errors | json }}
   </div>
 
   <input
     type="text"
     class="form-control"
     id="lastName"
-    [(ngModel)]="model.lastName.$value"
+    [(ngModel)]="form.lastName.$value"
     name="lastName"
     autocomplete="off"
   />
-  TODO: remove this: {{ model.lastName.$value }}
-  <div *ngIf="isTouched(model.lastName) && model.lastName.$errors">
-    Errors: {{ model.lastName.$errors | json }}
+  Last name value: {{ form.lastName.$value }}
+  <div *ngIf="isTouched(form.lastName) && form.lastName.$errors">
+    Errors: {{ form.lastName.$errors | json }}
   </div>
 </form>
 
-<button (click)="updateName()" [disabled]="!isValid()">Change name</button>
+<button (click)="setDefaultName()" [disabled]="!isValid()">
+  Set default name
+</button>
 <button (click)="toggleLastName()">Disable last name</button>

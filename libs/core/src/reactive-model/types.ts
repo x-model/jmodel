@@ -15,10 +15,9 @@ export const MODEL_REF = Symbol('MODEL_REF');
 export const DISABLED = Symbol('DISABLED');
 export const FIRST_CHANGE = Symbol('FIRST_CHANGE');
 export const TARGET = Symbol('TARGET');
-export const SIGNAL = Symbol('SIGNAL');
-export const SIGNAL_GRAPH = Symbol('SIGNAL_GRAPH');
-export const SIGNAL_VALUE = Symbol('SIGNAL_VALUE');
-export const FROM_SCHEMA = Symbol('FROM_SCHEMA');
+export const REF = Symbol('REF');
+export const REF_GRAPH = Symbol('REF_GRAPH');
+export const REF_VALUE = Symbol('REF_VALUE');
 export const VALIDATORS = Symbol('VALIDATORS');
 export const SCHEMA = Symbol('SCHEMA');
 
@@ -94,24 +93,21 @@ export type Source<T> = {
 
 ///////////////////////////////////////////////////////////////////
 
-export type SignalObject<T extends { [key: string]: unknown }> = {
-  [Property in keyof T]: T[Property] extends SignalDef<
-    infer SInner,
-    infer SGraph
-  >
+export type RefObject<T extends { [key: string]: unknown }> = {
+  [Property in keyof T]: T[Property] extends RefDef<infer SInner, infer SGraph>
     ? SInner extends { [key: string]: unknown }
-      ? Unwrap<SignalObject<SInner>>
+      ? Unwrap<RefObject<SInner>>
       : SInner extends symbol
       ? SGraph extends { [key: string]: unknown }
-        ? Unwrap<SignalObject<SGraph>>
+        ? Unwrap<RefObject<SGraph>>
         : SGraph
       : SInner
     : T[Property];
 };
 
-export type ExtractedSignalModel<T> = T extends SignalDef<infer M>
+export type ExtractedRefModel<T> = T extends RefDef<infer M>
   ? M extends { [key: string]: unknown }
-    ? Unwrap<SignalObject<M>>
+    ? Unwrap<RefObject<M>>
     : M
   : T;
 
@@ -128,11 +124,11 @@ export type Validator<TValue, TState = any> = (
   state: TState
 ) => Record<string, boolean>;
 
-export type SignalDef<TValue, TGraph = any> = {
-  [SIGNAL]: TValue;
+export type RefDef<TValue, TGraph = any> = {
+  [REF]: TValue;
   [VALIDATORS]?: Validator<TValue>[];
   [DISABLED]?: boolean;
-  [SIGNAL_GRAPH]?: TGraph;
+  [REF_GRAPH]?: TGraph;
 };
 
 export type $ValueProps<T> = T extends { [key: string]: unknown }
@@ -145,7 +141,7 @@ export type $ValueProps<T> = T extends { [key: string]: unknown }
 
 export type $Value<T> = {
   [MODEL_REF]?: ReactiveModel<any>;
-  [META_DATA]: SignalDef<any> | SignalDef<any>[];
+  [META_DATA]: RefDef<any> | RefDef<any>[];
   [QUERY]?: any;
   [PATH]?: any;
   [FIRST_CHANGE]: boolean;
@@ -156,10 +152,7 @@ export type $Value<T> = {
 } & $ValueProps<T>;
 
 export type ModelObject<T extends { [key: string]: unknown }> = {
-  [Property in keyof T]: T[Property] extends SignalDef<
-    infer SInner,
-    infer SGraph
-  >
+  [Property in keyof T]: T[Property] extends RefDef<infer SInner, infer SGraph>
     ? SInner extends { [key: string]: unknown }
       ? $Value<Unwrap<ModelObject<SInner>>>
       : SInner extends symbol
@@ -170,7 +163,7 @@ export type ModelObject<T extends { [key: string]: unknown }> = {
     : T[Property];
 };
 
-export type $Model<T = any> = T extends SignalDef<infer M>
+export type $Model<T = any> = T extends RefDef<infer M>
   ? M extends { [key: string]: unknown }
     ? $Value<Unwrap<ModelObject<M>>>
     : M

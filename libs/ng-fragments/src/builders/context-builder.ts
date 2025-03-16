@@ -15,15 +15,6 @@ import {
 
 export type BuilderPartialContext = Record<string, unknown>;
 
-export type ContentType<T> = T extends Type<infer TInner> ? TInner : T;
-
-export type ContextType<T> = ContentType<T>;
-
-export type BuilderConfig = {
-  providedIn?: 'root';
-  name?: string;
-};
-
 export function ngContextBuilder<BuilderModel extends Record<string, unknown>>(
   model: BuilderModel
 ): Type<Context> {
@@ -31,8 +22,6 @@ export function ngContextBuilder<BuilderModel extends Record<string, unknown>>(
     _injector = inject(Injector);
     _rootInjector = inject(EnvironmentInjector);
     _container = inject(Container);
-    // Symbol(builderConfig?.name || 'CONTEXT_ID')
-    // Ułatwi potem debugowanie
     _id = Symbol('CONTEXT_ID');
     /**
      * prevents to use context during creation process
@@ -63,8 +52,6 @@ export function ngContextBuilder<BuilderModel extends Record<string, unknown>>(
       );
 
       for (const key in this._innerContext) {
-        // do każdego value podpinać jakoś name (key), wtedy możemy tego używać do logs
-
         Object.defineProperty(this, key, {
           value: this._innerContext[key],
           writable: false,
