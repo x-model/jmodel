@@ -34,7 +34,7 @@ export class UserPageComponent {
   }
 
   isValid() {
-    return isValid(this.model);
+    return isValid(this.form);
   }
 
   isTouched(ref) {

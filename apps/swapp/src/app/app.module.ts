@@ -9,13 +9,14 @@ import { AppComponent } from './app.component';
 import { G11nModule } from './g11n';
 import { HomePageComponent } from './ui/main/pages/home-page/home-page.component';
 import { LayoutComponent } from './ui/main/components/layout/layout.component';
+import { UserPageComponent } from './ui/user/pages/user-page/user-page.component';
 
 function containerFactory(): Container {
   return new Container();
 }
 
 @NgModule({
-  declarations: [AppComponent, HomePageComponent, LayoutComponent],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -23,6 +24,9 @@ function containerFactory(): Container {
     G11nModule,
     MatButtonModule,
     MatToolbarModule,
+    LayoutComponent,
+    HomePageComponent,
+    UserPageComponent,
   ],
   providers: [
     {

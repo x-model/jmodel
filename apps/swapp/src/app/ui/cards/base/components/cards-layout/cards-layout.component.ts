@@ -8,7 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, MatButtonModule, TranslateModule],
   templateUrl: './cards-layout.component.html',
-  styleUrls: ['./cards-layout.component.scss']
+  styleUrls: ['./cards-layout.component.scss'],
 })
 export class CardsLayoutComponent {
   @Input() title: string;
