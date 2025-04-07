@@ -4,6 +4,8 @@ jModel is a prototype client-side library for managing web models. With built-in
 
 Read more here: [Introduction to jModel](https://dev.to/adalbertuschris/frontend-evolution-rethinking-frontend-part-3-introduction-to-jmodel-5gjk)
 
+[Example usage on StackBlitz](https://stackblitz.com/edit/stackblitz-starters-2fztvrsi)
+
 ## Goals
 Minimal & Simple – Clean, lightweight, and easy to learn and use by both frontend and backend developers, with performance in mind
 
