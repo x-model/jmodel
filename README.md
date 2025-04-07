@@ -23,3 +23,4 @@ Minimal & Simple – Clean, lightweight, and easy to learn and use by both front
 - Add adapters for more UI frameworks/libraries (currently only Angular is supported)
 - Increase test coverage
 - Prepare documentation
+- Developer tools - CLI
