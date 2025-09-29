@@ -1,4 +1,4 @@
-# jModel
+# jModel [DEPRECATED]
 
 jModel is a prototype client-side library for managing web models. With built-in tools for dependency injection, state management, and validation, it allows keeping business logic separate from the UI, ensuring modularity, scalability, and reusability.
 
